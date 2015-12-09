@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+  xmlns:os-core="http://www.openspaces.org/schema/core"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.1.xsd
+       http://www.openspaces.org/schema/core http://www.openspaces.org/schema/10.0/core/openspaces-core.xsd">
+
+  <bean id="partition1" class="org.openspaces.core.space.UrlSpaceFactoryBean">
+    <property name="url"
+      value="/./ITSpace?cluster_schema=partitioned-sync2backup&amp;total_members=2,0&amp;id=1&amp;groups=it-test" />
+  </bean>
+
+  <bean id="partition2" class="org.openspaces.core.space.UrlSpaceFactoryBean"
+    depends-on="partition1">
+    <property name="url"
+      value="/./ITSpace?cluster_schema=partitioned-sync2backup&amp;total_members=2,0&amp;id=2&amp;groups=it-test" />
+  </bean>
+
+  <bean id="space" class="org.openspaces.core.space.UrlSpaceFactoryBean" depends-on="partition2">
+    <property name="url" value="jini://*/*/ITSpace?groups=it-test" />
+  </bean>
+
+  <os-core:giga-space id="gigaSpace" space="space" />
+
+  <os-core:map id="map" space="space" />
+  <os-core:giga-map id="gigaMap" map="map" />
+
+  <bean id="gigaSet" class="org.openspaces.core.collections.DefaultGigaSet">
+    <constructor-arg ref="gigaMap"/>
+  </bean>
+
+</beans>
