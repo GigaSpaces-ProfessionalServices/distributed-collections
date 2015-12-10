@@ -16,27 +16,46 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.openspaces.core.GigaSpace;
+import org.springframework.test.context.TestContextManager;
 
 @RunWith(Parameterized.class)
-public abstract class AbstractGigaSetTest<T extends Serializable> extends GigaSpaceTest {
+public abstract class AbstractGigaSetTest<T extends Serializable> {
 
     @Resource
     protected GigaSet<T> gigaSet;
     
-    protected Set<T> testElements;
+    @Resource
+    protected GigaSpace gigaSpace;
     
+    protected Set<T> testElements;
+
     public AbstractGigaSetTest(Set<T> elements) {
         setUpSpringContext();
         this.testElements = elements;
     }
     
+    private void setUpSpringContext() {
+        try {
+            new TestContextManager(getClass()).prepareTestInstance(this);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to set spring context up", e);
+        }
+    }
+    
     @Before
     public void setUp() {
         gigaSet.addAll(testElements);
+    }
+    
+    @After
+    public void clear() {
+        gigaSpace.clear(null);
     }
     
     @Test

@@ -6,7 +6,6 @@ import java.util.Objects;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
-import com.gigaspaces.annotation.pojo.SpaceRouting;
 
 @SpaceClass
 public class ComplexType implements Serializable {
@@ -31,8 +30,8 @@ public class ComplexType implements Serializable {
         return number;
     }
 
-    public void setNumber(Long routing) {
-        this.number = routing;
+    public void setNumber(Long number) {
+        this.number = number;
     }
 
     public String getDescription() {

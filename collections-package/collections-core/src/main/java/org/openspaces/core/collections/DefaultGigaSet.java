@@ -17,20 +17,8 @@ public class DefaultGigaSet<T extends Serializable> extends AbstractSet<T> imple
 
     private static final String NULL_ELEMENT_ERR_MSG = "'GigaSet' does not permit null elements";
     
-    private static final Serializable DUMMY = new Serializable() {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public boolean equals(Object o) {
-            return o == null ? false : true;
-        }
-
-        @Override
-        public int hashCode() {
-            return 1;
-        }
-    };
-
+    private static final Serializable DUMMY = new DummyValue();
+    
     private GigaMap gigaMap;
     
     public DefaultGigaSet(GigaMap gigaMap) {
@@ -179,5 +167,19 @@ public class DefaultGigaSet<T extends Serializable> extends AbstractSet<T> imple
     @Override
     public long getDefaultWaitForResponse() {
         return gigaMap.getDefaultWaitForResponse();
+    }
+    
+    private static class DummyValue implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public boolean equals(Object o) {
+            return o == null ? false : true;
+        }
+
+        @Override
+        public int hashCode() {
+            return 1;
+        }
     }
 }

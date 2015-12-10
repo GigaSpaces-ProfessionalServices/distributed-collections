@@ -48,6 +48,16 @@
       <version>1.0</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>com.gigaspaces</groupId>
+      <artifactId>gs-runtime</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.gigaspaces</groupId>
+      <artifactId>gs-openspaces</artifactId>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 
   <build>

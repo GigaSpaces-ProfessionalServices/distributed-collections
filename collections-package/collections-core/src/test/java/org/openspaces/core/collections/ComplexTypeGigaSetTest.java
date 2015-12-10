@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.runners.Parameterized;
-import org.openspaces.core.collections.ComplexType.Child;
 import org.springframework.test.context.ContextConfiguration;
 
 @ContextConfiguration(locations = "classpath:/partitioned-space-test-config.xml")
@@ -44,22 +43,13 @@ public class ComplexTypeGigaSetTest extends AbstractGigaSetTest<ComplexType> {
     }
     
     private static ComplexType createComplexType() {
-        ComplexType complexType = new ComplexType();
-        Long id = ThreadLocalRandom.current().nextLong();
-        complexType.setId(id);
-        complexType.setNumber(ThreadLocalRandom.current().nextLong());
-        complexType.setDescription("Test data" + id);
-        
-        Child child1 = new Child();
-        child1.setId(ThreadLocalRandom.current().nextLong());
-        child1.setParentId(id);
-        
-        Child child2 = new Child();
-        child2.setId(ThreadLocalRandom.current().nextLong());
-        child2.setParentId(id);
-        
-        complexType.setChildren(Arrays.asList(child1, child2));
-        
-        return complexType;
+        final ThreadLocalRandom random = ThreadLocalRandom.current();
+        Long id = random.nextLong();
+        return new ComplexTypeBuilder(id)
+            .setNumber(random.nextLong())
+            .setDescription("Test data" + id)
+            .addChild(random.nextLong())
+            .addChild(random.nextLong())
+            .build();
     }
 }
