@@ -3,7 +3,7 @@ package org.openspaces.core.collections;
 import static java.util.Objects.requireNonNull;
 
 import java.io.Serializable;
-import java.util.AbstractSet;
+import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
@@ -13,7 +13,8 @@ import net.jini.core.transaction.Transaction;
 import org.openspaces.core.GigaMap;
 import org.openspaces.core.map.LockHandle;
 import org.openspaces.core.transaction.TransactionProvider;
-public class DefaultGigaSet<T extends Serializable> extends AbstractSet<T> implements GigaSet<T> {
+
+public class DefaultGigaSet<T extends Serializable> extends AbstractCollection<T> implements GigaSet<T> {
 
     private static final String NULL_ELEMENT_ERR_MSG = "'GigaSet' does not permit null elements";
     
@@ -81,19 +82,19 @@ public class DefaultGigaSet<T extends Serializable> extends AbstractSet<T> imple
     @Override
     public boolean remove(Object e) {
         final Object element = requireNonNull(e, NULL_ELEMENT_ERR_MSG);
-        return DUMMY.equals(gigaMap.remove(element));
+        return gigaMap.remove(element) != null;
     }
 
     @Override
     public boolean remove(Object e, long waitForResponse) {
         final Object element = requireNonNull(e, NULL_ELEMENT_ERR_MSG);
-        return DUMMY.equals(gigaMap.remove(element, waitForResponse));
+        return gigaMap.remove(element, waitForResponse) != null;
     }
 
     @Override
     public boolean remove(Object e, long waitForResponse, LockHandle lockHandle) {
         final Object element = requireNonNull(e, NULL_ELEMENT_ERR_MSG);
-        return DUMMY.equals(gigaMap.remove(element, waitForResponse, lockHandle));
+        return gigaMap.remove(element, waitForResponse, lockHandle) != null;
     }
     
     @Override
@@ -171,15 +172,5 @@ public class DefaultGigaSet<T extends Serializable> extends AbstractSet<T> imple
     
     private static class DummyValue implements Serializable {
         private static final long serialVersionUID = 1L;
-
-        @Override
-        public boolean equals(Object o) {
-            return o == null ? false : true;
-        }
-
-        @Override
-        public int hashCode() {
-            return 1;
-        }
     }
 }

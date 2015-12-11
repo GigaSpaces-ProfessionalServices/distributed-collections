@@ -45,4 +45,9 @@ public class SimpleTypeGigaSetTest extends AbstractGigaSetTest<Integer> {
     protected Integer newNotNullElement() {
         return ThreadLocalRandom.current().nextInt(Integer.MIN_VALUE, 0);
     }
+
+    @Override
+    protected Class<? extends Integer> getElementType() {
+        return Integer.class;
+    }
 }

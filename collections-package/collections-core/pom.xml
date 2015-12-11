@@ -39,7 +39,7 @@
     </dependency>
     <dependency>
       <groupId>com.gigaspaces.util</groupId>
-      <artifactId>collections-integration-tests</artifactId>
+      <artifactId>collections-tests-common</artifactId>
       <version>1.0</version>
       <scope>test</scope>
     </dependency>

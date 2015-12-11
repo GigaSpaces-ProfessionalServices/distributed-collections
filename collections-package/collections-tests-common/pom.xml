@@ -6,7 +6,7 @@
     <artifactId>collections-package</artifactId>
     <version>1.0</version>
   </parent>
-  <artifactId>collections-integration-tests</artifactId>
+  <artifactId>collections-tests-common</artifactId>
 
   <dependencies>
     <dependency>

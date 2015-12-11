@@ -3,12 +3,14 @@ package org.openspaces.core.collections;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -319,7 +321,32 @@ public abstract class AbstractGigaSetTest<T extends Serializable> {
         }
     }
     
+    @Test
+    public void testIterator() {
+        Iterator<T> iterator = gigaSet.iterator();
+        assertNotNull("Iterator must not be null", iterator);
+        int actualCount = 0;
+        while(iterator.hasNext()) {
+            assertNotNull("GigaSet elements must not be null", iterator.next());
+            actualCount++;
+        }
+        assertEquals("Invalid gigaSet elements count", actualCount, gigaSpace.count(null));
+    }
+    
+    @Test
+    public void testToArray() {
+        Object[] array = gigaSet.toArray();
+        assertNotNull("Array of gigaSet elements must not be null", array);
+        assertEquals("Invalid gigaSet elements count", array.length, gigaSpace.count(null));
+        for (Object o : array) {
+            assertNotNull("GigaSet elements must not be null", o);
+            assertTrue("Invalid element type", o.getClass().isAssignableFrom(getElementType()));
+        }
+    }
+
     protected abstract T newNotNullElement();
+    
+    protected abstract Class<? extends T> getElementType();
     
     private Set<T> getTestDataSubSet() {
         Set<T> subSet = new HashSet<>();

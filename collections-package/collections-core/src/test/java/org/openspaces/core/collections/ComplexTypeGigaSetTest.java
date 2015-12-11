@@ -52,4 +52,9 @@ public class ComplexTypeGigaSetTest extends AbstractGigaSetTest<ComplexType> {
             .addChild(random.nextLong())
             .build();
     }
+
+    @Override
+    protected Class<? extends ComplexType> getElementType() {
+        return ComplexType.class;
+    }
 }

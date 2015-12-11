@@ -1,6 +1,7 @@
 package org.openspaces.core.collections;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -15,6 +16,7 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
@@ -28,31 +30,54 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class GigaSetBenchmark {
 
     private static final String PARTITIONED_SPACE_CONFIG = "partitioned-space-test-config.xml";
-    private static final int ELEMENTS_COUNT = 100;
+    private static final int ELEMENTS_MAX_COUNT = 100;
     
     @Param({ "0", "1", "1000"})
-    int size;
+    private int size;
     
-    AbstractApplicationContext applicationContext;
-    GigaSet<ComplexType> gigaSet;
+    private AbstractApplicationContext applicationContext;
+    private GigaSet<ComplexType> gigaSet;
     
-    ComplexType complexType;
-    Set<ComplexType> complexTypes;
+    private ComplexType newComplexType;
+    private Set<ComplexType> newComplexTypes;
+    
+    private ComplexType existingComplexType;
+    private Set<ComplexType> existingComplexTypes;
 
     @Setup(Level.Trial)
     public void init() {
         applicationContext = new ClassPathXmlApplicationContext(PARTITIONED_SPACE_CONFIG);
         gigaSet = applicationContext.getBean(GigaSet.class);
-        complexType = create();
-        complexTypes = new HashSet<>();
-        populate(ELEMENTS_COUNT, complexTypes);
         
+        newComplexType = create();
+        newComplexTypes = new HashSet<>();
+        for (int i = 0; i < ELEMENTS_MAX_COUNT; i++) {
+            newComplexTypes.add(create());
+        }
     }
     
     @Setup(Level.Invocation)
     public void setup() {
         gigaSet.clear();
-        populate(size, gigaSet);
+        
+        existingComplexTypes = new HashSet<>();
+       
+        //if size is 0 then any not null value
+        if (size == 0) {
+            existingComplexType = create();
+        }
+        
+        for (int i = 0; i < size; i++) {
+            ComplexType complexType = create();
+            if (i == 0) {
+                existingComplexType = complexType;
+            }
+        
+            if (i < ELEMENTS_MAX_COUNT) {
+                existingComplexTypes.add(complexType);
+            }
+            gigaSet.add(complexType);
+        }
     }
     
     @TearDown(Level.Trial)
@@ -60,12 +85,6 @@ public class GigaSetBenchmark {
         applicationContext.close();
     }
     
-    private void populate(int size, Set<ComplexType> set) {
-        for (int i = 0; i < size; i++) {
-            set.add(create());
-        }
-    }
-
     private ComplexType create() {
         final ThreadLocalRandom random = ThreadLocalRandom.current();
         Long id = random.nextLong();
@@ -79,12 +98,64 @@ public class GigaSetBenchmark {
     
     @Benchmark
     public boolean testAdd() {
-        return gigaSet.add(complexType);
+        return gigaSet.add(newComplexType);
     }
     
     @Benchmark
     public boolean testAddAll() {
-        return gigaSet.addAll(complexTypes);
+        return gigaSet.addAll(newComplexTypes);
+    }
+    
+    @Benchmark
+    public boolean testRemove() {
+        return gigaSet.remove(existingComplexType);
+    }
+    
+    @Benchmark
+    public boolean testRemoveAll() {
+        return gigaSet.removeAll(existingComplexTypes);
+    }
+    
+    @Benchmark
+    public boolean testContains() {
+        return gigaSet.contains(existingComplexType);
+    }
+    
+    @Benchmark
+    public boolean testContainsAll() {
+        return gigaSet.containsAll(existingComplexTypes);
+    }
+    
+    @Benchmark
+    public boolean testRetainAll() {
+        return gigaSet.retainAll(existingComplexTypes);
+    }
+    
+    @Benchmark
+    public void testClear() {
+        gigaSet.clear();
+    }
+    
+    @Benchmark
+    public void testIterator(Blackhole bh) {
+        for (Iterator<ComplexType> iterator = gigaSet.iterator(); iterator.hasNext();) {
+            bh.consume(iterator.next());
+        }
+    }
+    
+    @Benchmark
+    public ComplexType[] testToArray() {
+        return gigaSet.toArray(new ComplexType[size]);
+    }
+    
+    @Benchmark
+    public int testSize() {
+        return gigaSet.size();
+    }
+    
+    @Benchmark
+    public boolean isEmpty() {
+        return gigaSet.isEmpty();
     }
     
     public static void main(String[] args) throws Exception {

@@ -13,7 +13,7 @@
   
   <modules>
     <module>collections-core</module>
-    <module>collections-integration-tests</module>
+    <module>collections-tests-common</module>
     <module>collections-benchmark</module>
   </modules>
   
