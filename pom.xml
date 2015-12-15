@@ -4,7 +4,7 @@
   
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.gigaspaces.util</groupId>
-  <artifactId>collections-package</artifactId>
+  <artifactId>distributed-collections</artifactId>
   <packaging>pom</packaging>
    
   <version>1.0</version>
