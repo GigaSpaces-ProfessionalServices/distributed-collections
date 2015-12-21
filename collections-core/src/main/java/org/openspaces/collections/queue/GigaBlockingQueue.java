@@ -7,5 +7,5 @@ import java.util.concurrent.BlockingQueue;
  *
  * @author Oleksiy_Dyagilev
  */
-public interface GigaBlockingQueue<T> extends BlockingQueue<T> {
+public interface GigaBlockingQueue<E> extends BlockingQueue<E> {
 }
