@@ -57,4 +57,9 @@ public class ComplexTypeGigaSetTest extends AbstractGigaSetTest<ComplexType> {
     protected Class<? extends ComplexType> getElementType() {
         return ComplexType.class;
     }
+
+    @Override
+    protected ComplexType[] getElementArray() {
+        return new ComplexType[testedElements.size()];
+    }
 }

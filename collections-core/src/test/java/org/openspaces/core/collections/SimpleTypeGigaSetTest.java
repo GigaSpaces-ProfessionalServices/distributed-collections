@@ -50,4 +50,9 @@ public class SimpleTypeGigaSetTest extends AbstractGigaSetTest<Integer> {
     protected Class<? extends Integer> getElementType() {
         return Integer.class;
     }
+
+    @Override
+    protected Integer[] getElementArray() {
+        return new Integer[testedElements.size()];
+    }
 }
