@@ -1,4 +1,4 @@
-package org.openspaces.core.collections;
+package org.openspaces.collections;
 
 import java.io.Serializable;
 import java.util.Collection;
