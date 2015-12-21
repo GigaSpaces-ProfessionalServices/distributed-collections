@@ -1,4 +1,4 @@
-package org.openspaces.collections;
+package org.openspaces.collections.set;
 
 import java.util.HashSet;
 import java.util.Iterator;

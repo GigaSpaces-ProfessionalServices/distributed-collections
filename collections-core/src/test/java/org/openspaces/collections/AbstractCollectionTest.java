@@ -1,4 +1,4 @@
-package org.openspaces.core.collections;
+package org.openspaces.collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

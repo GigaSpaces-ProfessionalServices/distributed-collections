@@ -1,4 +1,4 @@
-package org.openspaces.collections;
+package org.openspaces.collections.set;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -7,6 +7,7 @@ import javax.annotation.Resource;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.openspaces.collections.AbstractCollectionTest;
 
 @RunWith(Parameterized.class)
 public abstract class AbstractGigaSetTest<T extends Serializable> extends AbstractCollectionTest<T> {
