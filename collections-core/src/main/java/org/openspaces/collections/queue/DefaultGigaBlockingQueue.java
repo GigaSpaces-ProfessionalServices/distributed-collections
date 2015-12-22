@@ -13,6 +13,7 @@ import org.openspaces.core.GigaSpace;
 
 import java.io.Serializable;
 import java.util.AbstractCollection;
+import java.util.AbstractQueue;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
@@ -22,7 +23,7 @@ import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
 /**
  * @author Oleksiy_Dyagilev
  */
-public class DefaultGigaBlockingQueue<E> extends AbstractCollection<E> implements GigaBlockingQueue<E> {
+public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements GigaBlockingQueue<E> {
 
     private GigaSpace space;
     private String queueName;
@@ -70,16 +71,6 @@ public class DefaultGigaBlockingQueue<E> extends AbstractCollection<E> implement
     }
 
     @Override
-    public Iterator<E> iterator() {
-        throw new RuntimeException("Not implemented yet");
-    }
-
-    @Override
-    public int size() {
-        throw new RuntimeException("Not implemented yet");
-    }
-
-    @Override
     public boolean offer(E element) {
         ChangeSet offerChange = new ChangeSet().custom(new OfferOperation(1));
 
@@ -95,59 +86,6 @@ public class DefaultGigaBlockingQueue<E> extends AbstractCollection<E> implement
         } else {
             return false;
         }
-    }
-
-    /**
-     * @return template to query queue
-     */
-    private QueueData queueTemplate() {
-        QueueData queueTemplate = new QueueData();
-        queueTemplate.setName(queueName);
-        return queueTemplate;
-    }
-
-    private Serializable toSingleResult(ChangeResult<QueueData> changeResult) {
-        if (changeResult.getNumberOfChangedEntries() != 1) {
-            throw new IllegalStateException("Unexpected number of changed entries: " + changeResult.getNumberOfChangedEntries());
-        }
-
-        return changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
-    }
-
-    @Override
-    public E remove() {
-        throw new RuntimeException("Not implemented yet");
-    }
-
-    @Override
-    public E poll() {
-        ChangeSet pollChange = new ChangeSet().custom(new PollOperation());
-
-        ChangeResult<QueueData> changeResult = space.change(queueTemplate(), pollChange, RETURN_DETAILED_RESULTS);
-
-        PollOperation.Result pollResult = (PollOperation.Result) toSingleResult(changeResult);
-
-        if (pollResult.isQueueEmpty()) {
-            return null;
-        } else {
-            Long polledIndex = pollResult.getPolledIndex();
-            QueueItemKey itemKey = new QueueItemKey(queueName, polledIndex);
-            QueueItem queueItem = space.takeById(QueueItem.class, itemKey);
-
-            // TODO: race condition
-            return queueItem == null ? null : (E) queueItem.getItem();
-        }
-
-    }
-
-    @Override
-    public E element() {
-        throw new RuntimeException("Not implemented yet");
-    }
-
-    @Override
-    public E peek() {
-        throw new RuntimeException("Not implemented yet");
     }
 
     @Override
@@ -182,6 +120,59 @@ public class DefaultGigaBlockingQueue<E> extends AbstractCollection<E> implement
 
     @Override
     public int drainTo(Collection<? super E> c, int maxElements) {
+        throw new RuntimeException("Not implemented yet");
+    }
+
+    /**
+     * @return template to query queue
+     */
+    private QueueData queueTemplate() {
+        QueueData queueTemplate = new QueueData();
+        queueTemplate.setName(queueName);
+        return queueTemplate;
+    }
+
+    private Serializable toSingleResult(ChangeResult<QueueData> changeResult) {
+        if (changeResult.getNumberOfChangedEntries() != 1) {
+            throw new IllegalStateException("Unexpected number of changed entries: " + changeResult.getNumberOfChangedEntries());
+        }
+
+        return changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
+    }
+
+    @Override
+    public E poll() {
+        ChangeSet pollChange = new ChangeSet().custom(new PollOperation());
+
+        ChangeResult<QueueData> changeResult = space.change(queueTemplate(), pollChange, RETURN_DETAILED_RESULTS);
+
+        PollOperation.Result pollResult = (PollOperation.Result) toSingleResult(changeResult);
+
+        if (pollResult.isQueueEmpty()) {
+            return null;
+        } else {
+            Long polledIndex = pollResult.getPolledIndex();
+            QueueItemKey itemKey = new QueueItemKey(queueName, polledIndex);
+            QueueItem queueItem = space.takeById(QueueItem.class, itemKey);
+
+            // TODO: race condition
+            return queueItem == null ? null : (E) queueItem.getItem();
+        }
+
+    }
+
+    @Override
+    public E peek() {
+        throw new RuntimeException("Not implemented yet");
+    }
+
+    @Override
+    public Iterator<E> iterator() {
+        throw new RuntimeException("Not implemented yet");
+    }
+
+    @Override
+    public int size() {
         throw new RuntimeException("Not implemented yet");
     }
 }

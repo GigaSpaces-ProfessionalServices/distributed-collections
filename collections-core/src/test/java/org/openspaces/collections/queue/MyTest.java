@@ -13,7 +13,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import javax.annotation.Resource;
 
 /**
- * TODO: Temp test
+ * TODO: Temp testl
  *
  * @author Oleksiy_Dyagilev
  */
