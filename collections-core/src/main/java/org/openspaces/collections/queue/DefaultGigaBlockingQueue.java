@@ -59,18 +59,6 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         createNewIfRequired();
     }
 
-    /**
-     * create new queue in the grid if this is a first reference (queue doesn't exist yet)
-     */
-    private void createNewIfRequired() {
-        try {
-            QueueData queueData = new QueueData(queueName, 0L, 0L, bounded, capacity);
-            space.write(queueData, WriteModifiers.WRITE_ONLY);
-        } catch (EntryAlreadyInSpaceException e) {
-            // no-op
-        }
-    }
-
     @Override
     public boolean offer(E element) {
         ChangeSet offerChange = new ChangeSet().custom(new OfferOperation(1));
@@ -124,23 +112,6 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         throw new RuntimeException("Not implemented yet");
     }
 
-    /**
-     * @return template to query queue
-     */
-    private QueueData queueTemplate() {
-        QueueData queueTemplate = new QueueData();
-        queueTemplate.setName(queueName);
-        return queueTemplate;
-    }
-
-    private Serializable toSingleResult(ChangeResult<QueueData> changeResult) {
-        if (changeResult.getNumberOfChangedEntries() != 1) {
-            throw new IllegalStateException("Unexpected number of changed entries: " + changeResult.getNumberOfChangedEntries());
-        }
-
-        return changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
-    }
-
     @Override
     public E poll() {
         ChangeSet pollChange = new ChangeSet().custom(new PollOperation());
@@ -180,5 +151,34 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
         SizeOperation.Result sizeResult = (SizeOperation.Result) toSingleResult(changeResult);
         return  sizeResult.getSize();
+    }
+
+    /**
+     * create new queue in the grid if this is a first reference (queue doesn't exist yet)
+     */
+    private void createNewIfRequired() {
+        try {
+            QueueData queueData = new QueueData(queueName, 0L, 0L, bounded, capacity);
+            space.write(queueData, WriteModifiers.WRITE_ONLY);
+        } catch (EntryAlreadyInSpaceException e) {
+            // no-op
+        }
+    }
+
+    /**
+     * @return template to query queue
+     */
+    private QueueData queueTemplate() {
+        QueueData queueTemplate = new QueueData();
+        queueTemplate.setName(queueName);
+        return queueTemplate;
+    }
+
+    private Serializable toSingleResult(ChangeResult<QueueData> changeResult) {
+        if (changeResult.getNumberOfChangedEntries() != 1) {
+            throw new IllegalStateException("Unexpected number of changed entries: " + changeResult.getNumberOfChangedEntries());
+        }
+
+        return changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
     }
 }
