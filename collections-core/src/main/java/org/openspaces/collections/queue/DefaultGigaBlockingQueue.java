@@ -8,6 +8,7 @@ import org.openspaces.collections.queue.data.QueueItem;
 import org.openspaces.collections.queue.data.QueueItemKey;
 import org.openspaces.collections.queue.operations.OfferOperation;
 import org.openspaces.collections.queue.operations.PollOperation;
+import org.openspaces.collections.queue.operations.SizeOperation;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
 
@@ -173,6 +174,11 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
     @Override
     public int size() {
-        throw new RuntimeException("Not implemented yet");
+        ChangeSet sizeOperation = new ChangeSet().custom(new SizeOperation());
+
+        ChangeResult<QueueData> changeResult = space.change(queueTemplate(), sizeOperation, RETURN_DETAILED_RESULTS);
+
+        SizeOperation.Result sizeResult = (SizeOperation.Result) toSingleResult(changeResult);
+        return  sizeResult.getSize();
     }
 }

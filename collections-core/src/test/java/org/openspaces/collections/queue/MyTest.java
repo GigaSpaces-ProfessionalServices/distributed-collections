@@ -29,12 +29,16 @@ public class MyTest {
 
         DefaultGigaBlockingQueue<ComplexType> queue = new DefaultGigaBlockingQueue<>(gigaSpace, "test-queue", 1);
         System.out.println(queue.offer(new ComplexType()));
+        System.out.println("queue.size() = " + queue.size());
         System.out.println(queue.poll());
         System.out.println(queue.poll());
+        System.out.println("queue.size() = " + queue.size());
 
         System.out.println(queue.offer(new ComplexType()));
+        System.out.println("queue.size() = " + queue.size());
         System.out.println(queue.poll());
         System.out.println(queue.poll());
+        System.out.println("queue.size() = " + queue.size());
 
 
 //        System.out.println("111");

@@ -32,7 +32,7 @@ public class PollOperation extends CustomChangeOperation {
 
     @Override
     public String getName() {
-        return null;
+        return "poll";
     }
 
     /**
