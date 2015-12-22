@@ -1,10 +1,8 @@
 package org.openspaces.collections;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.openspaces.collections.set.ComplexType;
@@ -15,41 +13,24 @@ public final class CollectionUtils {
     private CollectionUtils() {
     }
     
-    private static final int MEDIUM_SET_SIZE = 500;
+    public static final int MEDIUM_COLLECTION_SIZE = 500;
     
-    private static final long LARGE_SET_SIZE = (long)Integer.MAX_VALUE + 1;
+    public static final long LARGE_COLLECTION_SIZE = (long)Integer.MAX_VALUE + 1;
     
-    public static Collection<Object[]> createIntegerCollections() {
-       return Arrays.asList(new Object[][] {
-          { Collections.emptySet() },
-          { Collections.singleton(Integer.valueOf(1))},
-          { createIntegerSet(MEDIUM_SET_SIZE) },
-          /*{ create(LARGE_SET) }*/
-       });
-    }
-
-    private static Set<Integer> createIntegerSet(long count) {
-        Set<Integer> set = new HashSet<>();
+    public static List<Integer> createIntegerList(long count) {
+        List<Integer> data = new ArrayList<>();
         for (long i = 0; i < count; i++) {
-            set.add(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE));
+            data.add(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE));
         }
-        return Collections.unmodifiableSet(set);
+        return Collections.unmodifiableList(data);
     }
     
-    public static Collection<Object[]> createComplexTypeCollections() {
-        return Arrays.asList(new Object[][] {
-           { Collections.emptySet() },
-           { Collections.singleton(createComplexType())},
-           { createComplexTypeSet(MEDIUM_SET_SIZE) }
-        });
-     }
-    
-    private static Set<ComplexType> createComplexTypeSet(long count) {
-        Set<ComplexType> set = new HashSet<>();
+    public static List<ComplexType> createComplexTypeList(long count) {
+        List<ComplexType> data = new ArrayList<>();
         for (long i = 0; i < count; i++) {
-            set.add(createComplexType());
+            data.add(createComplexType());
         }
-        return Collections.unmodifiableSet(set);
+        return Collections.unmodifiableList(data);
     }
     
     public static ComplexType createComplexType() {

@@ -1,8 +1,12 @@
 package org.openspaces.collections.queue;
 
-import static org.openspaces.collections.CollectionUtils.createIntegerCollections;
+import static org.openspaces.collections.CollectionUtils.MEDIUM_COLLECTION_SIZE;
+import static org.openspaces.collections.CollectionUtils.createIntegerList;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.Ignore;
@@ -13,13 +17,19 @@ import org.springframework.test.context.ContextConfiguration;
 @Ignore
 public class SimpleTypeGigaBlockingQueueTest extends AbstractGigaBlockingQueueTest<Integer> {
 
-    public SimpleTypeGigaBlockingQueueTest(Collection<Integer> elements) {
-        super(elements);
+    public SimpleTypeGigaBlockingQueueTest(List<Integer> elements, int capacity) {
+        super(elements, capacity);
     }
 
     @Parameterized.Parameters
     public static Collection<Object[]> testData() {
-        return createIntegerCollections();
+            return Arrays.asList(new Object[][] { 
+                    { Collections.emptyList(), 0},
+                    { Collections.emptyList(), 1},
+                    { Collections.singletonList(Integer.valueOf(1)), 2},
+                    { createIntegerList(MEDIUM_COLLECTION_SIZE), MEDIUM_COLLECTION_SIZE},
+                    /* { create(LARGE_COLLECTION_SIZE) } */
+            });
     }
 
     @Override
@@ -34,6 +44,6 @@ public class SimpleTypeGigaBlockingQueueTest extends AbstractGigaBlockingQueueTe
 
     @Override
     protected Integer newNotNullElement() {
-        return ThreadLocalRandom.current().nextInt(Integer.MIN_VALUE, 0);
+        return ThreadLocalRandom.current().nextInt();
     }
 }

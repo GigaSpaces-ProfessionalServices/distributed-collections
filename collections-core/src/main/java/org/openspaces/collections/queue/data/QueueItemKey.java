@@ -1,10 +1,14 @@
 package org.openspaces.collections.queue.data;
 
+import java.io.Serializable;
+
 /**
  * @author Oleksiy_Dyagilev
  */
-public class QueueItemKey {
+public class QueueItemKey implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+    
     private String queueName;
     private Long queueIndex;
 

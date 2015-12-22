@@ -1,9 +1,13 @@
 package org.openspaces.collections.queue;
 
+import static org.openspaces.collections.CollectionUtils.MEDIUM_COLLECTION_SIZE;
 import static org.openspaces.collections.CollectionUtils.createComplexType;
-import static org.openspaces.collections.CollectionUtils.createComplexTypeCollections;
+import static org.openspaces.collections.CollectionUtils.createComplexTypeList;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.runners.Parameterized;
@@ -14,15 +18,21 @@ import org.springframework.test.context.ContextConfiguration;
 @Ignore
 public class SerializableTypeGigaBlockingQueueTest extends AbstractGigaBlockingQueueTest<ComplexType> {
 
-    public SerializableTypeGigaBlockingQueueTest(Collection<ComplexType> elements) {
-        super(elements);
+    public SerializableTypeGigaBlockingQueueTest(List<ComplexType> elements, int capacity) {
+        super(elements, capacity);
     }
 
     @Parameterized.Parameters
     public static Collection<Object[]> testData() {
-        return createComplexTypeCollections();
+        return Arrays.asList(new Object[][] { 
+                { Collections.emptyList(), 0 },
+                { Collections.emptyList(), 1 },
+                { Collections.singletonList(createComplexType()), 2 },
+                { createComplexTypeList(MEDIUM_COLLECTION_SIZE), MEDIUM_COLLECTION_SIZE },
+                /* { createComplexTypeList(LARGE_COLLECTION_SIZE) } */
+        });
     }
-    
+
     @Override
     protected Class<? extends ComplexType> getElementType() {
         return ComplexType.class;

@@ -1,7 +1,10 @@
 package org.openspaces.collections.set;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.Resource;
 
@@ -15,12 +18,17 @@ public abstract class AbstractGigaSetTest<T extends Serializable> extends Abstra
     @Resource
     protected GigaSet<T> gigaSet;
     
-    public AbstractGigaSetTest(Collection<T> elements) {
+    public AbstractGigaSetTest(List<T> elements) {
         super(elements);
     }
     
     @Override
     protected Collection<T> getCollection() {
         return gigaSet;
+    }
+    
+    @Override
+    protected void assertSize(String msg, int expectedSize) {
+        assertEquals(msg, expectedSize, gigaSpace.count(null));
     }
 }

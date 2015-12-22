@@ -1,10 +1,13 @@
 package org.openspaces.collections.set;
 
+import static org.openspaces.collections.CollectionUtils.MEDIUM_COLLECTION_SIZE;
 import static org.openspaces.collections.CollectionUtils.createComplexType;
-import static org.openspaces.collections.CollectionUtils.createComplexTypeCollections;
+import static org.openspaces.collections.CollectionUtils.createComplexTypeList;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Set;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.runners.Parameterized;
 import org.springframework.test.context.ContextConfiguration;
@@ -12,13 +15,15 @@ import org.springframework.test.context.ContextConfiguration;
 @ContextConfiguration(locations = "classpath:/partitioned-space-test-config.xml")
 public class ComplexTypeGigaSetTest extends AbstractGigaSetTest<ComplexType> {
 
-    public ComplexTypeGigaSetTest(Set<ComplexType> elements) {
+    public ComplexTypeGigaSetTest(List<ComplexType> elements) {
         super(elements);
     }
 
     @Parameterized.Parameters
     public static Collection<Object[]> testData() {
-       return createComplexTypeCollections();
+        return Arrays.asList(new Object[][] { { Collections.emptyList() },
+                { Collections.singletonList(createComplexType()) },
+                { createComplexTypeList(MEDIUM_COLLECTION_SIZE) } });
     }
 
     @Override
