@@ -13,7 +13,6 @@ import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
 
 import java.io.Serializable;
-import java.util.AbstractCollection;
 import java.util.AbstractQueue;
 import java.util.Collection;
 import java.util.Iterator;
@@ -99,7 +98,11 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
     @Override
     public int remainingCapacity() {
-        throw new RuntimeException("Not implemented yet");
+        if (!bounded) {
+            return Integer.MAX_VALUE;
+        }
+
+        return capacity - size();
     }
 
     @Override
@@ -150,7 +153,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         ChangeResult<QueueData> changeResult = space.change(queueTemplate(), sizeOperation, RETURN_DETAILED_RESULTS);
 
         SizeOperation.Result sizeResult = (SizeOperation.Result) toSingleResult(changeResult);
-        return  sizeResult.getSize();
+        return sizeResult.getSize();
     }
 
     /**
@@ -174,6 +177,9 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         return queueTemplate;
     }
 
+    /**
+     * extract single result from the generic change api result
+     */
     private Serializable toSingleResult(ChangeResult<QueueData> changeResult) {
         if (changeResult.getNumberOfChangedEntries() != 1) {
             throw new IllegalStateException("Unexpected number of changed entries: " + changeResult.getNumberOfChangedEntries());

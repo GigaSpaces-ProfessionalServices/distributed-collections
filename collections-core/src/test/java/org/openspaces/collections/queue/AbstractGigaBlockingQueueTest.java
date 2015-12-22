@@ -163,7 +163,7 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
     
     @Test
     public void testRemainingCapacity() {
-        int expectedCapacity = testedElements.size() - capacity;
+        int expectedCapacity = capacity - testedElements.size();
         assertEquals("Invalid remaining capacity", expectedCapacity, gigaQueue.remainingCapacity());
         
         T element = newNotNullElement();
