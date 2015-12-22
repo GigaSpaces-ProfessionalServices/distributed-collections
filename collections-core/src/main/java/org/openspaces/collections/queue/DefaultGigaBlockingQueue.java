@@ -10,7 +10,6 @@ import org.openspaces.collections.queue.operations.OfferOperation;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
 
-import java.io.Serializable;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
@@ -25,6 +24,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractCollection<E> implement
 
     private GigaSpace space;
     private String queueName;
+    private boolean bounded;
     private int capacity;
 
     /**
@@ -35,6 +35,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractCollection<E> implement
     public DefaultGigaBlockingQueue(GigaSpace space, String queueName) {
         this.space = space;
         this.queueName = queueName;
+        this.bounded = false;
 
         createNewIfRequired();
     }
@@ -49,6 +50,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractCollection<E> implement
         this.space = space;
         this.queueName = queueName;
         this.capacity = capacity;
+        this.bounded = true;
 
         createNewIfRequired();
     }
@@ -58,7 +60,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractCollection<E> implement
      */
     private void createNewIfRequired() {
         try {
-            QueueData queueData = new QueueData(queueName, null, null, capacity);
+            QueueData queueData = new QueueData(queueName, 0L, 0L, bounded, capacity);
             space.write(queueData, WriteModifiers.WRITE_ONLY);
         } catch (EntryAlreadyInSpaceException e) {
             // no-op
@@ -84,23 +86,24 @@ public class DefaultGigaBlockingQueue<E> extends AbstractCollection<E> implement
 
         ChangeResult<QueueData> changeResult = space.change(queueTemplate, offerChange, RETURN_DETAILED_RESULTS);
 
-        long newTail = (long) singleChangeResult(changeResult);
+        OfferOperation.Result offerResult = toOfferResult(changeResult);
 
-        QueueItemKey itemKey = new QueueItemKey(queueName, newTail);
-        QueueItem<E> item = new QueueItem<E>(itemKey, element);
-
-        space.write(item);
-
-        // TODO: ...
-        return true;
+        if (offerResult.isChanged()){
+            QueueItemKey itemKey = new QueueItemKey(queueName, offerResult.getNewTail());
+            QueueItem<E> item = new QueueItem<>(itemKey, element);
+            space.write(item);
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    private Serializable singleChangeResult(ChangeResult<QueueData> changeResult) {
+    private OfferOperation.Result toOfferResult(ChangeResult<QueueData> changeResult) {
         if (changeResult.getNumberOfChangedEntries() != 1) {
             throw new IllegalStateException("Unexpected number of changed entries: " + changeResult.getNumberOfChangedEntries());
         }
 
-        return changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
+        return (OfferOperation.Result) changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
     }
 
     @Override

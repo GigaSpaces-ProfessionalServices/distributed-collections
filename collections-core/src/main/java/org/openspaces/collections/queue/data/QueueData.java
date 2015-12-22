@@ -14,15 +14,17 @@ public class QueueData {
     private String name;
     private Long head;
     private Long tail;
+    private Boolean bounded;
     private Integer capacity;
 
     public QueueData() {
     }
 
-    public QueueData(String name, Long head, Long tail, Integer capacity) {
+    public QueueData(String name, Long head, Long tail, Boolean bounded, Integer capacity) {
         this.name = name;
         this.head = head;
         this.tail = tail;
+        this.bounded = bounded;
         this.capacity = capacity;
     }
 
@@ -49,6 +51,14 @@ public class QueueData {
 
     public void setTail(Long tail) {
         this.tail = tail;
+    }
+
+    public Boolean getBounded() {
+        return bounded;
+    }
+
+    public void setBounded(Boolean bounded) {
+        this.bounded = bounded;
     }
 
     public Integer getCapacity() {

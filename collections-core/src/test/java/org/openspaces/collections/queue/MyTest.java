@@ -27,12 +27,13 @@ public class MyTest {
     @Test
     public void test() {
 
-        DefaultGigaBlockingQueue<ComplexType> queue = new DefaultGigaBlockingQueue<ComplexType>(gigaSpace, "test-queue");
-        queue.offer(new ComplexType());
-        queue.offer(new ComplexType());
+        DefaultGigaBlockingQueue<ComplexType> queue = new DefaultGigaBlockingQueue<>(gigaSpace, "test-queue", 1);
+        System.out.println(queue.offer(new ComplexType()));
+        System.out.println(queue.offer(new ComplexType()));
+        System.out.println(queue.offer(new ComplexType()));
 
 
-        System.out.println("111");
+//        System.out.println("111");
     }
 
 }
