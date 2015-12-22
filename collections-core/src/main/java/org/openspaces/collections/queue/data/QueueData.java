@@ -11,6 +11,12 @@ import com.gigaspaces.annotation.pojo.SpaceId;
 @SpaceClass
 public class QueueData {
 
+    /** path is used in change api **/
+    public static final String HEAD_PATH = "head";
+    public static final String TAIL_PATH = "tail";
+    public static final String BOUNDED_PATH = "bounded";
+    public static final String CAPACITY_PATH = "capacity";
+
     private String name;
     private Long head;
     private Long tail;

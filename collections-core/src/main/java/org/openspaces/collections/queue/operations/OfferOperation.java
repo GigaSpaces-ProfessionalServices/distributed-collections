@@ -4,17 +4,14 @@ import com.gigaspaces.client.CustomChangeOperation;
 import com.gigaspaces.server.MutableServerEntry;
 import org.openspaces.collections.queue.data.QueueData;
 
+import static org.openspaces.collections.queue.data.QueueData.*;
+
 import java.io.Serializable;
 
 /**
  * @author Oleksiy_Dyagilev
  */
 public class OfferOperation extends CustomChangeOperation {
-
-    private static final String HEAD_PATH = "head";
-    private static final String TAIL_PATH = "tail";
-    private static final String BOUNDED_PATH = "bounded";
-    private static final String CAPACITY_PATH = "capacity";
 
     private final int itemsNumber;
 

@@ -7,9 +7,11 @@ import org.openspaces.collections.queue.data.QueueData;
 import org.openspaces.collections.queue.data.QueueItem;
 import org.openspaces.collections.queue.data.QueueItemKey;
 import org.openspaces.collections.queue.operations.OfferOperation;
+import org.openspaces.collections.queue.operations.PollOperation;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
 
+import java.io.Serializable;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
@@ -79,16 +81,13 @@ public class DefaultGigaBlockingQueue<E> extends AbstractCollection<E> implement
 
     @Override
     public boolean offer(E element) {
-        QueueData queueTemplate = new QueueData();
-        queueTemplate.setName(queueName);
-
         ChangeSet offerChange = new ChangeSet().custom(new OfferOperation(1));
 
-        ChangeResult<QueueData> changeResult = space.change(queueTemplate, offerChange, RETURN_DETAILED_RESULTS);
+        ChangeResult<QueueData> changeResult = space.change(queueTemplate(), offerChange, RETURN_DETAILED_RESULTS);
 
-        OfferOperation.Result offerResult = toOfferResult(changeResult);
+        OfferOperation.Result offerResult = (OfferOperation.Result) toSingleResult(changeResult);
 
-        if (offerResult.isChanged()){
+        if (offerResult.isChanged()) {
             QueueItemKey itemKey = new QueueItemKey(queueName, offerResult.getNewTail());
             QueueItem<E> item = new QueueItem<>(itemKey, element);
             space.write(item);
@@ -98,12 +97,21 @@ public class DefaultGigaBlockingQueue<E> extends AbstractCollection<E> implement
         }
     }
 
-    private OfferOperation.Result toOfferResult(ChangeResult<QueueData> changeResult) {
+    /**
+     * @return template to query queue
+     */
+    private QueueData queueTemplate() {
+        QueueData queueTemplate = new QueueData();
+        queueTemplate.setName(queueName);
+        return queueTemplate;
+    }
+
+    private Serializable toSingleResult(ChangeResult<QueueData> changeResult) {
         if (changeResult.getNumberOfChangedEntries() != 1) {
             throw new IllegalStateException("Unexpected number of changed entries: " + changeResult.getNumberOfChangedEntries());
         }
 
-        return (OfferOperation.Result) changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
+        return changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
     }
 
     @Override
@@ -113,7 +121,23 @@ public class DefaultGigaBlockingQueue<E> extends AbstractCollection<E> implement
 
     @Override
     public E poll() {
-        throw new RuntimeException("Not implemented yet");
+        ChangeSet pollChange = new ChangeSet().custom(new PollOperation());
+
+        ChangeResult<QueueData> changeResult = space.change(queueTemplate(), pollChange, RETURN_DETAILED_RESULTS);
+
+        PollOperation.Result pollResult = (PollOperation.Result) toSingleResult(changeResult);
+
+        if (pollResult.isQueueEmpty()) {
+            return null;
+        } else {
+            Long polledIndex = pollResult.getPolledIndex();
+            QueueItemKey itemKey = new QueueItemKey(queueName, polledIndex);
+            QueueItem queueItem = space.takeById(QueueItem.class, itemKey);
+
+            // TODO: race condition
+            return queueItem == null ? null : (E) queueItem.getItem();
+        }
+
     }
 
     @Override
