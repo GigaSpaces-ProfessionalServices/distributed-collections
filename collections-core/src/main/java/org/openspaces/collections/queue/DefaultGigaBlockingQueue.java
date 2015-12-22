@@ -3,6 +3,7 @@ package org.openspaces.collections.queue;
 import com.gigaspaces.client.ChangeResult;
 import com.gigaspaces.client.ChangeSet;
 import com.gigaspaces.client.WriteModifiers;
+import com.gigaspaces.query.IdQuery;
 import org.openspaces.collections.queue.data.QueueData;
 import org.openspaces.collections.queue.data.QueueItem;
 import org.openspaces.collections.queue.data.QueueItemKey;
@@ -24,6 +25,8 @@ import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
  * @author Oleksiy_Dyagilev
  */
 public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements GigaBlockingQueue<E> {
+
+    private static final long POLL_TIMEOUT_MS = 5000;
 
     private GigaSpace space;
     private String queueName;
@@ -117,21 +120,28 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
     @Override
     public E poll() {
-        ChangeSet pollChange = new ChangeSet().custom(new PollOperation());
+        while (true) {
+            ChangeSet pollChange = new ChangeSet().custom(new PollOperation());
 
-        ChangeResult<QueueData> changeResult = space.change(queueTemplate(), pollChange, RETURN_DETAILED_RESULTS);
+            ChangeResult<QueueData> changeResult = space.change(queueTemplate(), pollChange, RETURN_DETAILED_RESULTS);
 
-        PollOperation.Result pollResult = (PollOperation.Result) toSingleResult(changeResult);
+            PollOperation.Result pollResult = (PollOperation.Result) toSingleResult(changeResult);
 
-        if (pollResult.isQueueEmpty()) {
-            return null;
-        } else {
-            Long polledIndex = pollResult.getPolledIndex();
-            QueueItemKey itemKey = new QueueItemKey(queueName, polledIndex);
-            QueueItem queueItem = space.takeById(QueueItem.class, itemKey);
+            if (pollResult.isQueueEmpty()) {
+                return null;
+            } else {
+                Long polledIndex = pollResult.getPolledIndex();
+                QueueItemKey itemKey = new QueueItemKey(queueName, polledIndex);
+                // there is a time window when queue tail changed, but item is not in the space yet
+                // to handle that we do take with timeout
+                QueueItem queueItem = space.takeById(new IdQuery<>(QueueItem.class, itemKey), POLL_TIMEOUT_MS);
 
-            // TODO: race condition
-            return queueItem == null ? null : (E) queueItem.getItem();
+                // we may not find item if producer failed in the middle of modifying tail and writing item to space
+                // just skip that item and poll the next one (see while loop)
+                if (queueItem != null) {
+                    return (E) queueItem.getItem();
+                }
+            }
         }
 
     }
