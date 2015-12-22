@@ -62,19 +62,6 @@ public abstract class AbstractCollectionTest<T> {
         getCollection().add(null);
     }
     
-    @Test
-    public void testAdd() {
-        final T newElement = newNotNullElement();
-        final Collection<T> collection = getCollection();
-        assertTrue("The result of adding a new element: " + newElement + " should be true", collection.add(newElement));
-        int expectedSize = testedElements.size() + 1;
-        assertSize("Invalid collection size", expectedSize);
-        
-        T existingElement = testedElements.isEmpty() ? newElement : testedElements.iterator().next();
-        assertFalse("The result of adding an existing element: " + existingElement + " should be false", collection.add(existingElement));
-        assertSize("Invalid collection size", expectedSize);
-    }
-    
     @Test(expected = NullPointerException.class)
     public void testAddAllNull() {
         getCollection().addAll(null);
@@ -83,40 +70,6 @@ public abstract class AbstractCollectionTest<T> {
     @Test(expected = NullPointerException.class)
     public void testAddAllNullElement() {
         getCollection().addAll(Arrays.asList(null));
-    }
-    
-    @Test
-    public void testAddAll() {
-        final Collection<T> collection = getCollection();
-        assertFalse("Collection should not be changed after adding empty set", collection.addAll(Collections.emptySet()));
-        int expectedSize = testedElements.size();
-        assertSize("Invalid collection size", expectedSize);
-        
-        assertFalse("Collection should not be changed after adding empty list", collection.addAll(Collections.emptyList()));
-        assertSize("Invalid collection size", expectedSize);
-        
-        assertFalse("Collection should not be changed after adding all its elements", collection.addAll(testedElements));
-        assertSize("Invalid collection size", expectedSize);
-        
-        assertFalse("Collection should not be changed after adding a sub collection of its elements", collection.addAll(getTestedDataSubCollection()));
-        assertSize("Invalid collection size", expectedSize);
-        
-        List<T> newElementsList = Collections.singletonList(newNotNullElement());
-        assertTrue("Collection should be changed after new element from list = " + newElementsList, collection.addAll(newElementsList));
-        assertSize("Invalid collection size", ++expectedSize);
-        
-        Queue<T> newElementsQueue = new LinkedList<>(newElementsList);
-        newElementsQueue.offer(newNotNullElement());
-        newElementsQueue.offer(newNotNullElement());
-        newElementsQueue.offer(newNotNullElement());
-        expectedSize += 3;
-        assertTrue("Collection should be changed after adding new elements from queue = " + newElementsQueue, collection.addAll(newElementsQueue));
-        assertSize("Invalid collection size", expectedSize);
-        
-        Set<T> newElementsSet = new HashSet<>(testedElements);
-        newElementsSet.add(newNotNullElement());
-        assertTrue("Collection should be changed after adding existing and new elements from set = " + newElementsSet, collection.addAll(newElementsSet));
-        assertSize("Invalid collection size", ++expectedSize);
     }
     
     @Test

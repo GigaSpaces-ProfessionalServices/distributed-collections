@@ -22,12 +22,4 @@
   </bean>
 
   <os-core:giga-space id="gigaSpace" space="space" />
-
-  <os-core:map id="map" space="space" />
-  <os-core:giga-map id="gigaMap" map="map" />
-
-  <bean id="gigaSet" class="org.openspaces.collections.set.DefaultGigaSet">
-    <constructor-arg ref="gigaMap"/>
-  </bean>
-
 </beans>

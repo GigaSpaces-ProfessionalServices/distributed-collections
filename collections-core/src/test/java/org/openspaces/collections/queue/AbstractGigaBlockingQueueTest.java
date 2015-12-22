@@ -11,8 +11,10 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assume;
 import org.junit.Test;
@@ -21,15 +23,17 @@ import org.junit.runners.Parameterized;
 import org.openspaces.collections.AbstractCollectionTest;
 import org.openspaces.collections.queue.data.QueueItem;
 
-
 @RunWith(Parameterized.class)
 public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectionTest<T> {
 
-    protected GigaBlockingQueue<T> gigaQueue;
+    protected final GigaBlockingQueue<T> gigaQueue;
     
     private static final String QUEUE_NAME = "TestGigaBlockingQueue";
     
     protected int capacity;
+    
+    private static final long TIMEOUT = 1000; // in milliseconds
+    private static final long TIMEOUT_ACCURACY = 10; // in milliseconds
     
     public AbstractGigaBlockingQueueTest(List<T> elements, int capacity) {
         super(elements);
@@ -44,8 +48,7 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
     
     @Override
     protected void assertSize(String msg, int expectedSize) {
-        QueueItem<T> queueItem = new QueueItem<>();
-        assertEquals(msg, expectedSize, gigaSpace.count(queueItem));
+        assertEquals(msg, expectedSize, gigaSpace.count(new QueueItem<>()));
     }
     
     // java.util.Queue methods
@@ -92,12 +95,21 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
     public void testRemoveHead() {
         Assume.assumeFalse(testedElements.isEmpty());
         
-        T head = gigaQueue.remove();
+        testRemoveInternal(new RemoveOperation<T>() {
+            @Override
+            public T perform() {
+                return gigaQueue.remove();
+            }
+        });
+    }
+    
+    private void testRemoveInternal(RemoveOperation<T> operation) {
+        T head = operation.perform();
         int size = testedElements.size();
         assertHead(--size, testedElements.get(0), head);
         
         Assume.assumeTrue(testedElements.size() > 1);
-        T head1 = gigaQueue.remove();
+        T head1 = operation.perform();
         assertNotEquals("Blocking queue head should not be the same", head, head1);
         assertHead(--size, testedElements.get(1), head1);
     }
@@ -108,14 +120,12 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
             assertNull("The retrieved element should be null in case of empty blocking queue", gigaQueue.poll());
             return;
         } 
-        T head = gigaQueue.poll();
-        int size = testedElements.size();
-        assertHead(--size, testedElements.get(0), head);
-        
-        Assume.assumeTrue(testedElements.size() > 1);
-        T head1 = gigaQueue.poll();
-        assertNotEquals("Blocking queue head should not be the same", head, head1);
-        assertHead(--size, testedElements.get(1), head1);
+        testRemoveInternal(new RemoveOperation<T>() {
+            @Override
+            public T perform() {
+                return gigaQueue.poll();
+            }
+        });
     }
     
     private void assertHead(int expectedSize, T expected, T actual) {
@@ -132,6 +142,48 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
         gigaQueue.add(newNotNullElement());
     }
     
+    @Test
+    public void testAdd() {
+        testAddInternal(new AddOperation<T>() {
+
+            @Override
+            public Boolean perform(T element) {
+                return gigaQueue.add(element);
+            }
+        });
+    }
+    
+    private void testAddInternal(AddOperation<T> addOperation) {
+        // a new element
+        T element = newNotNullElement();
+        int size = testedElements.size();
+        assertTrue("The element should be added", addOperation.perform(element));
+        assertHead(size, element, gigaQueue.peek());
+        
+        //an existing element
+        Assume.assumeFalse(testedElements.isEmpty());
+        element = testedElements.iterator().next();
+        assertTrue("The element should be added", addOperation.perform(element));
+        assertHead(size, element, gigaQueue.peek());
+    }
+    
+    @Test
+    public void testAddAll() {
+        assertFalse("Blocking queue should not be changed", gigaQueue.addAll(Collections.emptySet()));
+        assertSize("Invalid blocking queue size", testedElements.size());
+        
+        Collection<T> elementsToAdd = testedElements.isEmpty() ? Arrays.asList(newNotNullElement()) : testedElements;
+        assertTrue("Blocking queue should not be changed", gigaQueue.addAll(testedElements));
+        assertSize("Invalid blocking queue size", testedElements.size() + elementsToAdd.size());
+    }
+    
+    @Test(expected = IllegalStateException.class)
+    public void testAddAllToFullQueue() {
+        populateQueue();
+        
+        gigaQueue.addAll(Arrays.asList(newNotNullElement()));
+    }
+    
     @Test(expected = NullPointerException.class)
     public void testOfferNull() {
         gigaQueue.offer(null);
@@ -139,19 +191,13 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
     
     @Test
     public void testOffer() {
-        // a new element
-        T element = newNotNullElement();
-        int size = testedElements.size();
-        assertTrue("The element should be added", gigaQueue.offer(element));
-        assertSize("Blocking queue size should not be changed", ++size);
-        assertHead(size, element, gigaQueue.peek());
-        
-        //an existing element
-        Assume.assumeFalse(testedElements.isEmpty());
-        element = testedElements.iterator().next();
-        assertTrue("The element should be added", gigaQueue.offer(element));
-        assertSize("Blocking queue size should not be changed", ++size);
-        assertHead(size, element, gigaQueue.peek());
+        testAddInternal(new AddOperation<T>() {
+
+            @Override
+            public Boolean perform(T element) {
+                return gigaQueue.offer(element);
+            }
+        });
     }
     
     @Test
@@ -159,6 +205,39 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
         populateQueue();
         
         assertFalse("The element should not be inserted due to reaching the capacity", gigaQueue.offer(newNotNullElement()));
+    }
+    
+    @Test
+    public void testPut() {
+        testAddInternal(new AddOperation<T>() {
+
+            @Override
+            public Boolean perform(T element) {
+                try {
+                    gigaQueue.put(element);
+                    return true;
+                } catch (InterruptedException e) {
+                    fail(e.getMessage());
+                }
+                return null;
+            }
+        });
+    }
+    
+    @Test
+    public void testTake() {
+        testRemoveInternal(new RemoveOperation<T>() {
+
+            @Override
+            public T perform() {
+                try {
+                    return gigaQueue.take();
+                } catch (InterruptedException e) {
+                    fail(e.getMessage());
+                }
+                return null;
+            }
+        });
     }
     
     @Test
@@ -170,20 +249,21 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
         assertTrue(gigaQueue.add(element));
         assertEquals("Invalid remaining capacity", --expectedCapacity, gigaQueue.remainingCapacity());
         
+        assertTrue(gigaQueue.remove(element));
+        assertEquals("Invalid remaining capacity", ++expectedCapacity, gigaQueue.remainingCapacity());
+        
+        gigaQueue.clear();
+        assertEquals("Invalid remaining capacity", capacity, gigaQueue.remainingCapacity());
+        
+        Assume.assumeTrue(capacity > 1);
         List<T> elements = Arrays.asList(newNotNullElement(), newNotNullElement());
         assertTrue(gigaQueue.addAll(elements));
         expectedCapacity -= elements.size();
         assertEquals("Invalid remaining capacity", expectedCapacity, gigaQueue.remainingCapacity());
         
-        assertTrue(gigaQueue.remove(element));
-        assertEquals("Invalid remaining capacity", ++expectedCapacity, gigaQueue.remainingCapacity());
-        
         assertTrue(gigaQueue.removeAll(elements));
         expectedCapacity += elements.size();
         assertEquals("Invalid remaining capacity", expectedCapacity, gigaQueue.remainingCapacity());
-        
-        gigaQueue.clear();
-        assertEquals("Invalid remaining capacity", capacity, gigaQueue.remainingCapacity());
     }
     
     @Test(expected = NullPointerException.class)
@@ -254,6 +334,53 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
         verifyAllElementsTransferred(result);
     }
     
+    @Test(timeout = TIMEOUT)
+    public void testPollWithTimeoutEmptyQueue() throws InterruptedException {
+        Assume.assumeTrue(testedElements.isEmpty());
+        
+        gigaQueue.poll(TIMEOUT - TIMEOUT_ACCURACY, TimeUnit.MILLISECONDS);
+    }
+    
+    @Test
+    public void testPollWithTimeout() throws InterruptedException {
+        Assume.assumeFalse(testedElements.isEmpty());
+        
+        testRemoveInternal(new RemoveOperation<T>() {
+            @Override
+            public T perform() {
+                try {
+                    return gigaQueue.poll(TIMEOUT, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    fail(e.getMessage());
+                }
+                return null;
+            }
+        });
+    }
+    
+    @Test(timeout = TIMEOUT)
+    public void testOfferWithTimeoutFullQueue() throws InterruptedException {
+        populateQueue();
+
+        gigaQueue.offer(newNotNullElement(), TIMEOUT - TIMEOUT_ACCURACY, TimeUnit.MILLISECONDS);
+    }
+
+    @Test
+    public void testOfferWithTimeout() {
+        testAddInternal(new AddOperation<T>() {
+
+            @Override
+            public Boolean perform(T element) {
+                try {
+                    return gigaQueue.offer(element, TIMEOUT, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    fail(e.getMessage());
+                }
+                return null;
+            }
+        });
+    }
+    
     private void populateQueue() {
         int size = testedElements.size();
         for (int i = 0 ; i < size - capacity; i++) {
@@ -266,5 +393,13 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
                 fail("The capacity restriction should not have been violated");
             }
         }
+    }
+    
+    private interface AddOperation<T> {
+        Boolean perform(T element);
+    }
+    
+    private interface RemoveOperation<T> {
+        T perform();
     }
 }

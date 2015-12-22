@@ -1,8 +1,8 @@
 package org.openspaces.collections.queue;
 
 import static org.openspaces.collections.CollectionUtils.MEDIUM_COLLECTION_SIZE;
-import static org.openspaces.collections.CollectionUtils.createComplexType;
-import static org.openspaces.collections.CollectionUtils.createComplexTypeList;
+import static org.openspaces.collections.CollectionUtils.createSerializableType;
+import static org.openspaces.collections.CollectionUtils.createSerializableTypeList;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,14 +11,14 @@ import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.runners.Parameterized;
-import org.openspaces.collections.set.ComplexType;
+import org.openspaces.collections.set.SerializableType;
 import org.springframework.test.context.ContextConfiguration;
 
 @ContextConfiguration(locations = "classpath:/partitioned-space-test-config.xml")
 @Ignore
-public class SerializableTypeGigaBlockingQueueTest extends AbstractGigaBlockingQueueTest<ComplexType> {
+public class SerializableTypeGigaBlockingQueueTest extends AbstractGigaBlockingQueueTest<SerializableType> {
 
-    public SerializableTypeGigaBlockingQueueTest(List<ComplexType> elements, int capacity) {
+    public SerializableTypeGigaBlockingQueueTest(List<SerializableType> elements, int capacity) {
         super(elements, capacity);
     }
 
@@ -26,24 +26,24 @@ public class SerializableTypeGigaBlockingQueueTest extends AbstractGigaBlockingQ
     public static Collection<Object[]> testData() {
         return Arrays.asList(new Object[][] { 
                 { Collections.emptyList(), 1 },
-                { Collections.singletonList(createComplexType()), 2 },
-                { createComplexTypeList(MEDIUM_COLLECTION_SIZE), MEDIUM_COLLECTION_SIZE },
+                { Collections.singletonList(createSerializableType()), 2 },
+                { createSerializableTypeList(MEDIUM_COLLECTION_SIZE), MEDIUM_COLLECTION_SIZE },
                 /* { createComplexTypeList(LARGE_COLLECTION_SIZE) } */
         });
     }
 
     @Override
-    protected Class<? extends ComplexType> getElementType() {
-        return ComplexType.class;
+    protected Class<? extends SerializableType> getElementType() {
+        return SerializableType.class;
     }
 
     @Override
-    protected ComplexType[] getElementArray() {
-        return new ComplexType[testedElements.size()];
+    protected SerializableType[] getElementArray() {
+        return new SerializableType[testedElements.size()];
     }
 
     @Override
-    protected ComplexType newNotNullElement() {
-        return createComplexType();
+    protected SerializableType newNotNullElement() {
+        return createSerializableType();
     }
 }

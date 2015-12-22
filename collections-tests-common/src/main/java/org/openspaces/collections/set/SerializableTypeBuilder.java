@@ -3,39 +3,39 @@ package org.openspaces.collections.set;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ComplexTypeBuilder {
+public class SerializableTypeBuilder {
 
-    private ComplexType complexType;
+    private SerializableType complexType;
     
-    public ComplexTypeBuilder(Long id) {
-        complexType = new ComplexType();
+    public SerializableTypeBuilder(Long id) {
+        complexType = new SerializableType();
         complexType.setId(id);
     }
     
-    public ComplexTypeBuilder setNumber(Long number) {
+    public SerializableTypeBuilder setNumber(Long number) {
         complexType.setNumber(number);
         return this;
     }
 
-    public ComplexTypeBuilder setDescription(String description) {
+    public SerializableTypeBuilder setDescription(String description) {
         complexType.setDescription(description);
         return this;
     }
 
-    public ComplexTypeBuilder addChild(Long childId) {
-        List<ComplexType.Child> children = complexType.getChildren();
+    public SerializableTypeBuilder addChild(Long childId) {
+        List<SerializableType.Child> children = complexType.getChildren();
         if (children == null) {
             children = new ArrayList<>();
             complexType.setChildren(children);
         }
-        ComplexType.Child child = new ComplexType.Child();
+        SerializableType.Child child = new SerializableType.Child();
         child.setId(childId);
         child.setParentId(complexType.getId());
         children.add(child);
         return this;
     }
     
-    public ComplexType build() {
+    public SerializableType build() {
         return complexType;
     }
 }

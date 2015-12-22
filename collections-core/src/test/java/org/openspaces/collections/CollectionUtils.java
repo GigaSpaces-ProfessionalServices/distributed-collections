@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.openspaces.collections.set.ComplexType;
-import org.openspaces.collections.set.ComplexTypeBuilder;
+import org.openspaces.collections.set.SerializableType;
+import org.openspaces.collections.set.SerializableTypeBuilder;
 
 public final class CollectionUtils {
 
@@ -17,26 +17,18 @@ public final class CollectionUtils {
     
     public static final long LARGE_COLLECTION_SIZE = (long)Integer.MAX_VALUE + 1;
     
-    public static List<Integer> createIntegerList(long count) {
-        List<Integer> data = new ArrayList<>();
+    public static List<SerializableType> createSerializableTypeList(long count) {
+        List<SerializableType> data = new ArrayList<>();
         for (long i = 0; i < count; i++) {
-            data.add(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE));
+            data.add(createSerializableType());
         }
         return Collections.unmodifiableList(data);
     }
     
-    public static List<ComplexType> createComplexTypeList(long count) {
-        List<ComplexType> data = new ArrayList<>();
-        for (long i = 0; i < count; i++) {
-            data.add(createComplexType());
-        }
-        return Collections.unmodifiableList(data);
-    }
-    
-    public static ComplexType createComplexType() {
+    public static SerializableType createSerializableType() {
         final ThreadLocalRandom random = ThreadLocalRandom.current();
         Long id = random.nextLong();
-        return new ComplexTypeBuilder(id)
+        return new SerializableTypeBuilder(id)
             .setNumber(random.nextLong())
             .setDescription("Test data" + id)
             .addChild(random.nextLong())

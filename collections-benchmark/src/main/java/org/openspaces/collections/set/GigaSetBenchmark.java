@@ -36,13 +36,13 @@ public class GigaSetBenchmark {
     private int size;
     
     private AbstractApplicationContext applicationContext;
-    private GigaSet<ComplexType> gigaSet;
+    private GigaSet<SerializableType> gigaSet;
     
-    private ComplexType newComplexType;
-    private Set<ComplexType> newComplexTypes;
+    private SerializableType newComplexType;
+    private Set<SerializableType> newComplexTypes;
     
-    private ComplexType existingComplexType;
-    private Set<ComplexType> existingComplexTypes;
+    private SerializableType existingComplexType;
+    private Set<SerializableType> existingComplexTypes;
 
     @Setup(Level.Trial)
     public void init() {
@@ -68,7 +68,7 @@ public class GigaSetBenchmark {
         }
         
         for (int i = 0; i < size; i++) {
-            ComplexType complexType = create();
+            SerializableType complexType = create();
             if (i == 0) {
                 existingComplexType = complexType;
             }
@@ -85,10 +85,10 @@ public class GigaSetBenchmark {
         applicationContext.close();
     }
     
-    private ComplexType create() {
+    private SerializableType create() {
         final ThreadLocalRandom random = ThreadLocalRandom.current();
         Long id = random.nextLong();
-        return new ComplexTypeBuilder(id)
+        return new SerializableTypeBuilder(id)
                 .setNumber(random.nextLong())
                 .setDescription("Foo" + id)
                 .addChild(random.nextLong())
@@ -138,14 +138,14 @@ public class GigaSetBenchmark {
     
     @Benchmark
     public void testIterator(Blackhole bh) {
-        for (Iterator<ComplexType> iterator = gigaSet.iterator(); iterator.hasNext();) {
+        for (Iterator<SerializableType> iterator = gigaSet.iterator(); iterator.hasNext();) {
             bh.consume(iterator.next());
         }
     }
     
     @Benchmark
-    public ComplexType[] testToArray() {
-        return gigaSet.toArray(new ComplexType[size]);
+    public SerializableType[] testToArray() {
+        return gigaSet.toArray(new SerializableType[size]);
     }
     
     @Benchmark
