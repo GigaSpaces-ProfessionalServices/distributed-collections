@@ -25,7 +25,6 @@ public class SerializableTypeGigaBlockingQueueTest extends AbstractGigaBlockingQ
     @Parameterized.Parameters
     public static Collection<Object[]> testData() {
         return Arrays.asList(new Object[][] { 
-                { Collections.emptyList(), 0 },
                 { Collections.emptyList(), 1 },
                 { Collections.singletonList(createComplexType()), 2 },
                 { createComplexTypeList(MEDIUM_COLLECTION_SIZE), MEDIUM_COLLECTION_SIZE },
