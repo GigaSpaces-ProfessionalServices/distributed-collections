@@ -178,7 +178,7 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
     
     @Test
     public void testAddAll() {
-        assertFalse("Blocking queue should not be changed", gigaQueue.addAll(Collections.emptySet()));
+        assertFalse("Blocking queue should not be changed", gigaQueue.addAll(Collections.<T>emptySet()));
         assertSize("Invalid blocking queue size", testedElements.size());
         
         Collection<T> elementsToAdd = testedElements.isEmpty() ? Arrays.asList(newNotNullElement()) : testedElements;

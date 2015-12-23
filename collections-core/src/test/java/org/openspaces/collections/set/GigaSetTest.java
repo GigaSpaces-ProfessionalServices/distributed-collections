@@ -59,11 +59,11 @@ public class GigaSetTest extends AbstractCollectionTest<SerializableType> {
     @Test
     public void testAddAll() {
         final Collection<SerializableType> collection = getCollection();
-        assertFalse("Collection should not be changed after adding empty set", collection.addAll(Collections.emptySet()));
+        assertFalse("Collection should not be changed after adding empty set", collection.addAll(Collections.<SerializableType>emptySet()));
         int expectedSize = testedElements.size();
         assertSize("Invalid collection size", expectedSize);
         
-        assertFalse("Collection should not be changed after adding empty list", collection.addAll(Collections.emptyList()));
+        assertFalse("Collection should not be changed after adding empty list", collection.addAll(Collections.<SerializableType>emptyList()));
         assertSize("Invalid collection size", expectedSize);
         
         assertFalse("Collection should not be changed after adding all its elements", collection.addAll(testedElements));

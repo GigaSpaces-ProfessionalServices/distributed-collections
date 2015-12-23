@@ -22,7 +22,7 @@
     <gs.version>10.2.0-13800-RELEASE</gs.version>
     <spring.version>4.1.1.RELEASE</spring.version>
     <junit.version>4.12</junit.version>
-    <java.version>1.8</java.version>
+    <java.version>1.7</java.version>
     <sonar.language>java</sonar.language>
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     <sonar.jacoco.reportPath>${project.basedir}/target/jacoco.exec</sonar.jacoco.reportPath>

@@ -69,7 +69,7 @@ public abstract class AbstractCollectionTest<T> {
     
     @Test(expected = NullPointerException.class)
     public void testAddAllNullElement() {
-        getCollection().addAll(Arrays.asList(null));
+        getCollection().addAll(Arrays.<T>asList(null));
     }
     
     @Test
