@@ -28,7 +28,22 @@ public class MyTest {
     
     @Test
     public void test() {
-		DefaultGigaBlockingQueue<SerializableType> queue = new DefaultGigaBlockingQueue<>(gigaSpace, "test-queue", 1);
+		DefaultGigaBlockingQueue<SerializableType> queue = new DefaultGigaBlockingQueue<>(gigaSpace, "test-queue", 100);
+//
+//        Runnable runnable = new Runnable() {
+//            @Override
+//            public void run() {
+//                queue.offer(new SerializableType());
+//            }
+//        };
+////
+//
+//        try {
+//            Thread.sleep(55000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
         System.out.println(queue.offer(new SerializableType()));
         System.out.println("queue.size() = " + queue.size());
         System.out.println(queue.poll());

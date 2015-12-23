@@ -13,7 +13,7 @@ import org.openspaces.collections.queue.data.QueueItem;
 import org.openspaces.collections.queue.data.QueueItemKey;
 import org.openspaces.collections.queue.operations.OfferOperation;
 import org.openspaces.collections.queue.operations.PollOperation;
-import org.openspaces.collections.queue.operations.SizeAggregator;
+import org.openspaces.collections.queue.operations.SizeOperation;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
 
@@ -164,9 +164,9 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     public int size() {
         SQLQuery<QueueData> query = new SQLQuery<>(QueueData.class, "name = ?", queueName); // routing by queueName
         
-        AggregationResult aggregationResult = space.aggregate(query, new AggregationSet().add(new SizeAggregator()));
+        AggregationResult aggregationResult = space.aggregate(query, new AggregationSet().add(new SizeOperation()));
         
-        SizeAggregator.Result sizeResult = toSingleResult(aggregationResult);
+        SizeOperation.Result sizeResult = toSingleResult(aggregationResult);
         return sizeResult.getSize();
     }
 
