@@ -3,7 +3,10 @@ package org.openspaces.collections.queue.operations;
 import static org.openspaces.collections.queue.data.QueueData.HEAD_PATH;
 import static org.openspaces.collections.queue.data.QueueData.TAIL_PATH;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 import org.openspaces.collections.queue.operations.SizeOperation.Result;
 
@@ -46,7 +49,7 @@ public class SizeOperation extends SpaceEntriesAggregator<Result> {
     /**
      * Operation result
      */
-    public static class Result implements Serializable {
+    public static class Result implements Externalizable {
         private int size;
 
         public Result() {
@@ -58,6 +61,16 @@ public class SizeOperation extends SpaceEntriesAggregator<Result> {
 
         public int getSize() {
             return size;
+        }
+        
+        @Override
+        public void writeExternal(ObjectOutput out) throws IOException {
+            out.writeInt(getSize());
+        }
+
+        @Override
+        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+            this.size = in.readInt();
         }
     }
 }

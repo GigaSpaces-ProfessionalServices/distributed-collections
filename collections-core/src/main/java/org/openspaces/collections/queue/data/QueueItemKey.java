@@ -1,11 +1,15 @@
 package org.openspaces.collections.queue.data;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Objects;
 
 /**
  * @author Oleksiy_Dyagilev
  */
-public class QueueItemKey implements Serializable {
+public class QueueItemKey implements Externalizable {
 
     private static final long serialVersionUID = 1L;
     
@@ -16,8 +20,8 @@ public class QueueItemKey implements Serializable {
     }
 
     public QueueItemKey(String queueName, Long queueIndex) {
-        this.queueName = queueName;
-        this.queueIndex = queueIndex;
+        this.queueName = Objects.requireNonNull(queueName, "'queueName' must not be null");
+        this.queueIndex = Objects.requireNonNull(queueIndex, "'queueIndex' must not be null");
     }
 
     public String getQueueName() {
@@ -53,5 +57,17 @@ public class QueueItemKey implements Serializable {
         int result = queueName != null ? queueName.hashCode() : 0;
         result = 31 * result + (queueIndex != null ? queueIndex.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeUTF(getQueueName());
+        out.writeLong(getQueueIndex());
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+       setQueueName(in.readUTF());
+       setQueueIndex(in.readLong());
     }
 }

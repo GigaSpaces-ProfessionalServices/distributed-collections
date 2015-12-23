@@ -1,13 +1,17 @@
 package org.openspaces.collections.queue.operations;
 
-import com.gigaspaces.client.CustomChangeOperation;
-import com.gigaspaces.server.MutableServerEntry;
-
-import java.io.Serializable;
-
 import static org.openspaces.collections.queue.data.QueueData.HEAD_PATH;
 import static org.openspaces.collections.queue.data.QueueData.TAIL_PATH;
+import static org.openspaces.collections.util.SerializationUtils.readNullableObject;
+import static org.openspaces.collections.util.SerializationUtils.writeNullableObject;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
+import com.gigaspaces.client.CustomChangeOperation;
+import com.gigaspaces.server.MutableServerEntry;
 /**
  * @author Oleksiy_Dyagilev
  */
@@ -38,7 +42,7 @@ public class PollOperation extends CustomChangeOperation {
     /**
      * Operation result
      */
-    public static class Result implements Serializable {
+    public static class Result implements Externalizable {
         private boolean queueEmpty;
         private Long polledIndex;
 
@@ -58,13 +62,24 @@ public class PollOperation extends CustomChangeOperation {
             return result;
         }
 
-
         public boolean isQueueEmpty() {
             return queueEmpty;
         }
 
         public Long getPolledIndex() {
             return polledIndex;
+        }
+        
+        @Override
+        public void writeExternal(ObjectOutput out) throws IOException {
+            out.writeBoolean(isQueueEmpty());
+            writeNullableObject(out, getPolledIndex());
+        }
+
+        @Override
+        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+            this.queueEmpty = in.readBoolean();
+            this.polledIndex = readNullableObject(in);
         }
     }
 }
