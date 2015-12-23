@@ -15,7 +15,7 @@ import org.openspaces.collections.queue.data.QueueItemKey;
 import org.openspaces.collections.queue.operations.OfferOperation;
 import org.openspaces.collections.queue.operations.PollOperation;
 import org.openspaces.collections.queue.operations.SizeOperation;
-import org.openspaces.collections.utils.Pair;
+import org.openspaces.collections.util.Pair;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
 

@@ -1,4 +1,4 @@
-package org.openspaces.collections.utils;
+package org.openspaces.collections.util;
 
 /**
  * @author Oleksiy_Dyagilev

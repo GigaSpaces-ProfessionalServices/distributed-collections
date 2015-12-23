@@ -15,7 +15,7 @@ import org.openspaces.collections.set.SerializableType;
 import org.springframework.test.context.ContextConfiguration;
 
 @ContextConfiguration(locations = "classpath:/partitioned-space-test-config.xml")
-@Ignore
+//@Ignore
 public class SerializableTypeGigaBlockingQueueTest extends AbstractGigaBlockingQueueTest<SerializableType> {
 
     public SerializableTypeGigaBlockingQueueTest(List<SerializableType> elements, int capacity) {
