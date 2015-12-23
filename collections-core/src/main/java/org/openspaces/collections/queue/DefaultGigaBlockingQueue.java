@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.AbstractQueue;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 import org.openspaces.collections.queue.data.QueueData;
@@ -14,6 +15,7 @@ import org.openspaces.collections.queue.data.QueueItemKey;
 import org.openspaces.collections.queue.operations.OfferOperation;
 import org.openspaces.collections.queue.operations.PollOperation;
 import org.openspaces.collections.queue.operations.SizeOperation;
+import org.openspaces.collections.utils.Pair;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
 
@@ -30,7 +32,7 @@ import com.j_spaces.core.client.SQLQuery;
  */
 public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements GigaBlockingQueue<E> {
 
-    private static final long POLL_TIMEOUT_MS = 5000;
+    private static final long WAIT_ITEM_TIMEOUT_MS = 5000;
 
     private GigaSpace space;
     private String queueName;
@@ -140,7 +142,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
                 // there is a time window when queue tail changed, but item is not in the space yet
                 // to handle that we do take with timeout
-                QueueItem<E> queueItem = space.takeById(itemQuery, POLL_TIMEOUT_MS);
+                QueueItem<E> queueItem = space.takeById(itemQuery, WAIT_ITEM_TIMEOUT_MS);
 
                 // we may not find item if producer failed in the middle of modifying tail and writing item to space
                 // just skip that item and poll the next one (see while loop)
@@ -159,7 +161,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
     @Override
     public Iterator<E> iterator() {
-        QueueData queueData = space.readById(QueueData.class, queueQuery());
+        QueueData queueData = space.readById(queueQuery());
         return new QueueIterator(queueData.getHead(), queueData.getTail());
     }
 
@@ -227,32 +229,68 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     private class QueueIterator implements Iterator<E> {
 
         private Long currIndex;
+        private Long nextIndex;
         private Long endIndex;
         private E next;
+        private E curr;
 
         public QueueIterator(Long head, Long tail) {
             this.currIndex = head;
             this.endIndex = tail;
 
             if (currIndex < endIndex) {
-
+                Pair<E, Long> itemAndIndex = readItemByIndex(currIndex + 1);
+                next = itemAndIndex.getFirst();
+                nextIndex = itemAndIndex.getSecond();
             }
 
         }
 
         @Override
         public boolean hasNext() {
-            return false;
+            return next != null;
         }
 
         @Override
         public E next() {
-            return null;
+            if (next == null) {
+                throw new NoSuchElementException();
+            }
+            curr = next;
+            currIndex = nextIndex;
+
+            if (currIndex < endIndex) {
+                Pair<E, Long> itemAndIndex = readItemByIndex(currIndex + 1);
+                next = itemAndIndex.getFirst();
+                nextIndex = itemAndIndex.getSecond();
+            } else {
+                next = null;
+            }
+
+            return curr;
         }
 
         @Override
         public void remove() {
+            if (curr == null){
+                throw new IllegalStateException();
+            }
 
+            // TODO: remove item
+        }
+
+        @SuppressWarnings("unchecked")
+        private Pair<E, Long> readItemByIndex(long index) {
+            while (index <= endIndex) {
+                IdQuery<QueueItem> itemQuery = itemQueryByIndex(index);
+                QueueItem<E> queueItem = space.readById(itemQuery, WAIT_ITEM_TIMEOUT_MS);
+                if (queueItem != null) {
+                    return new Pair<>(queueItem.getItem(), index);
+                } else {
+                    index++;
+                }
+            }
+            return new Pair<>(null, index);
         }
 
 

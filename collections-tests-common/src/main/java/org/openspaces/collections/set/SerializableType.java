@@ -13,6 +13,13 @@ public class SerializableType implements Serializable {
     private String description;
     private List<Child> children;
 
+    public SerializableType() {
+    }
+
+    public SerializableType(Long id) {
+        this.id = id;
+    }
+
     public Long getId() {
         return id;
     }

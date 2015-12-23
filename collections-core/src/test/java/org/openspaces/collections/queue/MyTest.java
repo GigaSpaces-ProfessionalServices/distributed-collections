@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.Iterator;
+
 /**
  * TODO: Temp testl
  *
@@ -44,18 +46,18 @@ public class MyTest {
 //            e.printStackTrace();
 //        }
 
-        System.out.println(queue.offer(new SerializableType()));
-        System.out.println("queue.size() = " + queue.size());
-        System.out.println(queue.poll());
-        System.out.println(queue.poll());
+        System.out.println(queue.offer(new SerializableType(1L)));
+        System.out.println(queue.offer(new SerializableType(2L)));
+        System.out.println(queue.offer(new SerializableType(3L)));
         System.out.println("queue.size() = " + queue.size());
 
-        System.out.println(queue.offer(new SerializableType()));
-        System.out.println("queue.size() = " + queue.size());
-        System.out.println(queue.poll());
-        System.out.println(queue.poll());
-        System.out.println("queue.size() = " + queue.size());
-        
+        Iterator<SerializableType> iterator = queue.iterator();
+
+        while (iterator.hasNext()) {
+            SerializableType next = iterator.next();
+            System.out.println("next = " + next);
+        }
+
         //        System.out.println("111");
     }
 
