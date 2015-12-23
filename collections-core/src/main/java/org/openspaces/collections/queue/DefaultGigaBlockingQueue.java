@@ -69,7 +69,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     public boolean offer(E element) {
         ChangeSet offerChange = new ChangeSet().custom(new OfferOperation(1));
 
-        ChangeResult<QueueData> changeResult = space.change(queueTemplate(), offerChange, RETURN_DETAILED_RESULTS);
+        ChangeResult<QueueData> changeResult = space.change(queueQuery(), offerChange, RETURN_DETAILED_RESULTS);
 
         OfferOperation.Result offerResult = toSingleResult(changeResult);
 
@@ -128,7 +128,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         while (true) {
             ChangeSet pollChange = new ChangeSet().custom(new PollOperation());
 
-            ChangeResult<QueueData> changeResult = space.change(queueTemplate(), pollChange, RETURN_DETAILED_RESULTS);
+            ChangeResult<QueueData> changeResult = space.change(queueQuery(), pollChange, RETURN_DETAILED_RESULTS);
 
             PollOperation.Result pollResult = toSingleResult(changeResult);
 
@@ -136,10 +136,11 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
                 return null;
             } else {
                 Long polledIndex = pollResult.getPolledIndex();
-                QueueItemKey itemKey = new QueueItemKey(queueName, polledIndex);
+                IdQuery<QueueItem> itemQuery = itemQueryByIndex(polledIndex);
+
                 // there is a time window when queue tail changed, but item is not in the space yet
                 // to handle that we do take with timeout
-                QueueItem<E> queueItem = space.takeById(new IdQuery<>(QueueItem.class, itemKey), POLL_TIMEOUT_MS);
+                QueueItem<E> queueItem = space.takeById(itemQuery, POLL_TIMEOUT_MS);
 
                 // we may not find item if producer failed in the middle of modifying tail and writing item to space
                 // just skip that item and poll the next one (see while loop)
@@ -158,15 +159,16 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
     @Override
     public Iterator<E> iterator() {
-        throw new RuntimeException("Not implemented yet");
+        QueueData queueData = space.readById(QueueData.class, queueQuery());
+        return new QueueIterator(queueData.getHead(), queueData.getTail());
     }
 
     @Override
     public int size() {
         SQLQuery<QueueData> query = new SQLQuery<>(QueueData.class, "name = ?", queueName); // routing by queueName
-        
+
         AggregationResult aggregationResult = space.aggregate(query, new AggregationSet().add(new SizeOperation()));
-        
+
         SizeOperation.Result sizeResult = toSingleResult(aggregationResult);
         return sizeResult.getSize();
     }
@@ -184,12 +186,18 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     }
 
     /**
-     * @return template to query queue
+     * @return query to find queue by unique id (name)
      */
-    private QueueData queueTemplate() {
-        QueueData queueTemplate = new QueueData();
-        queueTemplate.setName(queueName);
-        return queueTemplate;
+    private IdQuery<QueueData> queueQuery() {
+        return new IdQuery<>(QueueData.class, queueName);
+    }
+
+    /**
+     * @return query to find item by index
+     */
+    private IdQuery<QueueItem> itemQueryByIndex(long index) {
+        QueueItemKey itemKey = new QueueItemKey(queueName, index);
+        return new IdQuery<>(QueueItem.class, itemKey);
     }
 
     /**
@@ -201,9 +209,9 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
             throw new IllegalStateException("Unexpected aggregation result size: " + aggregationResult.size());
         }
 
-        return (T)aggregationResult.get(0);
+        return (T) aggregationResult.get(0);
     }
-    
+
     /**
      * extract single result from the generic change api result
      */
@@ -214,5 +222,39 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         }
 
         return (T) changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
+    }
+
+    private class QueueIterator implements Iterator<E> {
+
+        private Long currIndex;
+        private Long endIndex;
+        private E next;
+
+        public QueueIterator(Long head, Long tail) {
+            this.currIndex = head;
+            this.endIndex = tail;
+
+            if (currIndex < endIndex) {
+
+            }
+
+        }
+
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public E next() {
+            return null;
+        }
+
+        @Override
+        public void remove() {
+
+        }
+
+
     }
 }
