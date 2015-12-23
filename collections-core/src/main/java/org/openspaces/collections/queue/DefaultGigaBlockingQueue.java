@@ -123,6 +123,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public E poll() {
         while (true) {
             ChangeSet pollChange = new ChangeSet().custom(new PollOperation());
@@ -138,12 +139,12 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
                 QueueItemKey itemKey = new QueueItemKey(queueName, polledIndex);
                 // there is a time window when queue tail changed, but item is not in the space yet
                 // to handle that we do take with timeout
-                QueueItem queueItem = space.takeById(new IdQuery<>(QueueItem.class, itemKey), POLL_TIMEOUT_MS);
+                QueueItem<E> queueItem = space.takeById(new IdQuery<>(QueueItem.class, itemKey), POLL_TIMEOUT_MS);
 
                 // we may not find item if producer failed in the middle of modifying tail and writing item to space
                 // just skip that item and poll the next one (see while loop)
                 if (queueItem != null) {
-                    return (E) queueItem.getItem();
+                    return queueItem.getItem();
                 }
             }
         }
