@@ -256,6 +256,7 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
         assertEquals("Invalid remaining capacity", capacity, gigaQueue.remainingCapacity());
         
         Assume.assumeTrue(capacity > 1);
+        expectedCapacity = capacity;
         List<T> elements = Arrays.asList(newNotNullElement(), newNotNullElement());
         assertTrue(gigaQueue.addAll(elements));
         expectedCapacity -= elements.size();

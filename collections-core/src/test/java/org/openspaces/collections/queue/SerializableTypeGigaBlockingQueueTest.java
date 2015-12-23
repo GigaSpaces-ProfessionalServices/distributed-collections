@@ -27,7 +27,7 @@ public class SerializableTypeGigaBlockingQueueTest extends AbstractGigaBlockingQ
         return Arrays.asList(new Object[][] { 
                 { Collections.emptyList(), 1 },
                 { Collections.singletonList(createSerializableType()), 2 },
-                { createSerializableTypeList(MEDIUM_COLLECTION_SIZE), MEDIUM_COLLECTION_SIZE },
+                { createSerializableTypeList(MEDIUM_COLLECTION_SIZE), 2 * MEDIUM_COLLECTION_SIZE },
                 /* { createComplexTypeList(LARGE_COLLECTION_SIZE) } */
         });
     }

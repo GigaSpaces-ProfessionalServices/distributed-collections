@@ -1,17 +1,6 @@
 package org.openspaces.collections.queue;
 
-import com.gigaspaces.client.ChangeResult;
-import com.gigaspaces.client.ChangeSet;
-import com.gigaspaces.client.WriteModifiers;
-import com.gigaspaces.query.IdQuery;
-import org.openspaces.collections.queue.data.QueueData;
-import org.openspaces.collections.queue.data.QueueItem;
-import org.openspaces.collections.queue.data.QueueItemKey;
-import org.openspaces.collections.queue.operations.OfferOperation;
-import org.openspaces.collections.queue.operations.PollOperation;
-import org.openspaces.collections.queue.operations.SizeOperation;
-import org.openspaces.core.EntryAlreadyInSpaceException;
-import org.openspaces.core.GigaSpace;
+import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
 
 import java.io.Serializable;
 import java.util.AbstractQueue;
@@ -19,7 +8,22 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
-import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
+import org.openspaces.collections.queue.data.QueueData;
+import org.openspaces.collections.queue.data.QueueItem;
+import org.openspaces.collections.queue.data.QueueItemKey;
+import org.openspaces.collections.queue.operations.OfferOperation;
+import org.openspaces.collections.queue.operations.PollOperation;
+import org.openspaces.collections.queue.operations.SizeAggregator;
+import org.openspaces.core.EntryAlreadyInSpaceException;
+import org.openspaces.core.GigaSpace;
+
+import com.gigaspaces.client.ChangeResult;
+import com.gigaspaces.client.ChangeSet;
+import com.gigaspaces.client.WriteModifiers;
+import com.gigaspaces.query.IdQuery;
+import com.gigaspaces.query.aggregators.AggregationResult;
+import com.gigaspaces.query.aggregators.AggregationSet;
+import com.j_spaces.core.client.SQLQuery;
 
 /**
  * @author Oleksiy_Dyagilev
@@ -67,7 +71,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
         ChangeResult<QueueData> changeResult = space.change(queueTemplate(), offerChange, RETURN_DETAILED_RESULTS);
 
-        OfferOperation.Result offerResult = (OfferOperation.Result) toSingleResult(changeResult);
+        OfferOperation.Result offerResult = toSingleResult(changeResult);
 
         if (offerResult.isChanged()) {
             QueueItemKey itemKey = new QueueItemKey(queueName, offerResult.getNewTail());
@@ -125,7 +129,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
             ChangeResult<QueueData> changeResult = space.change(queueTemplate(), pollChange, RETURN_DETAILED_RESULTS);
 
-            PollOperation.Result pollResult = (PollOperation.Result) toSingleResult(changeResult);
+            PollOperation.Result pollResult = toSingleResult(changeResult);
 
             if (pollResult.isQueueEmpty()) {
                 return null;
@@ -158,11 +162,11 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
     @Override
     public int size() {
-        ChangeSet sizeOperation = new ChangeSet().custom(new SizeOperation());
-
-        ChangeResult<QueueData> changeResult = space.change(queueTemplate(), sizeOperation, RETURN_DETAILED_RESULTS);
-
-        SizeOperation.Result sizeResult = (SizeOperation.Result) toSingleResult(changeResult);
+        SQLQuery<QueueData> query = new SQLQuery<>(QueueData.class, "name = ?", queueName); // routing by queueName
+        
+        AggregationResult aggregationResult = space.aggregate(query, new AggregationSet().add(new SizeAggregator()));
+        
+        SizeAggregator.Result sizeResult = toSingleResult(aggregationResult);
         return sizeResult.getSize();
     }
 
@@ -188,13 +192,26 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     }
 
     /**
+     * extract single result from the aggregation result
+     */
+    @SuppressWarnings("unchecked")
+    private <T extends Serializable> T toSingleResult(AggregationResult aggregationResult) {
+        if (aggregationResult.size() != 1) {
+            throw new IllegalStateException("Unexpected aggregation result size: " + aggregationResult.size());
+        }
+
+        return (T)aggregationResult.get(0);
+    }
+    
+    /**
      * extract single result from the generic change api result
      */
-    private Serializable toSingleResult(ChangeResult<QueueData> changeResult) {
+    @SuppressWarnings("unchecked")
+    private <T extends Serializable> T toSingleResult(ChangeResult<QueueData> changeResult) {
         if (changeResult.getNumberOfChangedEntries() != 1) {
             throw new IllegalStateException("Unexpected number of changed entries: " + changeResult.getNumberOfChangedEntries());
         }
 
-        return changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
+        return (T) changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
     }
 }
