@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assume;
@@ -31,28 +30,20 @@ import com.j_spaces.core.client.SQLQuery;
 public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectionTest<T> {
 
     protected GigaBlockingQueue<T> gigaQueue;
-    protected GigaBlockingQueue<T> fullGigaQueue; 
-    
-    protected int capacity;
     
     private static final String QUEUE_NAME = "TestGigaBlockingQueue";
-    private static final String FULL_QUEUE_NAME = "TestFullGigaBlockingQueue";
     
     private static final long TIMEOUT = 1000; // in milliseconds
     private static final long TIMEOUT_ACCURACY = 10; // in milliseconds
     
-    public AbstractGigaBlockingQueueTest(List<T> elements, int capacity) {
+    public AbstractGigaBlockingQueueTest(List<T> elements) {
         super(elements);
-        this.capacity = capacity;
     }
 
     @Before
     public void setUp() {
-        this.gigaQueue = new DefaultGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, capacity);
+        this.gigaQueue = new DefaultGigaBlockingQueue<>(gigaSpace, QUEUE_NAME);
         gigaQueue.addAll(testedElements);
-        
-        this.fullGigaQueue = new DefaultGigaBlockingQueue<>(gigaSpace, FULL_QUEUE_NAME, capacity);
-        populateQueue(fullGigaQueue);
     }
     
     @Override
@@ -150,11 +141,6 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
     }
     
     // java.util.BlockingQueue methods
-    @Test(expected = IllegalStateException.class)
-    public void testAddToFullQueue() {
-        fullGigaQueue.add(newNotNullElement());
-    }
-    
     @Test
     public void testAdd() {
         testAddInternal(new AddOperation<T>() {
@@ -174,8 +160,7 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
         assertTrue("The element should be added", addOperation.perform(element));
         assertHead(++size, head, gigaQueue.peek());
         
-        //an existing element
-        Assume.assumeTrue(capacity > size);
+        // an existing element
         element = testedElements.iterator().next();
         assertTrue("The element should be added", addOperation.perform(element));
         assertHead(++size, head, gigaQueue.peek());
@@ -191,11 +176,6 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
         assertSize("Invalid blocking queue size", testedElements.size() + elementsToAdd.size());
     }
     
-    @Test(expected = IllegalStateException.class)
-    public void testAddAllToFullQueue() {
-        fullGigaQueue.addAll(Arrays.asList(newNotNullElement()));
-    }
-
     @Test
     public void testOffer() {
         testAddInternal(new AddOperation<T>() {
@@ -205,11 +185,6 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
                 return gigaQueue.offer(element);
             }
         });
-    }
-    
-    @Test
-    public void testOfferToFullQueue() {
-        assertFalse("The element should not be inserted due to reaching the capacity", fullGigaQueue.offer(newNotNullElement()));
     }
     
     @Test
@@ -249,30 +224,26 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
     
     @Test
     public void testRemainingCapacity() {
-        int expectedCapacity = capacity - testedElements.size();
-        assertEquals("Invalid remaining capacity", expectedCapacity, gigaQueue.remainingCapacity());
+        assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
         
         T element = newNotNullElement();
         assertTrue(gigaQueue.add(element));
-        assertEquals("Invalid remaining capacity", --expectedCapacity, gigaQueue.remainingCapacity());
+        assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
         
         assertTrue(gigaQueue.remove(element));
-        assertEquals("Invalid remaining capacity", ++expectedCapacity, gigaQueue.remainingCapacity());
+        assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
         
         gigaQueue.clear();
-        assertEquals("Invalid remaining capacity", capacity, gigaQueue.remainingCapacity());
-        
-        Assume.assumeTrue(capacity > 1);
-        expectedCapacity = capacity;
+        assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
+
         List<T> elements = Arrays.asList(newNotNullElement(), newNotNullElement());
         assertTrue(gigaQueue.addAll(elements));
-        expectedCapacity -= elements.size();
-        assertEquals("Invalid remaining capacity", expectedCapacity, gigaQueue.remainingCapacity());
+        assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
         
         assertTrue(gigaQueue.removeAll(elements));
-        expectedCapacity += elements.size();
-        assertEquals("Invalid remaining capacity", expectedCapacity, gigaQueue.remainingCapacity());
+        assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
     }
+    
     @Test(expected = IllegalArgumentException.class)
     public void testDrainToSameCollection() {
         gigaQueue.drainTo(gigaQueue);
@@ -362,11 +333,6 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
         });
     }
     
-    @Test(timeout = TIMEOUT)
-    public void testOfferWithTimeoutFullQueue() throws InterruptedException {
-        gigaQueue.offer(newNotNullElement(), TIMEOUT - TIMEOUT_ACCURACY, TimeUnit.MILLISECONDS);
-    }
-
     @Test
     public void testOfferWithTimeout() {
         testAddInternal(new AddOperation<T>() {
@@ -381,17 +347,6 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
                 return null;
             }
         });
-    }
-    
-    private void populateQueue(Queue<T> queue) {
-        for (int i = 0 ; i < capacity; i++) {
-            try {
-                T element = newNotNullElement();
-                assertTrue("The element should be added", queue.add(element));
-            } catch(IllegalStateException e) {
-                fail("The capacity restriction should not have been violated");
-            }
-        }
     }
     
     private interface AddOperation<T> {

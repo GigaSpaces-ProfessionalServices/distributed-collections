@@ -18,17 +18,16 @@ import org.springframework.test.context.ContextConfiguration;
 @Ignore
 public class SerializableTypeGigaBlockingQueueTest extends AbstractGigaBlockingQueueTest<SerializableType> {
 
-    public SerializableTypeGigaBlockingQueueTest(List<SerializableType> elements, int capacity) {
-        super(elements, capacity);
+    public SerializableTypeGigaBlockingQueueTest(List<SerializableType> elements) {
+        super(elements);
     }
 
     @Parameterized.Parameters
     public static Collection<Object[]> testData() {
         return Arrays.asList(new Object[][] { 
-                { Collections.emptyList(), 1 },
-                { Collections.singletonList(createSerializableType()), 2 },
-                { createSerializableTypeList(MEDIUM_COLLECTION_SIZE), 2 * MEDIUM_COLLECTION_SIZE },
-                /* { createComplexTypeList(LARGE_COLLECTION_SIZE) } */
+                { Collections.emptyList() },
+                { Collections.singletonList(createSerializableType()) },
+                { createSerializableTypeList(MEDIUM_COLLECTION_SIZE) },
         });
     }
 
