@@ -15,25 +15,23 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Queue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.openspaces.collections.AbstractCollectionTest;
 import org.openspaces.collections.queue.data.QueueItem;
 
+import com.j_spaces.core.client.SQLQuery;
+
 @RunWith(Parameterized.class)
 public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectionTest<T> {
 
-    protected final GigaBlockingQueue<T> gigaQueue;
-    
-    /**
-     * is not supposed to be modified in the tests
-     */
-    protected final BlockingQueue<T> fullGigaQueue; 
+    protected GigaBlockingQueue<T> gigaQueue;
+    protected GigaBlockingQueue<T> fullGigaQueue; 
     
     protected int capacity;
     
@@ -46,11 +44,17 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
     public AbstractGigaBlockingQueueTest(List<T> elements, int capacity) {
         super(elements);
         this.capacity = capacity;
+    }
+
+    @Before
+    public void setUp() {
         this.gigaQueue = new DefaultGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, capacity);
+        gigaQueue.addAll(testedElements);
+        
         this.fullGigaQueue = new DefaultGigaBlockingQueue<>(gigaSpace, FULL_QUEUE_NAME, capacity);
         populateQueue(fullGigaQueue);
     }
-
+    
     @Override
     protected Collection<T> getCollection() {
         return gigaQueue;
@@ -58,7 +62,8 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
     
     @Override
     protected void assertSize(String msg, int expectedSize) {
-        assertEquals(msg, expectedSize, gigaSpace.count(new QueueItem<>()));
+        SQLQuery<QueueItem> query = new SQLQuery<QueueItem>(QueueItem.class, "itemKey.queueName = ?", QUEUE_NAME);
+        assertEquals(msg, expectedSize, gigaSpace.count(query));
     }
     
     // java.util.Queue methods

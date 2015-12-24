@@ -18,6 +18,7 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -43,6 +44,11 @@ public class GigaSetTest extends AbstractCollectionTest<SerializableType> {
                 { createSerializableTypeList(MEDIUM_COLLECTION_SIZE) } });
     }
 
+    @Before
+    public void setUp() {
+        gigaSet.addAll(testedElements);
+    }
+    
     @Test
     public void testAdd() {
         final SerializableType newElement = newNotNullElement();

@@ -3,8 +3,6 @@ package org.openspaces.collections.queue.operations;
 import static org.openspaces.collections.queue.data.QueueData.HEAD_PATH;
 import static org.openspaces.collections.queue.data.QueueData.REMOVED_INDEXES_PATH;
 import static org.openspaces.collections.queue.data.QueueData.TAIL_PATH;
-import static org.openspaces.collections.util.SerializationUtils.readNullableObject;
-import static org.openspaces.collections.util.SerializationUtils.writeNullableObject;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -20,6 +18,8 @@ import com.gigaspaces.server.MutableServerEntry;
  */
 public class PollOperation extends CustomChangeOperation {
 
+    private static final long serialVersionUID = 1L;
+
     @Override
     @SuppressWarnings("unchecked")
     public Object change(MutableServerEntry entry) {
@@ -29,20 +29,20 @@ public class PollOperation extends CustomChangeOperation {
         final int removedIndexesOrigSize = removedIndexes.size();
 
         if (head == tail) {
-            return Result.emptyQueueResult();
+            return QueueHeadResult.emptyQueueResult();
         }
 
         // skip elements that were removed with iterator,remove()
         long nextNonRemovedIndex = nextNonRemovedIndex(head, removedIndexes);
 
         long newHead;
-        Result result;
+        QueueHeadResult result;
         if (nextNonRemovedIndex > tail) {
             newHead = tail;
-            result = Result.emptyQueueResult();
+            result = QueueHeadResult.emptyQueueResult();
         } else {
             newHead = nextNonRemovedIndex;
-            result = Result.polledIndexResult(newHead);
+            result = QueueHeadResult.headIndexResult(newHead);
         }
 
         entry.setPathValue(HEAD_PATH, newHead);
@@ -70,49 +70,5 @@ public class PollOperation extends CustomChangeOperation {
     @Override
     public String getName() {
         return "poll";
-    }
-
-    /**
-     * Operation result
-     */
-    public static class Result implements Externalizable {
-        private boolean queueEmpty;
-        private Long polledIndex;
-
-        public Result() {
-        }
-
-        public static Result emptyQueueResult() {
-            Result result = new Result();
-            result.queueEmpty = true;
-            return result;
-        }
-
-        public static Result polledIndexResult(Long polledIndex) {
-            Result result = new Result();
-            result.queueEmpty = false;
-            result.polledIndex = polledIndex;
-            return result;
-        }
-
-        public boolean isQueueEmpty() {
-            return queueEmpty;
-        }
-
-        public Long getPolledIndex() {
-            return polledIndex;
-        }
-
-        @Override
-        public void writeExternal(ObjectOutput out) throws IOException {
-            out.writeBoolean(isQueueEmpty());
-            writeNullableObject(out, getPolledIndex());
-        }
-
-        @Override
-        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-            this.queueEmpty = in.readBoolean();
-            this.polledIndex = readNullableObject(in);
-        }
     }
 }

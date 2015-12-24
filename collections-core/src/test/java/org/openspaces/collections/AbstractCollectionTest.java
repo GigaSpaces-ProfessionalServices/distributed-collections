@@ -18,7 +18,6 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
-import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,11 +39,6 @@ public abstract class AbstractCollectionTest<T> {
     }
     
     @Before
-    public void setUp() {
-        getCollection().addAll(testedElements);
-    }
-    
-    @After
     public void clear() {
         gigaSpace.clear(null);
     }

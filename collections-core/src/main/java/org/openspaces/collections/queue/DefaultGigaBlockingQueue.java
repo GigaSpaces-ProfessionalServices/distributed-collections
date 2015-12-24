@@ -14,7 +14,9 @@ import org.openspaces.collections.queue.data.QueueData;
 import org.openspaces.collections.queue.data.QueueItem;
 import org.openspaces.collections.queue.data.QueueItemKey;
 import org.openspaces.collections.queue.operations.OfferOperation;
+import org.openspaces.collections.queue.operations.PeekOperation;
 import org.openspaces.collections.queue.operations.PollOperation;
+import org.openspaces.collections.queue.operations.QueueHeadResult;
 import org.openspaces.collections.queue.operations.SizeOperation;
 import org.openspaces.collections.util.Pair;
 import org.openspaces.core.EntryAlreadyInSpaceException;
@@ -133,12 +135,12 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
             ChangeResult<QueueData> changeResult = space.change(queueQuery(), pollChange, RETURN_DETAILED_RESULTS);
 
-            PollOperation.Result pollResult = toSingleResult(changeResult);
+            QueueHeadResult pollResult = toSingleResult(changeResult);
 
             if (pollResult.isQueueEmpty()) {
                 return null;
             } else {
-                Long polledIndex = pollResult.getPolledIndex();
+                Long polledIndex = pollResult.getHeadIndex();
                 IdQuery<QueueItem> itemQuery = itemQueryByIndex(polledIndex);
 
                 // there is a time window when queue tail changed, but item is not in the space yet
@@ -152,12 +154,32 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
                 }
             }
         }
-
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public E peek() {
-        throw new RuntimeException("Not implemented yet");
+        while (true) {
+            AggregationSet peekOperation = new AggregationSet().add(new PeekOperation());
+            
+            AggregationResult aggregationResult = space.aggregate(queueQuery(), peekOperation);
+            QueueHeadResult result = toSingleResult(aggregationResult);
+
+            if (result.isQueueEmpty()) {
+                return null;
+            } else {
+                Long headIndex = result.getHeadIndex();
+                // there is a time window when queue tail changed, but item is not in the space yet
+                // to handle that we do take with timeout
+                QueueItem<E> queueItem = space.readById(itemQueryByIndex(headIndex), WAIT_ITEM_TIMEOUT_MS);
+
+                // we may not find item if producer failed in the middle of modifying tail and writing item to space
+                // just skip that item and peek the next one (see while loop)
+                if (queueItem != null) {
+                    return queueItem.getItem();
+                }
+            }
+        }
     }
 
     @Override
@@ -168,9 +190,9 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
     @Override
     public int size() {
-        SQLQuery<QueueData> query = new SQLQuery<>(QueueData.class, "name = ?", queueName); // routing by queueName
-
-        AggregationResult aggregationResult = space.aggregate(query, new AggregationSet().add(new SizeOperation()));
+        AggregationSet sizeOperation = new AggregationSet().add(new SizeOperation());
+        
+        AggregationResult aggregationResult = space.aggregate(queueQuery(), sizeOperation);
 
         SizeOperation.Result sizeResult = toSingleResult(aggregationResult);
         return sizeResult.getSize();
@@ -194,7 +216,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     private IdQuery<QueueData> queueQuery() {
         return new IdQuery<>(QueueData.class, queueName);
     }
-
+    
     /**
      * @return query to find item by index
      */
