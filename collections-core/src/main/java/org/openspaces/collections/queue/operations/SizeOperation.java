@@ -1,12 +1,14 @@
 package org.openspaces.collections.queue.operations;
 
 import static org.openspaces.collections.queue.data.QueueData.HEAD_PATH;
+import static org.openspaces.collections.queue.data.QueueData.REMOVED_INDEXES_PATH;
 import static org.openspaces.collections.queue.data.QueueData.TAIL_PATH;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Set;
 
 import org.openspaces.collections.queue.operations.SizeOperation.Result;
 
@@ -28,11 +30,13 @@ public class SizeOperation extends SpaceEntriesAggregator<Result> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void aggregate(SpaceEntriesAggregatorContext context) {
         Long tail = (Long) context.getPathValue(TAIL_PATH);
         Long head = (Long) context.getPathValue(HEAD_PATH);
+        Set<Long> removedIndexes = (Set<Long>) context.getPathValue(REMOVED_INDEXES_PATH);
 
-        final long size = tail - head;
+        long size = tail - head - removedIndexes.size();
         this.sizeResult = new Result((int) size);
     }
 
