@@ -72,6 +72,8 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
     @Override
     public boolean offer(E element) {
+        checkNotNull(element);
+
         ChangeSet offerChange = new ChangeSet().custom(new OfferOperation(1));
 
         ChangeResult<QueueData> changeResult = space.change(queueQuery(), offerChange, RETURN_DETAILED_RESULTS);
@@ -89,12 +91,16 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     }
 
     @Override
-    public void put(E e) throws InterruptedException {
+    public void put(E element) throws InterruptedException {
+        checkNotNull(element);
+
         throw new RuntimeException("Not implemented yet");
     }
 
     @Override
-    public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException {
+    public boolean offer(E element, long timeout, TimeUnit unit) throws InterruptedException {
+        checkNotNull(element);
+
         throw new RuntimeException("Not implemented yet");
     }
 
@@ -119,11 +125,23 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
     @Override
     public int drainTo(Collection<? super E> c) {
+        checkNotNull(c);
+
+        if (c == this) {
+            throw new IllegalArgumentException();
+        }
+
         throw new RuntimeException("Not implemented yet");
     }
 
     @Override
     public int drainTo(Collection<? super E> c, int maxElements) {
+        checkNotNull(c);
+
+        if (c == this) {
+            throw new IllegalArgumentException();
+        }
+
         throw new RuntimeException("Not implemented yet");
     }
 
@@ -161,7 +179,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     public E peek() {
         while (true) {
             AggregationSet peekOperation = new AggregationSet().add(new PeekOperation());
-            
+
             AggregationResult aggregationResult = space.aggregate(queueQuery(), peekOperation);
             QueueHeadResult result = toSingleResult(aggregationResult);
 
@@ -191,7 +209,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     @Override
     public int size() {
         AggregationSet sizeOperation = new AggregationSet().add(new SizeOperation());
-        
+
         AggregationResult aggregationResult = space.aggregate(queueQuery(), sizeOperation);
 
         SizeOperation.Result sizeResult = toSingleResult(aggregationResult);
@@ -216,7 +234,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     private IdQuery<QueueData> queueQuery() {
         return new IdQuery<>(QueueData.class, queueName);
     }
-    
+
     /**
      * @return query to find item by index
      */
@@ -247,6 +265,17 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         }
 
         return (T) changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
+    }
+
+    /**
+     * Throws NullPointerException if argument is null.
+     *
+     * @param v the element
+     */
+    private static void checkNotNull(Object v) {
+        if (v == null) {
+            throw new NullPointerException();
+        }
     }
 
     private class QueueIterator implements Iterator<E> {
