@@ -1,6 +1,7 @@
 package org.openspaces.collections.queue;
 
 import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
+import static org.openspaces.collections.queue.data.QueueData.REMOVED_INDEXES_PATH;
 
 import java.io.Serializable;
 import java.util.AbstractQueue;
@@ -272,11 +273,19 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
         @Override
         public void remove() {
-            if (curr == null){
+            if (curr == null) {
                 throw new IllegalStateException();
             }
 
-            // TODO: remove item
+            ChangeSet removeOperation = new ChangeSet().addAllToCollection(REMOVED_INDEXES_PATH, currIndex);
+
+            // update queue
+            space.change(queueQuery(), removeOperation);
+
+            // remove element
+            QueueItem<Object> itemTemplate = new QueueItem<>();
+            itemTemplate.setItemKey(new QueueItemKey(queueName, currIndex));
+            space.clear(itemTemplate);
         }
 
         @SuppressWarnings("unchecked")

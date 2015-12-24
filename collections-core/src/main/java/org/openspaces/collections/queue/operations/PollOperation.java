@@ -1,6 +1,7 @@
 package org.openspaces.collections.queue.operations;
 
 import static org.openspaces.collections.queue.data.QueueData.HEAD_PATH;
+import static org.openspaces.collections.queue.data.QueueData.REMOVED_INDEXES_PATH;
 import static org.openspaces.collections.queue.data.QueueData.TAIL_PATH;
 import static org.openspaces.collections.util.SerializationUtils.readNullableObject;
 import static org.openspaces.collections.util.SerializationUtils.writeNullableObject;
@@ -9,30 +10,62 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Set;
 
 import com.gigaspaces.client.CustomChangeOperation;
 import com.gigaspaces.server.MutableServerEntry;
+
 /**
  * @author Oleksiy_Dyagilev
  */
 public class PollOperation extends CustomChangeOperation {
 
     @Override
+    @SuppressWarnings("unchecked")
     public Object change(MutableServerEntry entry) {
-        Long tail = (Long) entry.getPathValue(TAIL_PATH);
-        Long head = (Long) entry.getPathValue(HEAD_PATH);
-        if (isEmpty(tail, head)) {
+        final long tail = (long) entry.getPathValue(TAIL_PATH);
+        final long head = (long) entry.getPathValue(HEAD_PATH);
+        final Set<Long> removedIndexes = (Set<Long>) entry.getPathValue(REMOVED_INDEXES_PATH);
+        final int removedIndexesOrigSize = removedIndexes.size();
+
+        if (head == tail) {
             return Result.emptyQueueResult();
-        } else {
-            long newHead = head + 1;
-            entry.setPathValue(HEAD_PATH, newHead);
-            return Result.polledIndexResult(newHead);
         }
+
+        // skip elements that were removed with iterator,remove()
+        long nextNonRemovedIndex = nextNonRemovedIndex(head, removedIndexes);
+
+        long newHead;
+        Result result;
+        if (nextNonRemovedIndex > tail) {
+            newHead = tail;
+            result = Result.emptyQueueResult();
+        } else {
+            newHead = nextNonRemovedIndex;
+            result = Result.polledIndexResult(newHead);
+        }
+
+        entry.setPathValue(HEAD_PATH, newHead);
+
+        // update removed indexes set if it was changed
+        if (removedIndexes.size() != removedIndexesOrigSize) {
+            entry.setPathValue(REMOVED_INDEXES_PATH, removedIndexes);
+        }
+
+        return result;
     }
 
-    private boolean isEmpty(Long tail, Long head) {
-        return head.equals(tail);
+    /**
+     * returns next non removed index, as a side effect cleans up 'removedIndexes' set removing indexes we no longer need
+     */
+    private long nextNonRemovedIndex(final long index, Set<Long> removedIndexes) {
+        long next = index + 1;
+        while (removedIndexes.remove(next)) {
+            next++;
+        }
+        return next;
     }
+
 
     @Override
     public String getName() {
@@ -69,7 +102,7 @@ public class PollOperation extends CustomChangeOperation {
         public Long getPolledIndex() {
             return polledIndex;
         }
-        
+
         @Override
         public void writeExternal(ObjectOutput out) throws IOException {
             out.writeBoolean(isQueueEmpty());

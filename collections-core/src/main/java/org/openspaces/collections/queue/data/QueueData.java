@@ -3,6 +3,9 @@ package org.openspaces.collections.queue.data;
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * TODO: think about better name
  *
@@ -16,12 +19,14 @@ public class QueueData {
     public static final String TAIL_PATH = "tail";
     public static final String BOUNDED_PATH = "bounded";
     public static final String CAPACITY_PATH = "capacity";
+    public static final String REMOVED_INDEXES_PATH = "removedIndexes";
 
     private String name;
     private Long head;
     private Long tail;
     private Boolean bounded;
     private Integer capacity;
+    private Set<Long> removedIndexes;
 
     public QueueData() {
     }
@@ -32,6 +37,7 @@ public class QueueData {
         this.tail = tail;
         this.bounded = bounded;
         this.capacity = capacity;
+        this.removedIndexes = new HashSet<>();
     }
 
     @SpaceId
@@ -73,5 +79,13 @@ public class QueueData {
 
     public void setCapacity(Integer capacity) {
         this.capacity = capacity;
+    }
+
+    public Set<Long> getRemovedIndexes() {
+        return removedIndexes;
+    }
+
+    public void setRemovedIndexes(Set<Long> removedIndexes) {
+        this.removedIndexes = removedIndexes;
     }
 }
