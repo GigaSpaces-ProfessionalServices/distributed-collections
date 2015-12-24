@@ -51,31 +51,11 @@ public abstract class AbstractCollectionTest<T> {
         }
     }
     
-    @Test(expected = NullPointerException.class)
-    public void testAddNull() {
-        getCollection().add(null);
-    }
-    
-    @Test(expected = NullPointerException.class)
-    public void testAddAllNull() {
-        getCollection().addAll(null);
-    }
-    
-    @Test(expected = NullPointerException.class)
-    public void testAddAllNullElement() {
-        getCollection().addAll(Arrays.<T>asList(null));
-    }
-    
     @Test
     public void testClear() {
         getCollection().clear();
         
         assertSize("Invalid collection size", 0);
-    }
-    
-    @Test(expected = NullPointerException.class)
-    public void testContainsNull() {
-        getCollection().contains(null);
     }
     
     @Test
@@ -91,16 +71,6 @@ public abstract class AbstractCollectionTest<T> {
 
       /*  Object newType = new Serializable() {};
         assertFalse("Collection should not contain the element = " + newType, gigaSet.contains(newType));*/
-    }
-    
-    @Test(expected = NullPointerException.class)
-    public void testContainsAllNull() {
-        getCollection().containsAll(null);
-    }
-    
-    @Test(expected = NullPointerException.class)
-    public void testContainsAllNullElement() {
-        getCollection().containsAll(Arrays.asList(null));
     }
     
     @Test
@@ -170,11 +140,6 @@ public abstract class AbstractCollectionTest<T> {
         assertSize("Invalid collection elements count", actualCount);
     }
     
-    @Test(expected = NullPointerException.class)
-    public void testRemoveNull() {
-        getCollection().remove(null);
-    }
-    
     @Test
     public void testRemove() {
         int expectedSize = testedElements.size();
@@ -192,11 +157,6 @@ public abstract class AbstractCollectionTest<T> {
        /* Object newType = new Serializable() {};
         assertFalse("GigaSet should return true after removing an unexisting element = " + newType, gigaSet.remove(newType));
         assertEquals("Invalid gigaSet size", expectedSize, gigaSpace.count(null));*/
-    }
-    
-    @Test(expected = NullPointerException.class)
-    public void testRemoveAllNullElement() {
-        getCollection().removeAll(Arrays.asList(null));
     }
     
     @Test
@@ -229,16 +189,6 @@ public abstract class AbstractCollectionTest<T> {
         
         assertTrue("Collection should be changed after removing all its elements", getCollection().removeAll(testedElements));
         assertSize("Invalid collection size", 0);
-    }
-    
-    @Test(expected = NullPointerException.class)
-    public void testRetainAllNull() {
-        getCollection().retainAll(null);
-    }
-    
-    @Test(expected = NullPointerException.class)
-    public void testRetainAllNullElement() {
-        getCollection().retainAll(Arrays.asList(null));
     }
     
     @Test

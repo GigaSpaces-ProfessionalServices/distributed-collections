@@ -273,12 +273,6 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
         expectedCapacity += elements.size();
         assertEquals("Invalid remaining capacity", expectedCapacity, gigaQueue.remainingCapacity());
     }
-    
-    @Test(expected = NullPointerException.class)
-    public void testDrainToNullCollection() {
-        gigaQueue.drainTo(null);
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void testDrainToSameCollection() {
         gigaQueue.drainTo(gigaQueue);
@@ -299,6 +293,11 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
             assertNotNull("Element should not be null", actual);
             assertTrue("Invalid element", testedElements.contains(actual));
         }
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testDrainToNullCollection() {
+        gigaQueue.drainTo(null);
     }
 
     @Test(expected = NullPointerException.class)
