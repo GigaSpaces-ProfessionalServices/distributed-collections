@@ -37,6 +37,7 @@ public class SizeOperation extends SpaceEntriesAggregator<Result> {
         Set<Long> removedIndexes = (Set<Long>) context.getPathValue(REMOVED_INDEXES_PATH);
 
         long size = tail - head - removedIndexes.size();
+
         this.sizeResult = new Result((int) size);
     }
 

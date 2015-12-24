@@ -195,11 +195,6 @@ public abstract class AbstractCollectionTest<T> {
     }
     
     @Test(expected = NullPointerException.class)
-    public void testRemoveAllNull() {
-        getCollection().removeAll(null);
-    }
-    
-    @Test(expected = NullPointerException.class)
     public void testRemoveAllNullElement() {
         getCollection().removeAll(Arrays.asList(null));
     }

@@ -46,29 +46,45 @@ public class MyTest {
 //            e.printStackTrace();
 //        }
 
-        System.out.println(queue.offer(new SerializableType(1L)));
-        System.out.println(queue.offer(new SerializableType(2L)));
-        System.out.println(queue.offer(new SerializableType(3L)));
-//        System.out.println("queue.size() = " + queue.size());
+        System.out.println(queue.offer(null));
+//        System.out.println(queue.offer(new SerializableType(2L)));
+//        System.out.println(queue.offer(new SerializableType(3L)));
+//
+        System.out.println("queue.size() = " + queue.size());
 
-        Iterator<SerializableType> iterator = queue.iterator();
+        System.out.println(queue.poll());
+
+//        Iterator<SerializableType> iterator = queue.iterator();
 //
 //
-        iterator.next();
-        iterator.remove();
 //        iterator.next();
 //        iterator.remove();
 //        iterator.next();
 //        iterator.remove();
+//        iterator.next();
+//        iterator.remove();
+
+//        while(iterator.hasNext()) {
+//            iterator.next();
+//            iterator.remove();
+//        }
 
 //        while (iterator.hasNext()) {
 //            SerializableType next = iterator.next();
 //            System.out.println("next = " + next);
 //        }
 
-        System.out.println(queue.poll());
-        System.out.println(queue.poll());
-        System.out.println(queue.poll());
+//        System.out.println("queue.size() = " + queue.size());
+//
+//        System.out.println(queue.offer(new SerializableType(2L)));
+//        System.out.println(queue.offer(new SerializableType(3L)));
+//
+//        System.out.println("queue.size() = " + queue.size());
+
+
+//        System.out.println(queue.poll());
+//        System.out.println(queue.poll());
+//        System.out.println(queue.poll());
 //        System.out.println(queue.poll());
 //        System.out.println(queue.poll());
 

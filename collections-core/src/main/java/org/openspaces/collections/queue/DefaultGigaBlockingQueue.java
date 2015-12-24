@@ -119,6 +119,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
     @Override
     public int drainTo(Collection<? super E> c) {
+        checkNotNull(c);
         if (c == this) {
             throw new IllegalArgumentException();
         }
@@ -128,6 +129,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
     @Override
     public int drainTo(Collection<? super E> c, int maxElements) {
+        checkNotNull(c);
         if (c == this) {
             throw new IllegalArgumentException();
         }
@@ -204,6 +206,17 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
         SizeOperation.Result sizeResult = toSingleResult(aggregationResult);
         return sizeResult.getSize();
+    }
+
+    /**
+     * Throws NullPointerException if argument is null.
+     *
+     * @param v the element
+     */
+    private static void checkNotNull(Object v) {
+        if (v == null) {
+            throw new NullPointerException();
+        }
     }
 
     /**

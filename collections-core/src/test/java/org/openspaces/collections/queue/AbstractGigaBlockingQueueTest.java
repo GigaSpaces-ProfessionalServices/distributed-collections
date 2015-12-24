@@ -195,12 +195,7 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
     public void testAddAllToFullQueue() {
         fullGigaQueue.addAll(Arrays.asList(newNotNullElement()));
     }
-    
-    @Test(expected = NullPointerException.class)
-    public void testOfferNull() {
-        gigaQueue.offer(null);
-    }
-    
+
     @Test
     public void testOffer() {
         testAddInternal(new AddOperation<T>() {
@@ -283,7 +278,7 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
     public void testDrainToNullCollection() {
         gigaQueue.drainTo(null);
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void testDrainToSameCollection() {
         gigaQueue.drainTo(gigaQueue);
@@ -310,7 +305,7 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
     public void testDrainToMaxElementsNullCollection() {
         gigaQueue.drainTo(null, Integer.MAX_VALUE);
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void testDrainToMaxElementsSameCollection() {
         gigaQueue.drainTo(gigaQueue, Integer.MAX_VALUE);

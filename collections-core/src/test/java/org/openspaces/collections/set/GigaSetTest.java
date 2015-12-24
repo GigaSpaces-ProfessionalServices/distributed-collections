@@ -120,4 +120,9 @@ public class GigaSetTest extends AbstractCollectionTest<SerializableType> {
     protected void assertSize(String msg, int expectedSize) {
         assertEquals(msg, expectedSize, gigaSpace.count(null));
     }
+
+    @Test(expected = NullPointerException.class)
+    public void testRemoveAllNull() {
+        getCollection().removeAll(null);
+    }
 }
