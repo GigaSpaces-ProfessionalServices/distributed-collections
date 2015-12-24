@@ -16,15 +16,38 @@ public class QueueHeadResult implements Externalizable {
     public QueueHeadResult() {
     }
 
+    /**
+     * Creates empty queue result
+     * 
+     * @return result
+     */
     public static QueueHeadResult emptyQueueResult() {
-        QueueHeadResult result = new QueueHeadResult();
-        result.queueEmpty = true;
-        return result;
+        return headIndexResult(true, null);
+    }
+    
+    /**
+     * Creates empty queue result with new head index
+     * 
+     * @param index
+     * @return result
+     */
+    public static QueueHeadResult emptyQueueResult(Long index) {
+        return headIndexResult(true, index);
     }
 
+    /**
+     * Creates non-empty queue result with new head index
+     * 
+     * @param index
+     * @return result
+     */
     public static QueueHeadResult headIndexResult(Long index) {
+        return headIndexResult(false, index);
+    }
+    
+    private static QueueHeadResult headIndexResult(boolean queueEmpty, Long index) {
         QueueHeadResult result = new QueueHeadResult();
-        result.queueEmpty = false;
+        result.queueEmpty = queueEmpty;
         result.headIndex = index;
         return result;
     }

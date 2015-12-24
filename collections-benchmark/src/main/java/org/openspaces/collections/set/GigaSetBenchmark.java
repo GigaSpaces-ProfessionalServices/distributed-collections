@@ -29,7 +29,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 @State(Scope.Benchmark)
 public class GigaSetBenchmark {
 
-    private static final String PARTITIONED_SPACE_CONFIG = "partitioned-space-test-config.xml";
+    private static final String BENCHMARK_CONFIG = "GigaSetBenchmark-context.xml";
     private static final int ELEMENTS_MAX_COUNT = 100;
     
     @Param({ "0", "1", "1000"})
@@ -46,7 +46,7 @@ public class GigaSetBenchmark {
 
     @Setup(Level.Trial)
     public void init() {
-        applicationContext = new ClassPathXmlApplicationContext(PARTITIONED_SPACE_CONFIG);
+        applicationContext = new ClassPathXmlApplicationContext(BENCHMARK_CONFIG);
         gigaSet = applicationContext.getBean(GigaSet.class);
         
         newComplexType = create();
@@ -83,7 +83,7 @@ public class GigaSetBenchmark {
     @TearDown(Level.Trial)
     public void destroy() {
         applicationContext.close();
-    }
+    } 
     
     private SerializableType create() {
         final ThreadLocalRandom random = ThreadLocalRandom.current();
