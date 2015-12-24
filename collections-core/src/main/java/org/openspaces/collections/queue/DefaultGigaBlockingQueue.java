@@ -119,12 +119,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
     @Override
     public int drainTo(Collection<? super E> c) {
-        checkNotNull(c);
-        if (c == this) {
-            throw new IllegalArgumentException();
-        }
-
-        throw new RuntimeException("Not implemented yet");
+        return drainTo(c, Integer.MAX_VALUE);
     }
 
     @Override
@@ -133,8 +128,18 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         if (c == this) {
             throw new IllegalArgumentException();
         }
+        if (maxElements <= 0) {
+            return 0;
+        }
 
-        throw new RuntimeException("Not implemented yet");
+        int max = Math.min(size(), maxElements);
+
+        for (int i = 0; i < max; i++) {
+            E element = poll();
+            c.add(element);
+        }
+
+        return max;
     }
 
     @Override
