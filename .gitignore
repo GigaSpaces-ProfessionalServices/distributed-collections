@@ -48,3 +48,4 @@ target/
 
 #gigaspaces
 gigaspaces/*
+logs/*
