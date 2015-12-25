@@ -3,13 +3,12 @@ package org.openspaces.collections.queue;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.openspaces.collections.CollocationMode;
 import org.openspaces.collections.set.SerializableType;
 import org.openspaces.core.GigaSpace;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.util.Iterator;
 
 /**
  * TODO: Temp testl
@@ -30,7 +29,7 @@ public class MyTest {
     
     @Test
     public void test() {
-		DefaultGigaBlockingQueue<SerializableType> queue = new DefaultGigaBlockingQueue<>(gigaSpace, "test-queue", 100);
+		DefaultGigaBlockingQueue<SerializableType> queue = new DefaultGigaBlockingQueue<>(gigaSpace, "test-queue", 100, CollocationMode.DISTRIBUTED);
 //
 //        Runnable runnable = new Runnable() {
 //            @Override

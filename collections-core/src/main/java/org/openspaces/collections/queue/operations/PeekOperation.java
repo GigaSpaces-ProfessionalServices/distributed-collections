@@ -30,7 +30,7 @@ public class PeekOperation extends SpaceEntriesAggregator<QueueHeadResult> {
             this.result = QueueHeadResult.emptyQueueResult();
         } else {
             final Set<Long> removedIndexes = new HashSet<>((Set<Long>) context.getPathValue(REMOVED_INDEXES_PATH));
-            this.result = new QueueHeadTransformer().transform(head, tail, removedIndexes);
+            this.result = new QueueHeadTransformer().forwardQueueHead(head, tail, removedIndexes);
         }
     }
 

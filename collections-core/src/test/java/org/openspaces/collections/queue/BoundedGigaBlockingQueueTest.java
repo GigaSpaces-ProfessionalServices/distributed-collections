@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.openspaces.collections.CollocationMode;
 import org.openspaces.collections.set.SerializableType;
 import org.openspaces.core.GigaSpace;
 import org.springframework.test.context.ContextConfiguration;
@@ -39,7 +40,7 @@ public class BoundedGigaBlockingQueueTest {
     
     @Before
     public void setUp() {
-        this.gigaQueue = new DefaultGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, CAPACITY);
+        this.gigaQueue = new DefaultGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, CAPACITY, CollocationMode.DISTRIBUTED);
         gigaQueue.addAll(createSerializableTypeList(CAPACITY));
     }
     

@@ -31,7 +31,7 @@ public class PollOperation extends CustomChangeOperation {
         final Set<Long> removedIndexes = new HashSet<>((Set<Long>) entry.getPathValue(REMOVED_INDEXES_PATH));
         final int removedIndexesOrigSize = removedIndexes.size();
        
-        QueueHeadResult result = new QueueHeadTransformer().transform(head, tail, removedIndexes);
+        QueueHeadResult result = new QueueHeadTransformer().forwardQueueHead(head, tail, removedIndexes);
         entry.setPathValue(HEAD_PATH, result.getHeadIndex());
 
         // update removed indexes set if it was changed

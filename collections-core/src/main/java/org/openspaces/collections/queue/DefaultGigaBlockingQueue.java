@@ -8,8 +8,11 @@ import java.util.AbstractQueue;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.openspaces.collections.CollocationMode;
 import org.openspaces.collections.queue.data.QueueData;
 import org.openspaces.collections.queue.data.QueueItem;
 import org.openspaces.collections.queue.data.QueueItemKey;
@@ -28,7 +31,6 @@ import com.gigaspaces.client.WriteModifiers;
 import com.gigaspaces.query.IdQuery;
 import com.gigaspaces.query.aggregators.AggregationResult;
 import com.gigaspaces.query.aggregators.AggregationSet;
-import com.j_spaces.core.client.SQLQuery;
 
 /**
  * @author Oleksiy_Dyagilev
@@ -41,32 +43,52 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     private String queueName;
     private boolean bounded;
     private int capacity;
-
+    private CollocationMode collocationMode;
+    
     /**
-     * Create not bounded queue
-     *
-     * @param queueName unique queue queueName
+     *  Creates not bounded queue
+     *  
+     * @param space
+     * @param queueName
+     * @param collocationMode
      */
-    public DefaultGigaBlockingQueue(GigaSpace space, String queueName) {
-        this.space = space;
-        this.queueName = queueName;
-        this.bounded = false;
-
-        createNewIfRequired();
+    public DefaultGigaBlockingQueue(GigaSpace space, String queueName, CollocationMode collocationMode) {
+        this(space, queueName, 0, false, collocationMode);
     }
 
     /**
-     * Create bounded queue
+    * Creates bounded queue
+    * 
+    * @param space
+    * @param queueName
+    * @param capacity
+    * @param collocationMode
+    */
+    public DefaultGigaBlockingQueue(GigaSpace space, String queueName, int capacity, CollocationMode collocationMode) {
+        this(space, queueName, capacity, true, collocationMode);
+    }
+    
+    /**
+     * Creates blocking queue
      *
      * @param queueName unique queue queueName
      * @param capacity  queue capacity
+     * @param bounded flag whether queue is bounded
+     * @param collocationMode collocation mode
      */
-    public DefaultGigaBlockingQueue(GigaSpace space, String queueName, int capacity) {
-        this.space = space;
+    private DefaultGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded, CollocationMode collocationMode) {
+        if (queueName == null || queueName.isEmpty()) {
+            throw new IllegalArgumentException("'queueName' parameter must not be null or empty");
+        }
+        if (capacity < 0) {
+            throw new IllegalArgumentException("'capacity' parameter must not be negative");
+        }
+        this.space = Objects.requireNonNull(space, "'space' parameter must not be null");
         this.queueName = queueName;
         this.capacity = capacity;
-        this.bounded = true;
-
+        this.bounded = bounded;
+        this.collocationMode =  Objects.requireNonNull(collocationMode, "'collocationMode' parameter must not be null");;
+        
         createNewIfRequired();
     }
 
@@ -80,7 +102,8 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
         if (offerResult.isChanged()) {
             QueueItemKey itemKey = new QueueItemKey(queueName, offerResult.getNewTail());
-            QueueItem<E> item = new QueueItem<>(itemKey, element);
+            Integer routing = calculateRouting(itemKey);
+            QueueItem<E> item = new QueueItem<>(itemKey, element, routing);
             space.write(item);
             return true;
         } else {
@@ -200,7 +223,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     @Override
     public Iterator<E> iterator() {
         QueueData queueData = space.readById(queueQuery());
-        return new QueueIterator(queueData.getHead(), queueData.getTail());
+        return new QueueIterator(queueData.getHead(), queueData.getTail(), queueData.getRemovedIndexes());
     }
 
     @Override
@@ -248,7 +271,18 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
      */
     private IdQuery<QueueItem> itemQueryByIndex(long index) {
         QueueItemKey itemKey = new QueueItemKey(queueName, index);
-        return new IdQuery<>(QueueItem.class, itemKey);
+        return new IdQuery<>(QueueItem.class, itemKey, calculateRouting(itemKey));
+    }
+    
+    /**
+     * @return template to find item by index
+     */
+    private QueueItem<?> itemTemplateByIndex(long index) {
+        QueueItem<?> itemTemplate = new QueueItem<>();
+        QueueItemKey itemKey = new QueueItemKey(queueName, index);
+        itemTemplate.setItemKey(itemKey);
+        itemTemplate.setRouting(calculateRouting(itemKey));
+        return itemTemplate;
     }
 
     /**
@@ -282,17 +316,18 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         private Long endIndex;
         private E next;
         private E curr;
-
-        public QueueIterator(Long head, Long tail) {
+        private Set<Long> removedIndexes;
+        
+        public QueueIterator(Long head, Long tail, Set<Long> removedIndexes) {
             this.currIndex = head;
             this.endIndex = tail;
-
+            this.removedIndexes = removedIndexes;
+            
             if (currIndex < endIndex) {
                 Pair<E, Long> itemAndIndex = readItemByIndex(currIndex + 1);
                 next = itemAndIndex.getFirst();
                 nextIndex = itemAndIndex.getSecond();
             }
-
         }
 
         @Override
@@ -331,14 +366,17 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
             space.change(queueQuery(), removeOperation);
 
             // remove element
-            QueueItem<Object> itemTemplate = new QueueItem<>();
-            itemTemplate.setItemKey(new QueueItemKey(queueName, currIndex));
-            space.clear(itemTemplate);
+            space.clear(itemTemplateByIndex(currIndex));
         }
 
         @SuppressWarnings("unchecked")
         private Pair<E, Long> readItemByIndex(long index) {
             while (index <= endIndex) {
+                if (removedIndexes.remove(index)) {
+                    index++;
+                    continue;
+                }
+                
                 IdQuery<QueueItem> itemQuery = itemQueryByIndex(index);
                 QueueItem<E> queueItem = space.readById(itemQuery, WAIT_ITEM_TIMEOUT_MS);
                 if (queueItem != null) {
@@ -349,7 +387,29 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
             }
             return new Pair<>(null, index);
         }
+    }
 
+    private Integer calculateRouting(QueueItemKey itemKey) {
+        switch(collocationMode) {
+            case LOCAL:         return itemKey.getQueueName().hashCode();
+            case DISTRIBUTED:   return itemKey.hashCode();
+            default:
+                throw new UnsupportedOperationException("Invalid collocation mode = " + collocationMode);
+        }
+    }
+    
+    @Override
+    public String getName() {
+        return queueName;
+    }
 
+    @Override
+    public CollocationMode getCollocationMode() {
+        return collocationMode;
+    }
+
+    @Override
+    public void close() throws Exception {
+        // TODO: implement removing the queue
     }
 }

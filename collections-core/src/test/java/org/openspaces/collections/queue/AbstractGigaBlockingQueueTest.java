@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.openspaces.collections.AbstractCollectionTest;
+import org.openspaces.collections.CollocationMode;
 import org.openspaces.collections.queue.data.QueueItem;
 
 import com.j_spaces.core.client.SQLQuery;
@@ -42,7 +43,7 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
 
     @Before
     public void setUp() {
-        this.gigaQueue = new DefaultGigaBlockingQueue<>(gigaSpace, QUEUE_NAME);
+        this.gigaQueue = new DefaultGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, CollocationMode.DISTRIBUTED);
         gigaQueue.addAll(testedElements);
     }
     
