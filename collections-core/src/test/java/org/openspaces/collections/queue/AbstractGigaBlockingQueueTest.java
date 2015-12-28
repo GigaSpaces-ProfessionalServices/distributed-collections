@@ -162,7 +162,7 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
         assertHead(++size, head, gigaQueue.peek());
         
         // an existing element
-        element = testedElements.iterator().next();
+        element = testedElements.isEmpty() ? element : testedElements.iterator().next();
         assertTrue("The element should be added", addOperation.perform(element));
         assertHead(++size, head, gigaQueue.peek());
     }
@@ -208,7 +208,7 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
     @Test
     public void testTake() {
         Assume.assumeFalse(testedElements.isEmpty());
-        
+
         testRemoveInternal(new RemoveOperation<T>() {
 
             @Override
@@ -240,7 +240,7 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
         List<T> elements = Arrays.asList(newNotNullElement(), newNotNullElement());
         assertTrue(gigaQueue.addAll(elements));
         assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
-        
+
         assertTrue(gigaQueue.removeAll(elements));
         assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
     }
@@ -254,7 +254,7 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
     public void testDrainTo() {
         Collection<T> result = new ArrayList<>();
         assertEquals("Invalid number of elements transferred after performing 'drainTo' operation", testedElements.size(), gigaQueue.drainTo(result));
-        
+
         verifyAllElementsTransferred(result);
     }
     
@@ -313,14 +313,14 @@ public abstract class AbstractGigaBlockingQueueTest<T> extends AbstractCollectio
     @Test(timeout = TIMEOUT)
     public void testPollWithTimeoutEmptyQueue() throws InterruptedException {
         Assume.assumeTrue(testedElements.isEmpty());
-        
+
         gigaQueue.poll(TIMEOUT - TIMEOUT_ACCURACY, TimeUnit.MILLISECONDS);
     }
     
     @Test
     public void testPollWithTimeout() throws InterruptedException {
         Assume.assumeFalse(testedElements.isEmpty());
-        
+
         testRemoveInternal(new RemoveOperation<T>() {
             @Override
             public T perform() {
