@@ -1,6 +1,6 @@
 package org.openspaces.collections;
 
-import org.openspaces.collections.queue.DefaultGigaBlockingQueue;
+import org.openspaces.collections.queue.DistributedGigaBlockingQueue;
 import org.openspaces.collections.queue.GigaBlockingQueue;
 import org.openspaces.core.GigaSpace;
 import org.springframework.beans.factory.BeanNameAware;
@@ -18,7 +18,7 @@ public class GigaQueueFactoryBean implements InitializingBean, DisposableBean, F
     private String queueName;
     private Integer capacity;
     private CollocationMode collocationMode;
-    private DefaultGigaBlockingQueue gigaQueue;
+    private GigaBlockingQueue gigaQueue;
 
     public void setGigaSpace(GigaSpace gigaSpace) {
         this.gigaSpace = gigaSpace;
@@ -48,9 +48,9 @@ public class GigaQueueFactoryBean implements InitializingBean, DisposableBean, F
         Assert.notNull(collocationMode, "collocationMode property must be set");
 
         if (capacity != null) {
-            gigaQueue = new DefaultGigaBlockingQueue(gigaSpace, queueName, capacity, collocationMode);
+            gigaQueue = new DistributedGigaBlockingQueue(gigaSpace, queueName, capacity, collocationMode);
         } else {
-            gigaQueue = new DefaultGigaBlockingQueue(gigaSpace, queueName, collocationMode);
+            gigaQueue = new DistributedGigaBlockingQueue(gigaSpace, queueName, collocationMode);
         }
     }
 
