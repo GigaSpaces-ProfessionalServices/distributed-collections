@@ -8,6 +8,7 @@ package org.openspaces.collections;
  */
 public enum CollocationMode {
 
+    EMBEDDED,
     LOCAL,
     DISTRIBUTED
 }

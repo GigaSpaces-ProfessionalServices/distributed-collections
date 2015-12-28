@@ -40,7 +40,7 @@ public class BoundedQueueTest {
     
     @Before
     public void setUp() {
-        this.gigaQueue = new DefaultGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, CAPACITY, CollocationMode.DISTRIBUTED);
+        this.gigaQueue = new DistributedGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, CAPACITY, CollocationMode.DISTRIBUTED);
         gigaQueue.addAll(createSerializableTypeList(CAPACITY));
     }
     

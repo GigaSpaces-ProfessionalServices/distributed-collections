@@ -43,7 +43,7 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
 
     @Before
     public void setUp() {
-        this.gigaQueue = new DefaultGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, CollocationMode.DISTRIBUTED);
+        this.gigaQueue = new DistributedGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, CollocationMode.DISTRIBUTED);
         gigaQueue.addAll(testedElements);
     }
     

@@ -44,7 +44,7 @@ public class QueueRoutingTest {
     
     @Test
     public void testLocalModeRouting() {
-        GigaBlockingQueue<SerializableType> gigaQueue = new DefaultGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, CollocationMode.LOCAL);
+        GigaBlockingQueue<SerializableType> gigaQueue = new DistributedGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, CollocationMode.LOCAL);
         
         int count = 100;
         List<SerializableType> items = createSerializableTypeList(count);
