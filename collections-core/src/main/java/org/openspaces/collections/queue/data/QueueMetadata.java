@@ -18,6 +18,7 @@ public class QueueMetadata {
     public static final String BOUNDED_PATH = "bounded";
     public static final String CAPACITY_PATH = "capacity";
     public static final String REMOVED_INDEXES_PATH = "removedIndexes";
+    public static final String REMOVED_INDEXES_SIZE_PATH = "removedIndexesSize";
 
     private String name;
     private Long head;
@@ -25,6 +26,7 @@ public class QueueMetadata {
     private Boolean bounded;
     private Integer capacity;
     private Set<Long> removedIndexes;
+    private Integer removedIndexesSize;
 
     public QueueMetadata() {
     }
@@ -36,6 +38,7 @@ public class QueueMetadata {
         this.bounded = bounded;
         this.capacity = capacity;
         this.removedIndexes = new HashSet<>();
+        this.removedIndexesSize = 0;
     }
 
     @SpaceId
@@ -85,5 +88,13 @@ public class QueueMetadata {
 
     public void setRemovedIndexes(Set<Long> removedIndexes) {
         this.removedIndexes = removedIndexes;
+    }
+
+    public Integer getRemovedIndexesSize() {
+        return removedIndexesSize;
+    }
+
+    public void setRemovedIndexesSize(Integer removedIndexesSize) {
+        this.removedIndexesSize = removedIndexesSize;
     }
 }

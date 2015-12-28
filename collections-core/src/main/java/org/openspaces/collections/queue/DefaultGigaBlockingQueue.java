@@ -1,7 +1,6 @@
 package org.openspaces.collections.queue;
 
 import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
-import static org.openspaces.collections.queue.data.QueueMetadata.REMOVED_INDEXES_PATH;
 
 import java.io.Serializable;
 import java.util.*;
@@ -11,11 +10,7 @@ import org.openspaces.collections.CollocationMode;
 import org.openspaces.collections.queue.data.QueueMetadata;
 import org.openspaces.collections.queue.data.QueueItem;
 import org.openspaces.collections.queue.data.QueueItemKey;
-import org.openspaces.collections.queue.operations.OfferOperation;
-import org.openspaces.collections.queue.operations.PeekOperation;
-import org.openspaces.collections.queue.operations.PollOperation;
-import org.openspaces.collections.queue.operations.QueueHeadResult;
-import org.openspaces.collections.queue.operations.SizeOperation;
+import org.openspaces.collections.queue.operations.*;
 import org.openspaces.collections.util.Pair;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
@@ -91,7 +86,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     public boolean offer(E element) {
         ChangeSet offerChange = new ChangeSet().custom(new OfferOperation(1));
 
-        ChangeResult<QueueMetadata> changeResult = space.change(queueQuery(), offerChange, RETURN_DETAILED_RESULTS);
+        ChangeResult<QueueMetadata> changeResult = space.change(queueMetadataQuery(), offerChange, RETURN_DETAILED_RESULTS);
 
         OfferOperation.Result offerResult = toSingleResult(changeResult);
 
@@ -166,7 +161,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         while (true) {
             ChangeSet pollChange = new ChangeSet().custom(new PollOperation());
 
-            ChangeResult<QueueMetadata> changeResult = space.change(queueQuery(), pollChange, RETURN_DETAILED_RESULTS);
+            ChangeResult<QueueMetadata> changeResult = space.change(queueMetadataQuery(), pollChange, RETURN_DETAILED_RESULTS);
 
             QueueHeadResult pollResult = toSingleResult(changeResult);
 
@@ -195,7 +190,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         while (true) {
             AggregationSet peekOperation = new AggregationSet().add(new PeekOperation());
 
-            AggregationResult aggregationResult = space.aggregate(queueQuery(), peekOperation);
+            AggregationResult aggregationResult = space.aggregate(queueMetadataQuery(), peekOperation);
             QueueHeadResult result = toSingleResult(aggregationResult);
 
             if (result.isQueueEmpty()) {
@@ -217,7 +212,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
     @Override
     public Iterator<E> iterator() {
-        QueueMetadata queueMetadata = space.readById(queueQuery());
+        QueueMetadata queueMetadata = space.readById(queueMetadataQuery());
         return new QueueIterator(queueMetadata.getHead(), queueMetadata.getTail(), queueMetadata.getRemovedIndexes());
     }
 
@@ -225,7 +220,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     public int size() {
         AggregationSet sizeOperation = new AggregationSet().add(new SizeOperation());
 
-        AggregationResult aggregationResult = space.aggregate(queueQuery(), sizeOperation);
+        AggregationResult aggregationResult = space.aggregate(queueMetadataQuery(), sizeOperation);
 
         SizeOperation.Result sizeResult = toSingleResult(aggregationResult);
         return sizeResult.getSize();
@@ -257,7 +252,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     /**
      * @return query to find queue by unique id (name)
      */
-    private IdQuery<QueueMetadata> queueQuery() {
+    private IdQuery<QueueMetadata> queueMetadataQuery() {
         return new IdQuery<>(QueueMetadata.class, queueName);
     }
 
@@ -355,10 +350,9 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
                 throw new IllegalStateException();
             }
 
-            ChangeSet removeOperation = new ChangeSet().addAllToCollection(REMOVED_INDEXES_PATH, currIndex);
-
             // update queue
-            space.change(queueQuery(), removeOperation);
+            ChangeSet removeOperation = new ChangeSet().custom(new RemoveOperation(currIndex));
+            space.change(queueMetadataQuery(), removeOperation);
 
             // remove element
             space.clear(itemTemplateByIndex(currIndex));
