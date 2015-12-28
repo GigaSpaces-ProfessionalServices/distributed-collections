@@ -39,11 +39,11 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
     private static final long WAIT_ITEM_TIMEOUT_MS = 5000;
 
-    private GigaSpace space;
-    private String queueName;
-    private boolean bounded;
-    private int capacity;
-    private CollocationMode collocationMode;
+    private final GigaSpace space;
+    private final String queueName;
+    private final boolean bounded;
+    private final int capacity;
+    private final CollocationMode collocationMode;
     
     /**
      *  Creates not bounded queue
