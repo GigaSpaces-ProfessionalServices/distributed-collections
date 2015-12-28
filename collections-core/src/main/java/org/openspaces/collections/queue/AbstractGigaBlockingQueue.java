@@ -39,7 +39,7 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
         this.capacity = capacity;
         this.bounded = bounded;
 
-        createNewIfRequired();
+        createNewMetadataIfRequired();
     }
     
     @Override
@@ -82,7 +82,7 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
         return super.retainAll(Objects.requireNonNull(c, "Collection parameter must not be null"));
     }
     
-    protected abstract void createNewIfRequired();
+    protected abstract void createNewMetadataIfRequired();
     
     /**
      * Throws NullPointerException if argument is null.

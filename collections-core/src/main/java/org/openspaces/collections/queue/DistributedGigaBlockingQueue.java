@@ -1,11 +1,15 @@
 package org.openspaces.collections.queue;
 
 import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
+import static java.lang.System.currentTimeMillis;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import com.j_spaces.core.client.SQLQuery;
 import org.openspaces.collections.CollocationMode;
 import org.openspaces.collections.queue.data.QueueMetadata;
 import org.openspaces.collections.queue.data.QueueItem;
@@ -28,14 +32,22 @@ import com.gigaspaces.query.aggregators.AggregationSet;
 public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
 
     private static final long WAIT_ITEM_TIMEOUT_MS = 5000;
+    private static final long SIZE_CHANGE_LISTENER_TIMEOUT_MS = 5000;
 
     private final CollocationMode collocationMode;
+
+    private final Semaphore readSemaphore;
+    private final Semaphore writeSemaphore;
+
+    private final Thread sizeChangeListenerThread;
+
+    private final IdQuery<QueueMetadata> queueMetadataQuery;
 
     /**
      * Creates not bounded queue
      *
-     * @param space space used to hold queue
-     * @param queueName unique queue name
+     * @param space           space used to hold queue
+     * @param queueName       unique queue name
      * @param collocationMode collocation mode
      */
     public DistributedGigaBlockingQueue(GigaSpace space, String queueName, CollocationMode collocationMode) {
@@ -45,9 +57,9 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
     /**
      * Creates bounded queue
      *
-     * @param space space used to hold queue
-     * @param queueName unique queue name
-     * @param capacity queue capacity
+     * @param space           space used to hold queue
+     * @param queueName       unique queue name
+     * @param capacity        queue capacity
      * @param collocationMode collocation mode
      */
     public DistributedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, CollocationMode collocationMode) {
@@ -63,12 +75,29 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
      * @param collocationMode collocation mode
      */
     private DistributedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded, CollocationMode collocationMode) {
-       super(space, queueName, capacity, bounded);
-       checkNotNull(collocationMode);
-       if (collocationMode != CollocationMode.LOCAL && collocationMode != CollocationMode.DISTRIBUTED) {
-           throw new IllegalArgumentException("Invalid collocation mode = " + collocationMode);
-       }
-       this.collocationMode = collocationMode;
+        super(space, queueName, capacity, bounded);
+        checkNotNull(collocationMode);
+        if (collocationMode != CollocationMode.LOCAL && collocationMode != CollocationMode.DISTRIBUTED) {
+            throw new IllegalArgumentException("Invalid collocation mode = " + collocationMode);
+        }
+        this.collocationMode = collocationMode;
+        this.queueMetadataQuery = new IdQuery<>(QueueMetadata.class, queueName);
+
+        // setup semaphores
+        QueueMetadata metadata = space.read(queueMetadataQuery);
+        long tail = metadata.getTail();
+        long head = metadata.getHead();
+        int removedIndexesSize = metadata.getRemovedIndexesSize();
+        int size = (int) (tail - head - removedIndexesSize);
+
+
+        this.readSemaphore = new Semaphore(size, true);
+        this.writeSemaphore = bounded ? new Semaphore(capacity - size) : null;
+
+        // start size change listener thread
+        SizeChangeListener sizeChangeListener = new SizeChangeListener(tail, head, removedIndexesSize);
+        this.sizeChangeListenerThread = new Thread(sizeChangeListener, "Queue size change listener - " + queueName);
+        this.sizeChangeListenerThread.start();
     }
 
     @Override
@@ -92,22 +121,62 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
     @Override
     public void put(E element) throws InterruptedException {
-        throw new RuntimeException("Not implemented yet");
+        if (!bounded) {
+            offer(element);
+            return;
+        }
+
+        while (true) {
+            writeSemaphore.acquire();
+            if (offer(element)) {
+                return;
+            }
+        }
     }
 
     @Override
     public boolean offer(E element, long timeout, TimeUnit unit) throws InterruptedException {
-        throw new RuntimeException("Not implemented yet");
+        if (!bounded) {
+            return offer(element);
+        }
+
+        long endTime = currentTimeMillis() + MILLISECONDS.convert(timeout, unit);
+
+        while (currentTimeMillis() < endTime) {
+            if (writeSemaphore.tryAcquire(timeout, unit)) {
+                if (offer(element)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override
     public E take() throws InterruptedException {
-        throw new RuntimeException("Not implemented yet");
+        while (true) {
+            readSemaphore.acquire();
+            E e = poll();
+            if (e != null) {
+                return e;
+            }
+        }
     }
 
     @Override
     public E poll(long timeout, TimeUnit unit) throws InterruptedException {
-        throw new RuntimeException("Not implemented yet");
+        long endTime = currentTimeMillis() + MILLISECONDS.convert(timeout, unit);
+
+        while (currentTimeMillis() < endTime) {
+            if (readSemaphore.tryAcquire(timeout, unit)) {
+                E e = poll();
+                if (e != null) {
+                    return e;
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -191,10 +260,30 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
     }
 
     /**
+     * Set the proper number of permits for 'read' and 'write' semaphore based on the current state of metadata
+     */
+    private void onSizeChanged(long tail, long head, int removedIndexesSize) {
+        int size = (int) (tail - head - removedIndexesSize);
+
+        readSemaphore.drainPermits();
+        if (size > 0) {
+            readSemaphore.release(size);
+        }
+
+        if (bounded) {
+            writeSemaphore.drainPermits();
+            int availableSpace = capacity - size;
+            if (availableSpace > 0) {
+                writeSemaphore.release(availableSpace);
+            }
+        }
+    }
+
+    /**
      * create new queue in the grid if this is a first reference (queue doesn't exist yet)
      */
     @Override
-    protected void createNewIfRequired() {
+    protected void createNewMetadataIfRequired() {
         try {
             QueueMetadata queueMetadata = new QueueMetadata(queueName, 0L, 0L, bounded, capacity);
             space.write(queueMetadata, WriteModifiers.WRITE_ONLY);
@@ -329,14 +418,46 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
                     index++;
                 }
             }
-            return new Pair<>(null, null); 
+            return new Pair<>(null, null);
+        }
+    }
+
+    private class SizeChangeListener implements Runnable {
+        private Long tail;
+        private Long head;
+        private Integer removedIndexesSize;
+
+        public SizeChangeListener(Long tail, Long head, Integer removedIndexesSize) {
+            this.tail = tail;
+            this.head = head;
+            this.removedIndexesSize = removedIndexesSize;
+        }
+
+        @Override
+        public void run() {
+            SQLQuery<QueueMetadata> query = new SQLQuery<>(QueueMetadata.class, "name = ? AND (tail <> ? OR head <> ? OR removedIndexesSize <> ?)");
+            query.setProjections("tail", "head", "removedIndexesSize");
+
+            while (true) {
+                query.setParameters(queueName, tail, head, removedIndexesSize);
+                QueueMetadata foundMetadata = space.read(query, SIZE_CHANGE_LISTENER_TIMEOUT_MS);
+                if (foundMetadata != null) {
+                    this.tail = foundMetadata.getTail();
+                    this.head = foundMetadata.getHead();
+                    this.removedIndexesSize = foundMetadata.getRemovedIndexesSize();
+
+                    onSizeChanged(tail, head, removedIndexesSize);
+                }
+            }
         }
     }
 
     private Integer calculateRouting(QueueItemKey itemKey) {
-         switch(collocationMode) {
-            case LOCAL:         return itemKey.getQueueName().hashCode();
-            case DISTRIBUTED:   return itemKey.hashCode();
+        switch (collocationMode) {
+            case LOCAL:
+                return itemKey.getQueueName().hashCode();
+            case DISTRIBUTED:
+                return itemKey.hashCode();
             default:
                 throw new UnsupportedOperationException("Invalid collocation mode = " + collocationMode);
         }

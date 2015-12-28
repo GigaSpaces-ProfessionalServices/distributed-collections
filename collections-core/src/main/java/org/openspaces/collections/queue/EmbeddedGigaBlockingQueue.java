@@ -70,7 +70,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
     }
 
     @Override
-    protected void createNewIfRequired() {
+    protected void createNewMetadataIfRequired() {
         // TODO Auto-generated method stub
     }
 
