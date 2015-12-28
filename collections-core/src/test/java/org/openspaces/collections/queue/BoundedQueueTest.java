@@ -25,7 +25,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:/partitioned-space-test-config.xml")
 @Ignore
-public class BoundedGigaBlockingQueueTest {
+public class BoundedQueueTest {
 
     private static final String QUEUE_NAME = "TestBoundedGigaBlockingQueue";
     private static final int CAPACITY = 100;

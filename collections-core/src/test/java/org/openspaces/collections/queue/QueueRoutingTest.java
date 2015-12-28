@@ -30,7 +30,7 @@ import com.j_spaces.core.client.SQLQuery;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:/partitioned-space-test-config.xml")
-public class GigaBlockingQueueRoutingTest {
+public class QueueRoutingTest {
 
     private static final String QUEUE_NAME = "TestLocalGigaBlockingQueue";
     

@@ -55,11 +55,6 @@ public class GigaSetTest extends AbstractCollectionTest<SerializableType> {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testAddAllNull() {
-        getCollection().addAll(null);
-    }
-
-    @Test(expected = NullPointerException.class)
     public void testAddAllNullElement() {
         List<SerializableType> objects = Collections.singletonList(null);
         getCollection().addAll(objects);
@@ -143,11 +138,6 @@ public class GigaSetTest extends AbstractCollectionTest<SerializableType> {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testRemoveAllNull() {
-        getCollection().removeAll(null);
-    }
-
-    @Test(expected = NullPointerException.class)
     public void testContainsNull() {
         getCollection().contains(null);
     }
@@ -158,18 +148,8 @@ public class GigaSetTest extends AbstractCollectionTest<SerializableType> {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testContainsAllNull() {
-        getCollection().containsAll(null);
-    }
-
-    @Test(expected = NullPointerException.class)
     public void testContainsAllNullElement() {
         getCollection().containsAll(Arrays.asList(null));
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testRetainAllNull() {
-        getCollection().retainAll(null);
     }
 
     @Test(expected = NullPointerException.class)

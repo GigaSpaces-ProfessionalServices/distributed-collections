@@ -226,6 +226,16 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         return sizeResult.getSize();
     }
 
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        return super.removeAll(Objects.requireNonNull(c, "Collection parameter must not be null"));
+    }
+    
+    @Override
+    public boolean retainAll(Collection<?> c) {
+        return super.retainAll(Objects.requireNonNull(c, "Collection parameter must not be null"));
+    }
+    
     /**
      * Throws NullPointerException if argument is null.
      *
@@ -322,12 +332,12 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
         @Override
         public boolean hasNext() {
-            return next != null;
+            return nextIndex != null;
         }
 
         @Override
         public E next() {
-            if (next == null) {
+            if (nextIndex == null) {
                 throw new NoSuchElementException();
             }
             curr = next;
@@ -338,6 +348,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
                 next = itemAndIndex.getFirst();
                 nextIndex = itemAndIndex.getSecond();
             } else {
+                nextIndex = null;
                 next = null;
             }
 
@@ -346,7 +357,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
         @Override
         public void remove() {
-            if (curr == null) {
+            if (currIndex == null) {
                 throw new IllegalStateException();
             }
 
@@ -374,16 +385,14 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
                     index++;
                 }
             }
-            return new Pair<>(null, index);
+            return new Pair<>(null, null); 
         }
     }
 
     private Integer calculateRouting(QueueItemKey itemKey) {
-        switch (collocationMode) {
-            case LOCAL:
-                return itemKey.getQueueName().hashCode();
-            case DISTRIBUTED:
-                return itemKey.hashCode();
+         switch(collocationMode) {
+            case LOCAL:         return itemKey.getQueueName().hashCode();
+            case DISTRIBUTED:   return itemKey.hashCode();
             default:
                 throw new UnsupportedOperationException("Invalid collocation mode = " + collocationMode);
         }
