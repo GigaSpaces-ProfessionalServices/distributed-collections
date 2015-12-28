@@ -29,7 +29,7 @@ public class MyTest {
     
     @Test
     public void test() {
-		DefaultGigaBlockingQueue<SerializableType> queue = new DefaultGigaBlockingQueue<>(gigaSpace, "test-queue", 100, CollocationMode.DISTRIBUTED);
+		DistributedGigaBlockingQueue<SerializableType> queue = new DistributedGigaBlockingQueue<>(gigaSpace, "test-queue", 100, CollocationMode.DISTRIBUTED);
 //
 //        Runnable runnable = new Runnable() {
 //            @Override

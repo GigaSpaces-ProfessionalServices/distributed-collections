@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -49,6 +48,26 @@ public abstract class AbstractCollectionTest<T> {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to set spring context up", e);
         }
+    }
+   
+    @Test(expected = NullPointerException.class)
+    public void testAddAllNull() {
+        getCollection().addAll(null);
+    }
+    
+    @Test(expected = NullPointerException.class)
+    public void testRemoveAllNull() {
+        getCollection().removeAll(null);
+    }
+    
+    @Test(expected = NullPointerException.class)
+    public void testContainsAllNull() {
+        getCollection().containsAll(null);
+    }
+    
+    @Test(expected = NullPointerException.class)
+    public void testRetainAllNull() {
+        getCollection().retainAll(null);
     }
     
     @Test

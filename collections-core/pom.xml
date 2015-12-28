@@ -26,6 +26,7 @@
       <groupId>com.gigaspaces</groupId>
       <artifactId>gs-openspaces</artifactId>
     </dependency>
+
     <!-- Testing -->
     <dependency>
       <groupId>junit</groupId>

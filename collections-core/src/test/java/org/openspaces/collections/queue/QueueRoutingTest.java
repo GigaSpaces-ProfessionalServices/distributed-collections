@@ -30,7 +30,7 @@ import com.j_spaces.core.client.SQLQuery;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:/partitioned-space-test-config.xml")
-public class GigaBlockingQueueRoutingTest {
+public class QueueRoutingTest {
 
     private static final String QUEUE_NAME = "TestLocalGigaBlockingQueue";
     
@@ -44,7 +44,7 @@ public class GigaBlockingQueueRoutingTest {
     
     @Test
     public void testLocalModeRouting() {
-        GigaBlockingQueue<SerializableType> gigaQueue = new DefaultGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, CollocationMode.LOCAL);
+        GigaBlockingQueue<SerializableType> gigaQueue = new DistributedGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, CollocationMode.LOCAL);
         
         int count = 100;
         List<SerializableType> items = createSerializableTypeList(count);
