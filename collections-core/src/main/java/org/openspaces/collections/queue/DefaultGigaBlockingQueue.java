@@ -1,7 +1,7 @@
 package org.openspaces.collections.queue;
 
 import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
-import static org.openspaces.collections.queue.data.QueueData.REMOVED_INDEXES_PATH;
+import static org.openspaces.collections.queue.data.QueueMetadata.REMOVED_INDEXES_PATH;
 
 import java.io.Serializable;
 import java.util.AbstractQueue;
@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.openspaces.collections.CollocationMode;
-import org.openspaces.collections.queue.data.QueueData;
+import org.openspaces.collections.queue.data.QueueMetadata;
 import org.openspaces.collections.queue.data.QueueItem;
 import org.openspaces.collections.queue.data.QueueItemKey;
 import org.openspaces.collections.queue.operations.OfferOperation;
@@ -96,7 +96,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     public boolean offer(E element) {
         ChangeSet offerChange = new ChangeSet().custom(new OfferOperation(1));
 
-        ChangeResult<QueueData> changeResult = space.change(queueQuery(), offerChange, RETURN_DETAILED_RESULTS);
+        ChangeResult<QueueMetadata> changeResult = space.change(queueQuery(), offerChange, RETURN_DETAILED_RESULTS);
 
         OfferOperation.Result offerResult = toSingleResult(changeResult);
 
@@ -171,7 +171,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         while (true) {
             ChangeSet pollChange = new ChangeSet().custom(new PollOperation());
 
-            ChangeResult<QueueData> changeResult = space.change(queueQuery(), pollChange, RETURN_DETAILED_RESULTS);
+            ChangeResult<QueueMetadata> changeResult = space.change(queueQuery(), pollChange, RETURN_DETAILED_RESULTS);
 
             QueueHeadResult pollResult = toSingleResult(changeResult);
 
@@ -222,8 +222,8 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
 
     @Override
     public Iterator<E> iterator() {
-        QueueData queueData = space.readById(queueQuery());
-        return new QueueIterator(queueData.getHead(), queueData.getTail(), queueData.getRemovedIndexes());
+        QueueMetadata queueMetadata = space.readById(queueQuery());
+        return new QueueIterator(queueMetadata.getHead(), queueMetadata.getTail(), queueMetadata.getRemovedIndexes());
     }
 
     @Override
@@ -252,8 +252,8 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
      */
     private void createNewIfRequired() {
         try {
-            QueueData queueData = new QueueData(queueName, 0L, 0L, bounded, capacity);
-            space.write(queueData, WriteModifiers.WRITE_ONLY);
+            QueueMetadata queueMetadata = new QueueMetadata(queueName, 0L, 0L, bounded, capacity);
+            space.write(queueMetadata, WriteModifiers.WRITE_ONLY);
         } catch (EntryAlreadyInSpaceException e) {
             // no-op
         }
@@ -262,8 +262,8 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     /**
      * @return query to find queue by unique id (name)
      */
-    private IdQuery<QueueData> queueQuery() {
-        return new IdQuery<>(QueueData.class, queueName);
+    private IdQuery<QueueMetadata> queueQuery() {
+        return new IdQuery<>(QueueMetadata.class, queueName);
     }
 
     /**
@@ -301,7 +301,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
      * extract single result from the generic change api result
      */
     @SuppressWarnings("unchecked")
-    private <T extends Serializable> T toSingleResult(ChangeResult<QueueData> changeResult) {
+    private <T extends Serializable> T toSingleResult(ChangeResult<QueueMetadata> changeResult) {
         if (changeResult.getNumberOfChangedEntries() != 1) {
             throw new IllegalStateException("Unexpected number of changed entries: " + changeResult.getNumberOfChangedEntries());
         }

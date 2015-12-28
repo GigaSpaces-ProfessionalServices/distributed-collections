@@ -7,12 +7,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * TODO: think about better name
- *
  * @author Oleksiy_Dyagilev
  */
 @SpaceClass
-public class QueueData {
+public class QueueMetadata {
 
     /** path is used in change api **/
     public static final String HEAD_PATH = "head";
@@ -28,10 +26,10 @@ public class QueueData {
     private Integer capacity;
     private Set<Long> removedIndexes;
 
-    public QueueData() {
+    public QueueMetadata() {
     }
 
-    public QueueData(String name, Long head, Long tail, Boolean bounded, Integer capacity) {
+    public QueueMetadata(String name, Long head, Long tail, Boolean bounded, Integer capacity) {
         this.name = name;
         this.head = head;
         this.tail = tail;

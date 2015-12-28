@@ -1,9 +1,9 @@
 package org.openspaces.collections.queue.operations;
 
-import static org.openspaces.collections.queue.data.QueueData.BOUNDED_PATH;
-import static org.openspaces.collections.queue.data.QueueData.CAPACITY_PATH;
-import static org.openspaces.collections.queue.data.QueueData.HEAD_PATH;
-import static org.openspaces.collections.queue.data.QueueData.TAIL_PATH;
+import static org.openspaces.collections.queue.data.QueueMetadata.BOUNDED_PATH;
+import static org.openspaces.collections.queue.data.QueueMetadata.CAPACITY_PATH;
+import static org.openspaces.collections.queue.data.QueueMetadata.HEAD_PATH;
+import static org.openspaces.collections.queue.data.QueueMetadata.TAIL_PATH;
 import static org.openspaces.collections.util.SerializationUtils.readNullableObject;
 import static org.openspaces.collections.util.SerializationUtils.writeNullableObject;
 
