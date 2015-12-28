@@ -4,12 +4,7 @@ import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
 import static org.openspaces.collections.queue.data.QueueMetadata.REMOVED_INDEXES_PATH;
 
 import java.io.Serializable;
-import java.util.AbstractQueue;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import org.openspaces.collections.CollocationMode;
@@ -44,10 +39,10 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     private final boolean bounded;
     private final int capacity;
     private final CollocationMode collocationMode;
-    
+
     /**
-     *  Creates not bounded queue
-     *  
+     * Creates not bounded queue
+     *
      * @param space
      * @param queueName
      * @param collocationMode
@@ -57,23 +52,23 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     }
 
     /**
-    * Creates bounded queue
-    * 
-    * @param space
-    * @param queueName
-    * @param capacity
-    * @param collocationMode
-    */
+     * Creates bounded queue
+     *
+     * @param space
+     * @param queueName
+     * @param capacity
+     * @param collocationMode
+     */
     public DefaultGigaBlockingQueue(GigaSpace space, String queueName, int capacity, CollocationMode collocationMode) {
         this(space, queueName, capacity, true, collocationMode);
     }
-    
+
     /**
      * Creates blocking queue
      *
-     * @param queueName unique queue queueName
-     * @param capacity  queue capacity
-     * @param bounded flag whether queue is bounded
+     * @param queueName       unique queue queueName
+     * @param capacity        queue capacity
+     * @param bounded         flag whether queue is bounded
      * @param collocationMode collocation mode
      */
     private DefaultGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded, CollocationMode collocationMode) {
@@ -87,8 +82,8 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         this.queueName = queueName;
         this.capacity = capacity;
         this.bounded = bounded;
-        this.collocationMode =  Objects.requireNonNull(collocationMode, "'collocationMode' parameter must not be null");;
-        
+        this.collocationMode = Objects.requireNonNull(collocationMode, "'collocationMode' parameter must not be null");
+
         createNewIfRequired();
     }
 
@@ -273,7 +268,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         QueueItemKey itemKey = new QueueItemKey(queueName, index);
         return new IdQuery<>(QueueItem.class, itemKey, calculateRouting(itemKey));
     }
-    
+
     /**
      * @return template to find item by index
      */
@@ -317,12 +312,12 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
         private E next;
         private E curr;
         private Set<Long> removedIndexes;
-        
+
         public QueueIterator(Long head, Long tail, Set<Long> removedIndexes) {
             this.currIndex = head;
             this.endIndex = tail;
-            this.removedIndexes = removedIndexes;
-            
+            this.removedIndexes = new HashSet<>(removedIndexes);
+
             if (currIndex < endIndex) {
                 Pair<E, Long> itemAndIndex = readItemByIndex(currIndex + 1);
                 next = itemAndIndex.getFirst();
@@ -376,7 +371,7 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
                     index++;
                     continue;
                 }
-                
+
                 IdQuery<QueueItem> itemQuery = itemQueryByIndex(index);
                 QueueItem<E> queueItem = space.readById(itemQuery, WAIT_ITEM_TIMEOUT_MS);
                 if (queueItem != null) {
@@ -390,14 +385,16 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     }
 
     private Integer calculateRouting(QueueItemKey itemKey) {
-        switch(collocationMode) {
-            case LOCAL:         return itemKey.getQueueName().hashCode();
-            case DISTRIBUTED:   return itemKey.hashCode();
+        switch (collocationMode) {
+            case LOCAL:
+                return itemKey.getQueueName().hashCode();
+            case DISTRIBUTED:
+                return itemKey.hashCode();
             default:
                 throw new UnsupportedOperationException("Invalid collocation mode = " + collocationMode);
         }
     }
-    
+
     @Override
     public String getName() {
         return queueName;
