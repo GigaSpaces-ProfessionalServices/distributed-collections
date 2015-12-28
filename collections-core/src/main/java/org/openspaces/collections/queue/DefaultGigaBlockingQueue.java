@@ -43,9 +43,9 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     /**
      * Creates not bounded queue
      *
-     * @param space
-     * @param queueName
-     * @param collocationMode
+     * @param space space used to hold queue
+     * @param queueName unique queue name
+     * @param collocationMode collocation mode
      */
     public DefaultGigaBlockingQueue(GigaSpace space, String queueName, CollocationMode collocationMode) {
         this(space, queueName, 0, false, collocationMode);
@@ -54,10 +54,10 @@ public class DefaultGigaBlockingQueue<E> extends AbstractQueue<E> implements Gig
     /**
      * Creates bounded queue
      *
-     * @param space
-     * @param queueName
-     * @param capacity
-     * @param collocationMode
+     * @param space space used to hold queue
+     * @param queueName unique queue name
+     * @param capacity queue capacity
+     * @param collocationMode collocation mode
      */
     public DefaultGigaBlockingQueue(GigaSpace space, String queueName, int capacity, CollocationMode collocationMode) {
         this(space, queueName, capacity, true, collocationMode);
