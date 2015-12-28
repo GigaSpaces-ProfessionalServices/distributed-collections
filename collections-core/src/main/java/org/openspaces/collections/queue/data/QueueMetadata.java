@@ -97,4 +97,17 @@ public class QueueMetadata {
     public void setRemovedIndexesSize(Integer removedIndexesSize) {
         this.removedIndexesSize = removedIndexesSize;
     }
+
+    @Override
+    public String toString() {
+        return "QueueMetadata{" +
+                "name='" + name + '\'' +
+                ", head=" + head +
+                ", tail=" + tail +
+                ", bounded=" + bounded +
+                ", capacity=" + capacity +
+                ", removedIndexes=" + removedIndexes +
+                ", removedIndexesSize=" + removedIndexesSize +
+                '}';
+    }
 }
