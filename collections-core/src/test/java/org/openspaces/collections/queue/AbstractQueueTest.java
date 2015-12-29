@@ -198,7 +198,7 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         size += elementsToAdd.size();
         assertSize("Invalid blocking queue size", size);
         
-        elementsToAdd = Arrays.asList(null, newNotNullElement(), null, newNotNullElement());
+        elementsToAdd = Arrays.asList(newNotNullElement(), newNotNullElement());
         assertTrue("Blocking queue should be changed", gigaQueue.addAll(elementsToAdd));
         size += elementsToAdd.size();
         assertSize("Invalid blocking queue size", size);

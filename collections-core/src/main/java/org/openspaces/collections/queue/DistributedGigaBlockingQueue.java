@@ -102,6 +102,8 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
     @Override
     public boolean offer(E element) {
+        checkNotNull(element);
+
         ChangeSet offerChange = new ChangeSet().custom(new OfferOperation(1));
 
         ChangeResult<QueueMetadata> changeResult = space.change(queueMetadataQuery, offerChange, RETURN_DETAILED_RESULTS);

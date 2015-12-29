@@ -45,7 +45,6 @@ public class MyTest {
 //            e.printStackTrace();
 //        }
 
-        System.out.println(queue.offer(null));
 //        System.out.println(queue.offer(new SerializableType(2L)));
 //        System.out.println(queue.offer(new SerializableType(3L)));
 //
