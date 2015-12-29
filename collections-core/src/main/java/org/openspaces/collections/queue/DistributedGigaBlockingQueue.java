@@ -6,7 +6,6 @@ import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.springframework.util.Assert.notNull;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -312,30 +311,6 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
         itemTemplate.setItemKey(itemKey);
         itemTemplate.setRouting(calculateRouting(itemKey));
         return itemTemplate;
-    }
-
-    /**
-     * extract single result from the aggregation result
-     */
-    @SuppressWarnings("unchecked")
-    private <T extends Serializable> T toSingleResult(AggregationResult aggregationResult) {
-        if (aggregationResult.size() != 1) {
-            throw new IllegalStateException("Unexpected aggregation result size: " + aggregationResult.size());
-        }
-
-        return (T) aggregationResult.get(0);
-    }
-
-    /**
-     * extract single result from the generic change api result
-     */
-    @SuppressWarnings("unchecked")
-    private <T extends Serializable> T toSingleResult(ChangeResult<QueueMetadata> changeResult) {
-        if (changeResult.getNumberOfChangedEntries() != 1) {
-            throw new IllegalStateException("Unexpected number of changed entries: " + changeResult.getNumberOfChangedEntries());
-        }
-
-        return (T) changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
     }
 
     private class QueueIterator implements Iterator<E> {

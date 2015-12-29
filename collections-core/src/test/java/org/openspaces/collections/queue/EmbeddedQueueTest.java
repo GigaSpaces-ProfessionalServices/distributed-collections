@@ -118,24 +118,6 @@ public class EmbeddedQueueTest extends AbstractQueueTest<SerializableType> {
 
     @Override
     @Test
-    @Ignore public void testElementEmptyQueue() {
-        super.testElementEmptyQueue();
-    }
-
-    @Override
-    @Test
-    @Ignore public void testElement() {
-        super.testElement();
-    }
-
-    @Override
-    @Test
-    @Ignore public void testPeek() {
-        super.testPeek();
-    }
-
-    @Override
-    @Test
     @Ignore public void testRemoveEmptyQueue() {
         super.testRemoveEmptyQueue();
     }

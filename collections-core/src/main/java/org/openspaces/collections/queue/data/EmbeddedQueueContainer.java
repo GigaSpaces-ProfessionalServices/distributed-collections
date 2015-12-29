@@ -16,6 +16,7 @@ import java.util.Queue;
  */
 public class EmbeddedQueueContainer implements Externalizable {
     
+    public static final String QUEUE_PATH = "queue";
     public static final String QUEUE_SIZE_PATH = "size";
     
     private Queue<Object> queue;
@@ -45,7 +46,7 @@ public class EmbeddedQueueContainer implements Externalizable {
     public void setSize(Integer size) {
         this.size = size;
     }
-
+    
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeObject(getQueue());

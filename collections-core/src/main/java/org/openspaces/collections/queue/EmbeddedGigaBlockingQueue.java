@@ -14,11 +14,15 @@ import java.util.concurrent.TimeUnit;
 import org.openspaces.collections.CollocationMode;
 import org.openspaces.collections.queue.data.EmbeddedQueue;
 import org.openspaces.collections.queue.data.EmbeddedQueueContainer;
+import org.openspaces.collections.queue.operations.EmbeddedPeekOperation;
+import org.openspaces.collections.queue.operations.EmbeddedQueueItemResult;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
 
 import com.gigaspaces.client.WriteModifiers;
 import com.gigaspaces.query.IdQuery;
+import com.gigaspaces.query.aggregators.AggregationResult;
+import com.gigaspaces.query.aggregators.AggregationSet;
 /**
  * @author Svitlana_Pogrebna
  *
@@ -63,9 +67,13 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public E peek() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        AggregationResult aggregationResult = space.aggregate(idQuery(), new AggregationSet().add(new EmbeddedPeekOperation()));
+        EmbeddedQueueItemResult result = toSingleResult(aggregationResult);
+        //TODO: add deserialization 
+        return (E) result.getItem();
     }
 
     @Override

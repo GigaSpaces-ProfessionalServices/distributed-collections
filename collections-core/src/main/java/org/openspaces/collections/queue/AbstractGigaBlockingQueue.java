@@ -5,10 +5,15 @@ package org.openspaces.collections.queue;
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.Serializable;
 import java.util.AbstractQueue;
 import java.util.Collection;
 
+import org.openspaces.collections.queue.data.QueueMetadata;
 import org.openspaces.core.GigaSpace;
+
+import com.gigaspaces.client.ChangeResult;
+import com.gigaspaces.query.aggregators.AggregationResult;
 
 /**
  * @author Svitlana_Pogrebna
@@ -97,5 +102,28 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
     }
 
     protected abstract void createNewMetadataIfRequired();
-    
+ 
+    /**
+     * extract single result from the aggregation result
+     */
+    @SuppressWarnings("unchecked")
+    protected static <T extends Serializable> T toSingleResult(AggregationResult aggregationResult) {
+        if (aggregationResult.size() != 1) {
+            throw new IllegalStateException("Unexpected aggregation result size: " + aggregationResult.size());
+        }
+
+        return (T) aggregationResult.get(0);
+    }
+
+    /**
+     * extract single result from the generic change api result
+     */
+    @SuppressWarnings("unchecked")
+    protected static <T extends Serializable> T toSingleResult(ChangeResult<QueueMetadata> changeResult) {
+        if (changeResult.getNumberOfChangedEntries() != 1) {
+            throw new IllegalStateException("Unexpected number of changed entries: " + changeResult.getNumberOfChangedEntries());
+        }
+
+        return (T) changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
+    }
 }
