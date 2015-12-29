@@ -26,7 +26,7 @@ public class SerializableTypeQueueTest extends AbstractQueueTest<SerializableTyp
         return Arrays.asList(new Object[][] { 
                 { Collections.emptyList() },
                 { Collections.singletonList(createSerializableType()) },
-                { createSerializableTypeList(MEDIUM_COLLECTION_SIZE) },
+//                { createSerializableTypeList(MEDIUM_COLLECTION_SIZE) },
         });
     }
 
