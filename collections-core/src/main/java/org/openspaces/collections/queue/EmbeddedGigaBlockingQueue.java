@@ -84,7 +84,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
     protected void createNewMetadataIfRequired() {
         try {
             //TODO: replace LinkedBlockingQueue with more efficient implementation
-            Queue<byte[]> queue = bounded ? new LinkedBlockingQueue<byte[]>(capacity) : new LinkedBlockingQueue<byte[]>();
+            Queue<Object> queue = bounded ? new LinkedBlockingQueue<Object>(capacity) : new LinkedBlockingQueue<Object>();
             EmbeddedQueue embeddedQueue = new EmbeddedQueue(queueName, new EmbeddedQueueContainer(queue));
             space.write(embeddedQueue, WriteModifiers.WRITE_ONLY);
         } catch (EntryAlreadyInSpaceException e) {

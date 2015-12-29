@@ -16,22 +16,22 @@ import java.util.Queue;
  */
 public class EmbeddedQueueContainer implements Externalizable {
     
-    private Queue<byte[]> queue;
+    private Queue<Object> queue;
     private Integer size;
     
     public EmbeddedQueueContainer() {
     }
     
-    public EmbeddedQueueContainer(Queue<byte[]> queue) {
+    public EmbeddedQueueContainer(Queue<Object> queue) {
         this.queue = Objects.requireNonNull(queue, "'queue' parameter must not be null");
         this.size = queue.size();
     }
     
-    public Queue<byte[]> getQueue() {
+    public Queue<Object> getQueue() {
         return queue;
     }
 
-    public void setQueue(Queue<byte[]> queue) {
+    public void setQueue(Queue<Object> queue) {
         this.queue = queue;
         this.size = queue.size();
     }
@@ -53,7 +53,7 @@ public class EmbeddedQueueContainer implements Externalizable {
     @SuppressWarnings("unchecked")
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        setQueue((Queue<byte[]>)in.readObject());
+        setQueue((Queue<Object>)in.readObject());
         setSize(in.readInt());
     }
 }
