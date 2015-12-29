@@ -104,7 +104,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
     public boolean offer(E element) {
         ChangeSet offerChange = new ChangeSet().custom(new OfferOperation(1));
 
-        ChangeResult<QueueMetadata> changeResult = space.change(queueMetadataQuery(), offerChange, RETURN_DETAILED_RESULTS);
+        ChangeResult<QueueMetadata> changeResult = space.change(queueMetadataQuery, offerChange, RETURN_DETAILED_RESULTS);
 
         OfferOperation.Result offerResult = toSingleResult(changeResult);
 
@@ -194,7 +194,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
         while (true) {
             ChangeSet pollChange = new ChangeSet().custom(new PollOperation());
 
-            ChangeResult<QueueMetadata> changeResult = space.change(queueMetadataQuery(), pollChange, RETURN_DETAILED_RESULTS);
+            ChangeResult<QueueMetadata> changeResult = space.change(queueMetadataQuery, pollChange, RETURN_DETAILED_RESULTS);
 
             QueueHeadResult pollResult = toSingleResult(changeResult);
 
@@ -223,7 +223,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
         while (true) {
             AggregationSet peekOperation = new AggregationSet().add(new PeekOperation());
 
-            AggregationResult aggregationResult = space.aggregate(queueMetadataQuery(), peekOperation);
+            AggregationResult aggregationResult = space.aggregate(queueMetadataQuery, peekOperation);
             QueueHeadResult result = toSingleResult(aggregationResult);
 
             if (result.isQueueEmpty()) {
@@ -245,7 +245,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
     @Override
     public Iterator<E> iterator() {
-        QueueMetadata queueMetadata = space.readById(queueMetadataQuery());
+        QueueMetadata queueMetadata = space.readById(queueMetadataQuery);
         return new QueueIterator(queueMetadata.getHead(), queueMetadata.getTail(), queueMetadata.getRemovedIndexes());
     }
 
@@ -253,7 +253,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
     public int size() {
         AggregationSet sizeOperation = new AggregationSet().add(new SizeOperation());
 
-        AggregationResult aggregationResult = space.aggregate(queueMetadataQuery(), sizeOperation);
+        AggregationResult aggregationResult = space.aggregate(queueMetadataQuery, sizeOperation);
 
         SizeOperation.Result sizeResult = toSingleResult(aggregationResult);
         return sizeResult.getSize();
@@ -290,13 +290,6 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
         } catch (EntryAlreadyInSpaceException e) {
             // no-op
         }
-    }
-
-    /**
-     * @return query to find queue by unique id (name)
-     */
-    private IdQuery<QueueMetadata> queueMetadataQuery() {
-        return new IdQuery<>(QueueMetadata.class, queueName);
     }
 
     /**
@@ -396,7 +389,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
             // update queue
             ChangeSet removeOperation = new ChangeSet().custom(new RemoveOperation(currIndex));
-            space.change(queueMetadataQuery(), removeOperation);
+            space.change(queueMetadataQuery, removeOperation);
 
             // remove element
             space.clear(itemTemplateByIndex(currIndex));
