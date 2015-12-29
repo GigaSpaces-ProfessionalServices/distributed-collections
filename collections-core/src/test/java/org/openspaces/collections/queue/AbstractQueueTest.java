@@ -40,6 +40,21 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
     @Override
     protected abstract void assertSize(String msg, int expectedSize);
     
+    @Test(expected = NullPointerException.class)
+    public void testOfferNull() {
+        gigaQueue.offer(null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testPutNull() throws InterruptedException {
+        gigaQueue.put(null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testOfferNullWithTimeout() throws InterruptedException {
+        gigaQueue.offer(null, 1, TimeUnit.SECONDS);
+    }
+
     // java.util.Queue methods
     @Test(expected = NoSuchElementException.class)
     public void testElementEmptyQueue() {
@@ -61,13 +76,6 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         });
     }
     
-    @Test(expected = NoSuchElementException.class)
-    public void testElementNullValue() {
-        Assume.assumeTrue(testedElements.isEmpty());
-        gigaQueue.add(null);
-        gigaQueue.element();
-    }
-    
     @Test
     public void testPeek() {
         if (testedElements.isEmpty()) {
@@ -84,8 +92,6 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         };
 
         testRetrieveHead(operation);
-
-        checkRetrieveNullHead(operation, false);
     }
     
     private void testRetrieveHead(RetrieveOperation<T> operation) {
@@ -115,13 +121,6 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         });
     }
     
-    @Test(expected = NoSuchElementException.class)
-    public void testRemoveNullHead() {
-        Assume.assumeTrue(testedElements.isEmpty());
-        gigaQueue.add(null);
-        gigaQueue.remove();
-    }
-    
     private void testRemoveInternal(RetrieveOperation<T> operation) {
         T head = operation.perform();
         int size = testedElements.size();
@@ -132,12 +131,6 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         assertNotEquals("Blocking queue head should not be the same", head, head1);
         assertHead(--size, testedElements.get(1), head1);
     }   
-    
-    private void checkRetrieveNullHead(RetrieveOperation<T> operation, boolean remove) {
-        gigaQueue.clear();
-        gigaQueue.add(null);
-        assertHead(remove ? 0 : 1, null, operation.perform());
-    }
     
     @Test
     public void testPoll() {
@@ -182,9 +175,6 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         element = testedElements.isEmpty() ? element : testedElements.iterator().next();        
         assertTrue("The element should be added", addOperation.perform(element));
         assertHead(++size, head, gigaQueue.peek());
-        
-        // a null element
-        assertTrue("The element should be added", addOperation.perform(null));
     }
     
     @Test
@@ -202,60 +192,6 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         assertTrue("Blocking queue should be changed", gigaQueue.addAll(elementsToAdd));
         size += elementsToAdd.size();
         assertSize("Invalid blocking queue size", size);
-    }
-    
-    @Test
-    public void testContainsNullElement() {
-       assertTrue(gigaQueue.add(null));
-       
-       assertTrue("Blocking queue 'contains' operation result should be true", gigaQueue.contains(null));
-       assertTrue("Blocking queue 'containsAll' operation result should be true", gigaQueue.containsAll(Collections.singleton(null)));
-       
-       Collection<T> elementsToAdd = Arrays.asList(null, newNotNullElement());
-       assertTrue(gigaQueue.addAll(elementsToAdd));
-       assertTrue("Blocking queue should contain elements", gigaQueue.containsAll(elementsToAdd));
-    }
-    
-    @Test
-    public void testRemoveNullElement() {
-       assertTrue(gigaQueue.add(null));
-       int size = testedElements.size();
-       
-       assertTrue("Blocking queue 'remove(E e)' operation result should be true", gigaQueue.remove(null));
-       assertSize("Invalid blocking queue size", size);
-       
-       assertTrue(gigaQueue.add(null));
-       assertTrue("Blocking queue 'removeAll' operation result should be true", gigaQueue.removeAll(Collections.singleton(null)));
-       assertSize("Invalid blocking queue size", size);
-       
-       Collection<T> elementsToAdd = Arrays.asList(null, newNotNullElement());
-       assertTrue(gigaQueue.addAll(elementsToAdd));
-       assertTrue("Blocking queue should contain elements", gigaQueue.removeAll(elementsToAdd));
-       assertSize("Invalid blocking queue size", size);
-    }
-    
-    @Test
-    public void testRetainAllNullElement() {
-        assertTrue(gigaQueue.add(null));
-       
-        if (testedElements.isEmpty()) {
-            assertFalse("Blocking queue 'retainAll' operation result should be true", gigaQueue.retainAll(Collections.singleton(null)));
-        } else {
-            assertTrue("Blocking queue 'retainAll' operation result should be true", gigaQueue.retainAll(Collections.singleton(null)));
-        }
-        assertSize("Invalid blocking queue size", 1);
-        
-        Collection<T> elementsToAdd = Arrays.asList(null, newNotNullElement());
-        assertTrue(gigaQueue.addAll(elementsToAdd));
-        assertTrue("Blocking queue 'retainAll' operation result should be true", gigaQueue.retainAll(Collections.singleton(null)));
-        assertSize("Invalid blocking queue size", 2);
-        
-        assertTrue(gigaQueue.addAll(elementsToAdd));
-        assertFalse("Blocking queue 'retainAll' operation result should be false", gigaQueue.retainAll(elementsToAdd));
-        assertSize("Invalid blocking queue size", 4);
-        
-        assertTrue("Blocking queue 'retainAll' operation result should be true", gigaQueue.retainAll(Collections.singleton(newNotNullElement())));
-        assertSize("Invalid blocking queue size", 0);
     }
     
     @Test
@@ -304,8 +240,6 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         };
         
         testRemoveInternal(operation);
-       
-        checkRetrieveNullHead(operation, true);
     }
     
     @Test
@@ -322,7 +256,7 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         gigaQueue.clear();
         assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
 
-        List<T> elements = Arrays.asList(newNotNullElement(), null, newNotNullElement());
+        List<T> elements = Arrays.asList(newNotNullElement(), newNotNullElement());
         assertTrue(gigaQueue.addAll(elements));
         assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
 
@@ -353,21 +287,6 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         }
     }
 
-    @Test
-    public void testDrainToWithNullElements() {
-        int size = testedElements.size();
-        gigaQueue.add(null);
-        List<T> result = new ArrayList<>();
-        assertEquals("Invalid number of elements transferred after performing 'drainTo' operation", ++size, gigaQueue.drainTo(result));
-        verifyNullElementCanBeTransferred(size, result);
-    }
-    
-    private void verifyNullElementCanBeTransferred(int size, Collection<T> result) {
-        assertEquals("Invalid result collection size", size, result.size());
-        assertSize("Blocking queue should be empty", 0);
-        assertTrue("Result should contain null element", result.contains(null));
-    }
-    
     @Test(expected = NullPointerException.class)
     public void testDrainToNullCollection() {
         gigaQueue.drainTo(null);
@@ -409,12 +328,6 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         Assume.assumeTrue(testedElements.size() > 1);
         assertEquals("Invalid number of elements transferred after performing 'drainTo' operation", size, gigaQueue.drainTo(result, Integer.MAX_VALUE));
         verifyAllElementsTransferred(result);
-        
-        List<T> elements = Arrays.asList(null, newNotNullElement(), null, newNotNullElement());
-        int transferCount = elements.size();
-        gigaQueue.addAll(elements);
-        assertEquals("Invalid number of elements transferred after performing 'drainTo' operation", transferCount, gigaQueue.drainTo(result, transferCount));
-        verifyNullElementCanBeTransferred(testedElements.size() + transferCount, result);
     }
     
     @Test(timeout = TIMEOUT)
@@ -441,8 +354,6 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         };
         
         testRemoveInternal(operation);
-        
-        checkRetrieveNullHead(operation, true);
     }
     
     @Test
