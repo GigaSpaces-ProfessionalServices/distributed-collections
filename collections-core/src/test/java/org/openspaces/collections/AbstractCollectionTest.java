@@ -73,7 +73,7 @@ public abstract class AbstractCollectionTest<T> {
     @Test(expected = NullPointerException.class)
     public void testAddAllWithNull() throws InterruptedException {
         List<T> list = new ArrayList<>();
-        list.add(newNotNullElement());
+        list.add(newElement());
         list.add(null);
         getCollection().addAll(list);
     }
@@ -81,7 +81,7 @@ public abstract class AbstractCollectionTest<T> {
     @Test(expected = NullPointerException.class)
     public void testRemoveAllWithNull() throws InterruptedException {
         List<T> list = new ArrayList<>();
-        list.add(newNotNullElement());
+        list.add(newElement());
         list.add(null);
         getCollection().addAll(list);
     }
@@ -101,7 +101,7 @@ public abstract class AbstractCollectionTest<T> {
             assertTrue("Collection should contain the element = " + element, collection.contains(element));
         }
         
-        T element = newNotNullElement();
+        T element = newElement();
         assertFalse("Collection should not contain the element = " + element, collection.contains(element));
 
       /*  Object newType = new Serializable() {};
@@ -121,18 +121,18 @@ public abstract class AbstractCollectionTest<T> {
         assertTrue("Collection should contain subset of its elements", collection.containsAll(subCollection));
         assertTrue("Collection should contain subset of its elements", collection.containsAll(new ArrayList<>(subCollection)));
         
-        Set<T> newElementsSet = Collections.singleton(newNotNullElement());
+        Set<T> newElementsSet = Collections.singleton(newElement());
         assertFalse("Collection should not contain the elements from the collection = " + newElementsSet, collection.containsAll(newElementsSet));
         
-        List<T> newElementsList = Collections.singletonList(newNotNullElement());
+        List<T> newElementsList = Collections.singletonList(newElement());
         assertFalse("Collection should not contain the elements from the collection = " + newElementsList, collection.containsAll(newElementsList));
 
         Set<T> elementsSet = new HashSet<>(testedElements);
-        elementsSet.add(newNotNullElement());
+        elementsSet.add(newElement());
         assertFalse("Collection should not contain the elements from the collection = " + elementsSet, collection.containsAll(elementsSet));
         
         Queue<T> elementsQueue = new LinkedList<>(testedElements);
-        elementsQueue.offer(newNotNullElement());
+        elementsQueue.offer(newElement());
         assertFalse("Collection should not contain the elements from the collection = " + elementsQueue, collection.containsAll(elementsQueue));
         
       /*  List<?> newTypeElements = Arrays.asList(new Serializable(){});
@@ -148,7 +148,7 @@ public abstract class AbstractCollectionTest<T> {
             assertTrue("Collection should be empty", collection.isEmpty());
         }
         
-        T element = newNotNullElement();
+        T element = newElement();
         collection.add(element);
         assertFalse("Collection should not be empty", collection.isEmpty());
         
@@ -185,7 +185,7 @@ public abstract class AbstractCollectionTest<T> {
             assertSize("Invalid collection size", --expectedSize);
         }
         
-        T newElement = newNotNullElement();
+        T newElement = newElement();
         assertFalse("Collection should return true after removing an unexisting element = " + newElement, collection.remove(newElement));
         assertSize("Invalid collection size", expectedSize);
         
@@ -201,13 +201,13 @@ public abstract class AbstractCollectionTest<T> {
         int expectedSize = testedElements.size();
         assertSize("Invalid collection size", expectedSize);
         
-        List<T> newElementsList = Collections.singletonList(newNotNullElement());
+        List<T> newElementsList = Collections.singletonList(newElement());
         assertFalse("Collection should not be changed after removing list with unexisting elements", collection.removeAll(newElementsList));
         
         Collection<T> subCollection = getTestedDataSubCollection();
         expectedSize -= subCollection.size();
-        subCollection.add(newNotNullElement());
-        subCollection.add(newNotNullElement());
+        subCollection.add(newElement());
+        subCollection.add(newElement());
         
         if (!testedElements.isEmpty()) {
             assertTrue("Collection should be changed after removing a collection with existing and unexisting elements", collection.removeAll(subCollection));
@@ -255,7 +255,7 @@ public abstract class AbstractCollectionTest<T> {
         final Collection<T> collection = getCollection();
         assertEquals("Invalid collection size", expectedSize, collection.size());
         
-        T element = newNotNullElement();
+        T element = newElement();
         collection.add(element);
         assertEquals("Invalid collection size", ++expectedSize, collection.size());
         
@@ -302,5 +302,5 @@ public abstract class AbstractCollectionTest<T> {
         return subSet;
     }
     
-    protected abstract T newNotNullElement();
+    protected abstract T newElement();
 }

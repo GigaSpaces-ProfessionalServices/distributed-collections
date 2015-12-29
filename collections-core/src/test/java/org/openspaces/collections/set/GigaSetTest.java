@@ -62,7 +62,7 @@ public class GigaSetTest extends AbstractCollectionTest<SerializableType> {
     
     @Test
     public void testAdd() {
-        final SerializableType newElement = newNotNullElement();
+        final SerializableType newElement = newElement();
         final Collection<SerializableType> collection = getCollection();
         assertTrue("The result of adding a new element: " + newElement + " should be true", collection.add(newElement));
         int expectedSize = testedElements.size() + 1;
@@ -89,26 +89,26 @@ public class GigaSetTest extends AbstractCollectionTest<SerializableType> {
         assertFalse("Collection should not be changed after adding a sub collection of its elements", collection.addAll(getTestedDataSubCollection()));
         assertSize("Invalid collection size", expectedSize);
         
-        List<SerializableType> newElementsList = Collections.singletonList(newNotNullElement());
+        List<SerializableType> newElementsList = Collections.singletonList(newElement());
         assertTrue("Collection should be changed after new element from list = " + newElementsList, collection.addAll(newElementsList));
         assertSize("Invalid collection size", ++expectedSize);
         
         Queue<SerializableType> newElementsQueue = new LinkedList<>(newElementsList);
-        newElementsQueue.offer(newNotNullElement());
-        newElementsQueue.offer(newNotNullElement());
-        newElementsQueue.offer(newNotNullElement());
+        newElementsQueue.offer(newElement());
+        newElementsQueue.offer(newElement());
+        newElementsQueue.offer(newElement());
         expectedSize += 3;
         assertTrue("Collection should be changed after adding new elements from queue = " + newElementsQueue, collection.addAll(newElementsQueue));
         assertSize("Invalid collection size", expectedSize);
         
         Set<SerializableType> newElementsSet = new HashSet<>(testedElements);
-        newElementsSet.add(newNotNullElement());
+        newElementsSet.add(newElement());
         assertTrue("Collection should be changed after adding existing and new elements from set = " + newElementsSet, collection.addAll(newElementsSet));
         assertSize("Invalid collection size", ++expectedSize);
     }
     
     @Override
-    protected SerializableType newNotNullElement() {
+    protected SerializableType newElement() {
         return createSerializableType();
     }
     

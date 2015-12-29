@@ -64,7 +64,7 @@ public class EmbeddedQueueTest extends AbstractQueueTest<SerializableType> {
     }
 
     @Override
-    protected SerializableType newNotNullElement() {
+    protected SerializableType newElement() {
         return createSerializableType();
     }
     

@@ -68,10 +68,10 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         Assume.assumeFalse(testedElements.isEmpty());
         
         testRetrieveHead(new RetrieveOperation<T>() {
-            
+
             @Override
             public T perform() {
-               return gigaQueue.element();
+                return gigaQueue.element();
             }
         });
     }
@@ -165,7 +165,7 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
     
     private void testAddInternal(AddOperation<T> addOperation) {
         // a new element
-        T element = newNotNullElement();
+        T element = newElement();
         T head = testedElements.isEmpty() ? element : testedElements.iterator().next();
         int size = testedElements.size();
         assertTrue("The element should be added", addOperation.perform(element));
@@ -183,12 +183,12 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         int size = testedElements.size();
         assertSize("Invalid blocking queue size", testedElements.size());
         
-        Collection<T> elementsToAdd = testedElements.isEmpty() ? Arrays.asList(newNotNullElement()) : testedElements;
+        Collection<T> elementsToAdd = testedElements.isEmpty() ? Arrays.asList(newElement()) : testedElements;
         assertTrue("Blocking queue should be changed", gigaQueue.addAll(elementsToAdd));
         size += elementsToAdd.size();
         assertSize("Invalid blocking queue size", size);
         
-        elementsToAdd = Arrays.asList(newNotNullElement(), newNotNullElement());
+        elementsToAdd = Arrays.asList(newElement(), newElement());
         assertTrue("Blocking queue should be changed", gigaQueue.addAll(elementsToAdd));
         size += elementsToAdd.size();
         assertSize("Invalid blocking queue size", size);
@@ -246,7 +246,7 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
     public void testRemainingCapacity() {
         assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
         
-        T element = newNotNullElement();
+        T element = newElement();
         assertTrue(gigaQueue.add(element));
         assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
         
@@ -256,7 +256,7 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         gigaQueue.clear();
         assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
 
-        List<T> elements = Arrays.asList(newNotNullElement(), newNotNullElement());
+        List<T> elements = Arrays.asList(newElement(), newElement());
         assertTrue(gigaQueue.addAll(elements));
         assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
 

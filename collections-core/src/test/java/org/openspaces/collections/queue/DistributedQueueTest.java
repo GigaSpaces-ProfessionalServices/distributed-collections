@@ -56,7 +56,7 @@ public class DistributedQueueTest extends AbstractQueueTest<SerializableType> {
     }
 
     @Override
-    protected SerializableType newNotNullElement() {
+    protected SerializableType newElement() {
         return createSerializableType();
     }
     
