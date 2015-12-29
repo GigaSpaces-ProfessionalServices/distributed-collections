@@ -17,22 +17,13 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assume;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+
 import org.openspaces.collections.AbstractCollectionTest;
-import org.openspaces.collections.CollocationMode;
-import org.openspaces.collections.queue.data.QueueItem;
 
-import com.j_spaces.core.client.SQLQuery;
-
-@RunWith(Parameterized.class)
 public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
 
     protected GigaBlockingQueue<T> gigaQueue;
-    
-    private static final String QUEUE_NAME = "TestGigaBlockingQueue";
     
     private static final long TIMEOUT = 1000; // in milliseconds
     private static final long TIMEOUT_ACCURACY = 10; // in milliseconds
@@ -41,22 +32,13 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         super(elements);
     }
 
-    @Before
-    public void setUp() {
-        this.gigaQueue = new DistributedGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, CollocationMode.DISTRIBUTED);
-        gigaQueue.addAll(testedElements);
-    }
-    
     @Override
     protected Collection<T> getCollection() {
         return gigaQueue;
     }
     
     @Override
-    protected void assertSize(String msg, int expectedSize) {
-        SQLQuery<QueueItem> query = new SQLQuery<QueueItem>(QueueItem.class, "itemKey.queueName = ?", QUEUE_NAME);
-        assertEquals(msg, expectedSize, gigaSpace.count(query));
-    }
+    protected abstract void assertSize(String msg, int expectedSize);
     
     // java.util.Queue methods
     @Test(expected = NoSuchElementException.class)
@@ -197,7 +179,8 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         assertHead(++size, head, gigaQueue.peek());
         
         // an existing element
-        element = testedElements.isEmpty() ? element : testedElements.iterator().next();        assertTrue("The element should be added", addOperation.perform(element));
+        element = testedElements.isEmpty() ? element : testedElements.iterator().next();        
+        assertTrue("The element should be added", addOperation.perform(element));
         assertHead(++size, head, gigaQueue.peek());
         
         // a null element
