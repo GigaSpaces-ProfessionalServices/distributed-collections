@@ -3,6 +3,9 @@
  */
 package org.openspaces.collections.queue;
 
+import static org.openspaces.collections.queue.data.EmbeddedQueue.QUEUE_CONTAINER_PATH;
+import static org.openspaces.collections.queue.data.EmbeddedQueueContainer.QUEUE_SIZE_PATH;
+
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -15,7 +18,7 @@ import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
 
 import com.gigaspaces.client.WriteModifiers;
-
+import com.gigaspaces.query.IdQuery;
 /**
  * @author Svitlana_Pogrebna
  *
@@ -56,11 +59,6 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
     }
 
     @Override
-    public int remainingCapacity() {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
     public E poll() {
         throw new UnsupportedOperationException("Not implemented yet");
     }
@@ -73,11 +71,6 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
     @Override
     public CollocationMode getCollocationMode() {
         return CollocationMode.EMBEDDED;
-    }
-
-    @Override
-    public void close() throws Exception {
-        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override
@@ -99,6 +92,17 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
 
     @Override
     public int size() {
+        final IdQuery<EmbeddedQueue> idQuery = idQuery().setProjections(QUEUE_CONTAINER_PATH + "." + QUEUE_SIZE_PATH);
+        return space.read(idQuery).getContainer().getSize();
+    }
+    
+    private IdQuery<EmbeddedQueue> idQuery() {
+        return new IdQuery<EmbeddedQueue>(EmbeddedQueue.class, queueName);
+    }
+    
+    @Override
+    public void close() throws Exception {
         throw new UnsupportedOperationException("Not implemented yet");
     }
+
 }

@@ -16,8 +16,8 @@ import com.gigaspaces.annotation.pojo.SpaceRouting;
 @SpaceClass
 public class EmbeddedQueue {
 
-    private static final String QUEUE_NAME_PATH = "name";
-    private static final String QUEUE_CONTAINER_PATH = "container";
+    public static final String QUEUE_NAME_PATH = "name";
+    public static final String QUEUE_CONTAINER_PATH = "container";
 
     private String name;
     private EmbeddedQueueContainer container;

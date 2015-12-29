@@ -7,16 +7,23 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.springframework.util.Assert.notNull;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import com.j_spaces.core.client.SQLQuery;
 import org.openspaces.collections.CollocationMode;
-import org.openspaces.collections.queue.data.QueueMetadata;
 import org.openspaces.collections.queue.data.QueueItem;
 import org.openspaces.collections.queue.data.QueueItemKey;
-import org.openspaces.collections.queue.operations.*;
+import org.openspaces.collections.queue.data.QueueMetadata;
+import org.openspaces.collections.queue.operations.OfferOperation;
+import org.openspaces.collections.queue.operations.PeekOperation;
+import org.openspaces.collections.queue.operations.PollOperation;
+import org.openspaces.collections.queue.operations.QueueHeadResult;
+import org.openspaces.collections.queue.operations.RemoveOperation;
+import org.openspaces.collections.queue.operations.SizeOperation;
 import org.openspaces.collections.util.Pair;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
@@ -27,7 +34,7 @@ import com.gigaspaces.client.WriteModifiers;
 import com.gigaspaces.query.IdQuery;
 import com.gigaspaces.query.aggregators.AggregationResult;
 import com.gigaspaces.query.aggregators.AggregationSet;
-import org.springframework.util.Assert;
+import com.j_spaces.core.client.SQLQuery;
 
 /**
  * @author Oleksiy_Dyagilev
@@ -182,15 +189,6 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
             }
         }
         return null;
-    }
-
-    @Override
-    public int remainingCapacity() {
-        if (!bounded) {
-            return Integer.MAX_VALUE;
-        }
-
-        return capacity - size();
     }
 
     @Override

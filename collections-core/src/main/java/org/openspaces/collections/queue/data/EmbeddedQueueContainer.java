@@ -16,6 +16,8 @@ import java.util.Queue;
  */
 public class EmbeddedQueueContainer implements Externalizable {
     
+    public static final String QUEUE_SIZE_PATH = "size";
+    
     private Queue<Object> queue;
     private Integer size;
     

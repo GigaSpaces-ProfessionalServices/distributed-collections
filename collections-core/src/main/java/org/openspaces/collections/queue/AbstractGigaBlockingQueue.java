@@ -3,13 +3,12 @@
  */
 package org.openspaces.collections.queue;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.AbstractQueue;
 import java.util.Collection;
-import java.util.Objects;
 
 import org.openspaces.core.GigaSpace;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * @author Svitlana_Pogrebna
@@ -86,6 +85,15 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
     public boolean retainAll(Collection<?> c) {
         requireNonNull(c, "Collection parameter must not be null");
         return super.retainAll(c);
+    }
+
+    @Override
+    public int remainingCapacity() {
+        if (!bounded) {
+            return Integer.MAX_VALUE;
+        }
+
+        return capacity - size();
     }
 
     protected abstract void createNewMetadataIfRequired();
