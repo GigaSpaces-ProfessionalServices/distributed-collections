@@ -2,7 +2,9 @@ package org.openspaces.collections.queue;
 
 import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
 import static java.lang.System.currentTimeMillis;
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.springframework.util.Assert.notNull;
 
 import java.io.Serializable;
 import java.util.*;
@@ -25,6 +27,7 @@ import com.gigaspaces.client.WriteModifiers;
 import com.gigaspaces.query.IdQuery;
 import com.gigaspaces.query.aggregators.AggregationResult;
 import com.gigaspaces.query.aggregators.AggregationSet;
+import org.springframework.util.Assert;
 
 /**
  * @author Oleksiy_Dyagilev
@@ -76,7 +79,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
      */
     private DistributedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded, CollocationMode collocationMode) {
         super(space, queueName, capacity, bounded);
-        checkNotNull(collocationMode);
+        notNull(collocationMode, "Collocation mode is null");
         if (collocationMode != CollocationMode.LOCAL && collocationMode != CollocationMode.DISTRIBUTED) {
             throw new IllegalArgumentException("Invalid collocation mode = " + collocationMode);
         }
@@ -102,7 +105,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
     @Override
     public boolean offer(E element) {
-        checkNotNull(element);
+        requireNonNull(element, NULL_ELEMENT_ERR_MSG);
 
         ChangeSet offerChange = new ChangeSet().custom(new OfferOperation(1));
 

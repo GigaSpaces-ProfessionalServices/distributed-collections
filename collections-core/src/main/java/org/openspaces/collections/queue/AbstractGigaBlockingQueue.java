@@ -9,10 +9,14 @@ import java.util.Objects;
 
 import org.openspaces.core.GigaSpace;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * @author Svitlana_Pogrebna
  */
 public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> implements GigaBlockingQueue<E> {
+
+    protected static final String NULL_ELEMENT_ERR_MSG = "Queue doesn't support null elements";
 
     protected final GigaSpace space;
     protected final String queueName;
@@ -34,7 +38,7 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
         if (capacity < 0) {
             throw new IllegalArgumentException("'capacity' parameter must not be negative");
         }
-        this.space = Objects.requireNonNull(space, "'space' parameter must not be null");
+        this.space = requireNonNull(space, "'space' parameter must not be null");
         this.queueName = queueName;
         this.capacity = capacity;
         this.bounded = bounded;
@@ -54,7 +58,7 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
 
     @Override
     public int drainTo(Collection<? super E> c, int maxElements) {
-        checkNotNull(c);
+        requireNonNull(c, "Collection parameter must not be null");
         if (c == this) {
             throw new IllegalArgumentException();
         }
@@ -74,24 +78,16 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
     
     @Override
     public boolean removeAll(Collection<?> c) {
-        return super.removeAll(Objects.requireNonNull(c, "Collection parameter must not be null"));
+        requireNonNull(c, "Collection parameter must not be null");
+        return super.removeAll(c);
     }
     
     @Override
     public boolean retainAll(Collection<?> c) {
-        return super.retainAll(Objects.requireNonNull(c, "Collection parameter must not be null"));
+        requireNonNull(c, "Collection parameter must not be null");
+        return super.retainAll(c);
     }
-    
+
     protected abstract void createNewMetadataIfRequired();
     
-    /**
-     * Throws NullPointerException if argument is null.
-     *
-     * @param v the element
-     */
-    protected static void checkNotNull(Object v) {
-        if (v == null) {
-            throw new NullPointerException();
-        }
-    }
 }

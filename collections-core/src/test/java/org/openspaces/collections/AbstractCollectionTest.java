@@ -78,13 +78,13 @@ public abstract class AbstractCollectionTest<T> {
         getCollection().addAll(list);
     }
 
-//    @Test(expected = NullPointerException.class)
-//    public void testRemoveAllWithNull() throws InterruptedException {
-//        List<T> list = new ArrayList<>();
-//        list.add(newNotNullElement());
-//        list.add(null);
-//        getCollection().addAll(list);
-//    }
+    @Test(expected = NullPointerException.class)
+    public void testRemoveAllWithNull() throws InterruptedException {
+        List<T> list = new ArrayList<>();
+        list.add(newNotNullElement());
+        list.add(null);
+        getCollection().addAll(list);
+    }
     
     @Test
     public void testClear() {
