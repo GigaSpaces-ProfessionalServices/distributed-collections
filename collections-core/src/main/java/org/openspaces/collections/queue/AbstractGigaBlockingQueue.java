@@ -10,6 +10,7 @@ import java.util.AbstractQueue;
 import java.util.Collection;
 
 import org.openspaces.collections.queue.data.QueueMetadata;
+import org.openspaces.collections.serialization.ElementSerializer;
 import org.openspaces.core.GigaSpace;
 
 import com.gigaspaces.client.ChangeResult;
@@ -39,7 +40,7 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
      * @param capacity        queue capacity
      * @param bounded         flag whether queue is bounded
      */
-    public AbstractGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded) {
+    public AbstractGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded, ElementSerializer serializer) {
         if (queueName == null || queueName.isEmpty()) {
             throw new IllegalArgumentException("'queueName' parameter must not be null or empty");
         }
@@ -115,8 +116,10 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
      * extract single result from the aggregation result
      */
     @SuppressWarnings("unchecked")
-    protected static <T extends Serializable> T toSingleResult(AggregationResult aggregationResult) {
-        if (aggregationResult.size() != 1) {
+    protected <T extends Serializable> T toSingleResult(AggregationResult aggregationResult) {
+        if (aggregationResult.size() == 0 && queueClosed){
+            throw new IllegalStateException("Queue has been closed(deleted) from the grid: " + queueName);
+        } else if (aggregationResult.size() != 1) {
             throw new IllegalStateException("Unexpected aggregation result size: " + aggregationResult.size());
         }
 
@@ -127,7 +130,7 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
      * extract single result from the generic change api result
      */
     @SuppressWarnings("unchecked")
-    protected <T extends Serializable> T toSingleResult(ChangeResult<QueueMetadata> changeResult) {
+    protected <T extends Serializable> T toSingleResult(ChangeResult<?> changeResult) {
         if (changeResult.getNumberOfChangedEntries() == 0 && queueClosed){
             throw new IllegalStateException("Queue has been closed(deleted) from the grid: " + queueName);
         } else if (changeResult.getNumberOfChangedEntries() > 1) {

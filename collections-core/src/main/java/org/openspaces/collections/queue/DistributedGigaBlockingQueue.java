@@ -23,6 +23,8 @@ import org.openspaces.collections.queue.operations.PollOperation;
 import org.openspaces.collections.queue.operations.QueueHeadResult;
 import org.openspaces.collections.queue.operations.RemoveOperation;
 import org.openspaces.collections.queue.operations.SizeOperation;
+import org.openspaces.collections.serialization.ElementSerializer;
+import org.openspaces.collections.util.MiscUtils;
 import org.openspaces.collections.util.Pair;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;

@@ -4,6 +4,8 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openspaces.collections.CollocationMode;
+import org.openspaces.collections.serialization.DefaultSerializerProvider;
+import org.openspaces.collections.serialization.ElementSerializer;
 import org.openspaces.collections.set.SerializableType;
 import org.openspaces.core.GigaSpace;
 import org.springframework.beans.factory.annotation.Autowired;

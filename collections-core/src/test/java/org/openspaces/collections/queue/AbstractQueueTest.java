@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -391,12 +392,12 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         });
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testOfferAfterClose() throws Exception {
-        gigaQueue.close();
-        gigaQueue.offer(newElement());
-
-    }
+//    @Test(expected = IllegalStateException.class)
+//    public void testOfferAfterClose() throws Exception {
+//        gigaQueue.close();
+//        gigaQueue.offer(newElement());
+//
+//    }
 
     protected void assertQueueClosed() throws InterruptedException {
         assertEquals(0, gigaSpace.count(new Object()));
