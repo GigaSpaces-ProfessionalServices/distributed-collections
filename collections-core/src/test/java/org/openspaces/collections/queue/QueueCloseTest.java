@@ -28,6 +28,7 @@ public class QueueCloseTest {
     @Autowired
     private GigaSpace gigaSpace;
 
+    @Ignore
     @Test
     public void testQueueClose() throws Exception {
         DistributedGigaBlockingQueue<SerializableType> queue = createDistributedQueue();
@@ -41,7 +42,6 @@ public class QueueCloseTest {
         gigaSpace.clear(null);
     }
 
-    @Ignore
     @Test(expected = IllegalStateException.class)
     public void testOfferAfterClose() throws Exception {
         DistributedGigaBlockingQueue<SerializableType> queue = createDistributedQueue();
