@@ -1,8 +1,8 @@
 package org.openspaces.collections.queue;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.openspaces.collections.CollocationMode;
 import org.openspaces.collections.serialization.DefaultSerializerProvider;
 import org.openspaces.collections.serialization.ElementSerializer;
@@ -12,15 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.openspaces.collections.CollectionUtils.createSerializableType;
-import static org.openspaces.collections.CollectionUtils.createSerializableTypeList;
 
 /**
  * @author Oleksiy_Dyagilev
@@ -40,6 +35,10 @@ public class QueueCloseTest {
         assertQueueClosed();
     }
 
+    @Before
+    public void before(){
+        gigaSpace.clear(null);
+    }
 
     @Test(expected = IllegalStateException.class)
     public void testOfferAfterClose() throws Exception {

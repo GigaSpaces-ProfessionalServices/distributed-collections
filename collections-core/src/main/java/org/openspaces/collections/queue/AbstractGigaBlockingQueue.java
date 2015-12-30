@@ -1,20 +1,18 @@
 /**
- * 
+ *
  */
 package org.openspaces.collections.queue;
 
-import static java.util.Objects.requireNonNull;
+import com.gigaspaces.client.ChangeResult;
+import com.gigaspaces.query.aggregators.AggregationResult;
+import org.openspaces.collections.serialization.ElementSerializer;
+import org.openspaces.core.GigaSpace;
 
 import java.io.Serializable;
 import java.util.AbstractQueue;
 import java.util.Collection;
 
-import org.openspaces.collections.queue.data.QueueMetadata;
-import org.openspaces.collections.serialization.ElementSerializer;
-import org.openspaces.core.GigaSpace;
-
-import com.gigaspaces.client.ChangeResult;
-import com.gigaspaces.query.aggregators.AggregationResult;
+import static java.util.Objects.requireNonNull;
 
 /**
  * @author Svitlana_Pogrebna
@@ -35,10 +33,10 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
     /**
      * Creates blocking queue
      *
-     * @param space           giga space
-     * @param queueName       unique queue queueName
-     * @param capacity        queue capacity
-     * @param bounded         flag whether queue is bounded
+     * @param space     giga space
+     * @param queueName unique queue queueName
+     * @param capacity  queue capacity
+     * @param bounded   flag whether queue is bounded
      */
     public AbstractGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded, ElementSerializer serializer) {
         if (queueName == null || queueName.isEmpty()) {
@@ -58,12 +56,12 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
 
         createNewMetadataIfRequired();
     }
-    
+
     @Override
     public String getName() {
         return queueName;
     }
-    
+
     @Override
     public int drainTo(Collection<? super E> c) {
         return drainTo(c, Integer.MAX_VALUE);
@@ -88,13 +86,13 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
 
         return max;
     }
-    
+
     @Override
     public boolean removeAll(Collection<?> c) {
         requireNonNull(c, "Collection parameter must not be null");
         return super.removeAll(c);
     }
-    
+
     @Override
     public boolean retainAll(Collection<?> c) {
         requireNonNull(c, "Collection parameter must not be null");
@@ -111,13 +109,13 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
     }
 
     protected abstract void createNewMetadataIfRequired();
- 
+
     /**
      * extract single result from the aggregation result
      */
     @SuppressWarnings("unchecked")
     protected <T extends Serializable> T toSingleResult(AggregationResult aggregationResult) {
-        if (aggregationResult.size() == 0 && queueClosed){
+        if (aggregationResult.size() == 0 && queueClosed) {
             throw new IllegalStateException("Queue has been closed(deleted) from the grid: " + queueName);
         } else if (aggregationResult.size() != 1) {
             throw new IllegalStateException("Unexpected aggregation result size: " + aggregationResult.size());
@@ -131,7 +129,7 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
      */
     @SuppressWarnings("unchecked")
     protected <T extends Serializable> T toSingleResult(ChangeResult<?> changeResult) {
-        if (changeResult.getNumberOfChangedEntries() == 0 && queueClosed){
+        if (changeResult.getNumberOfChangedEntries() == 0 && queueClosed) {
             throw new IllegalStateException("Queue has been closed(deleted) from the grid: " + queueName);
         } else if (changeResult.getNumberOfChangedEntries() > 1) {
             throw new IllegalStateException("Unexpected number of changed entries: " + changeResult.getNumberOfChangedEntries());

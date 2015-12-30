@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.openspaces.collections.queue.data;
 
@@ -12,24 +12,23 @@ import java.util.Queue;
 
 /**
  * @author Svitlana_Pogrebna
- *
  */
 public class EmbeddedQueueContainer implements Externalizable {
-    
+
     public static final String QUEUE_PATH = "queue";
     public static final String QUEUE_SIZE_PATH = "size";
-    
+
     private Queue<Object> queue;
     private Integer size;
-    
+
     public EmbeddedQueueContainer() {
     }
-    
+
     public EmbeddedQueueContainer(Queue<Object> queue) {
         this.queue = Objects.requireNonNull(queue, "'queue' parameter must not be null");
         this.size = queue.size();
     }
-    
+
     public Queue<Object> getQueue() {
         return queue;
     }
@@ -45,7 +44,7 @@ public class EmbeddedQueueContainer implements Externalizable {
     public void setSize(Integer size) {
         this.size = size;
     }
-    
+
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeObject(getQueue());
@@ -55,7 +54,7 @@ public class EmbeddedQueueContainer implements Externalizable {
     @SuppressWarnings("unchecked")
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        setQueue((Queue<Object>)in.readObject());
+        setQueue((Queue<Object>) in.readObject());
         setSize(in.readInt());
     }
 }

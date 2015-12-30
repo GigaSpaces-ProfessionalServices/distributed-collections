@@ -1,6 +1,9 @@
 package org.openspaces.collections.set;
 
-import static java.util.Objects.requireNonNull;
+import net.jini.core.transaction.Transaction;
+import org.openspaces.core.GigaMap;
+import org.openspaces.core.map.LockHandle;
+import org.openspaces.core.transaction.TransactionProvider;
 
 import java.io.Serializable;
 import java.util.AbstractCollection;
@@ -8,20 +11,16 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 
-import net.jini.core.transaction.Transaction;
-
-import org.openspaces.core.GigaMap;
-import org.openspaces.core.map.LockHandle;
-import org.openspaces.core.transaction.TransactionProvider;
+import static java.util.Objects.requireNonNull;
 
 public class DefaultGigaSet<T extends Serializable> extends AbstractCollection<T> implements GigaSet<T> {
 
     private static final String NULL_ELEMENT_ERR_MSG = "'GigaSet' does not permit null elements";
-    
+
     private static final Serializable DUMMY = new DummyValue();
-    
+
     private GigaMap gigaMap;
-    
+
     public DefaultGigaSet(GigaMap gigaMap) {
         this.gigaMap = requireNonNull(gigaMap, "'gigaMap' parameter must not be null");
     }
@@ -54,7 +53,7 @@ public class DefaultGigaSet<T extends Serializable> extends AbstractCollection<T
         final Object element = requireNonNull(e, NULL_ELEMENT_ERR_MSG);
         return gigaMap.put(element, DUMMY) == null;
     }
-    
+
     @Override
     public boolean add(T e, long timeToLive) {
         final Object element = requireNonNull(e, NULL_ELEMENT_ERR_MSG);
@@ -96,7 +95,7 @@ public class DefaultGigaSet<T extends Serializable> extends AbstractCollection<T
         final Object element = requireNonNull(e, NULL_ELEMENT_ERR_MSG);
         return gigaMap.remove(element, waitForResponse, lockHandle) != null;
     }
-    
+
     @Override
     public boolean removeAll(Collection<?> c) {
         boolean modified = false;
@@ -105,7 +104,7 @@ public class DefaultGigaSet<T extends Serializable> extends AbstractCollection<T
         }
         return modified;
     }
-     
+
     @Override
     public boolean retainAll(Collection<?> c) {
         Objects.requireNonNull(c);
@@ -119,7 +118,7 @@ public class DefaultGigaSet<T extends Serializable> extends AbstractCollection<T
         }
         return modified;
     }
-    
+
     @Override
     public void clear() {
         gigaMap.clear();
@@ -142,12 +141,12 @@ public class DefaultGigaSet<T extends Serializable> extends AbstractCollection<T
 
     @Override
     public LockHandle lock(T e, long lockTimeToLive, long waitingForLockTimeout) {
-       return gigaMap.lock(e, lockTimeToLive, waitingForLockTimeout);
+        return gigaMap.lock(e, lockTimeToLive, waitingForLockTimeout);
     }
 
     @Override
     public void unlock(T e) {
-       gigaMap.unlock(e);
+        gigaMap.unlock(e);
     }
 
     @Override
@@ -169,7 +168,7 @@ public class DefaultGigaSet<T extends Serializable> extends AbstractCollection<T
     public long getDefaultWaitForResponse() {
         return gigaMap.getDefaultWaitForResponse();
     }
-    
+
     private static class DummyValue implements Serializable {
         private static final long serialVersionUID = 1L;
     }

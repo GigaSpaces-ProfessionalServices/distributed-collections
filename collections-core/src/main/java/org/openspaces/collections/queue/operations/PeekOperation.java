@@ -13,7 +13,7 @@ public class PeekOperation extends SpaceEntriesAggregator<QueueHeadResult> {
     private static final long serialVersionUID = 1L;
 
     private transient QueueHeadResult result;
-    
+
     @Override
     public String getDefaultAlias() {
         return "peek";
@@ -24,7 +24,7 @@ public class PeekOperation extends SpaceEntriesAggregator<QueueHeadResult> {
     public void aggregate(SpaceEntriesAggregatorContext context) {
         final long tail = (long) context.getPathValue(TAIL_PATH);
         final long head = (long) context.getPathValue(HEAD_PATH);
-        
+
         if (tail == head) {
             this.result = QueueHeadResult.emptyQueueResult();
         } else {

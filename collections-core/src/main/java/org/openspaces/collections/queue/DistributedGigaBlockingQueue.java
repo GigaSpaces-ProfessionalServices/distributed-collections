@@ -1,10 +1,22 @@
 package org.openspaces.collections.queue;
 
-import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
-import static java.lang.System.currentTimeMillis;
-import static java.util.Objects.requireNonNull;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.springframework.util.Assert.notNull;
+import com.gigaspaces.client.ChangeResult;
+import com.gigaspaces.client.ChangeSet;
+import com.gigaspaces.client.WriteModifiers;
+import com.gigaspaces.query.IdQuery;
+import com.gigaspaces.query.aggregators.AggregationResult;
+import com.gigaspaces.query.aggregators.AggregationSet;
+import com.j_spaces.core.client.SQLQuery;
+import org.openspaces.collections.CollocationMode;
+import org.openspaces.collections.queue.data.QueueItem;
+import org.openspaces.collections.queue.data.QueueItemKey;
+import org.openspaces.collections.queue.data.QueueMetadata;
+import org.openspaces.collections.queue.operations.*;
+import org.openspaces.collections.serialization.ElementSerializer;
+import org.openspaces.collections.util.MiscUtils;
+import org.openspaces.collections.util.Pair;
+import org.openspaces.core.EntryAlreadyInSpaceException;
+import org.openspaces.core.GigaSpace;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -13,29 +25,11 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.openspaces.collections.CollocationMode;
-import org.openspaces.collections.queue.data.QueueItem;
-import org.openspaces.collections.queue.data.QueueItemKey;
-import org.openspaces.collections.queue.data.QueueMetadata;
-import org.openspaces.collections.queue.operations.OfferOperation;
-import org.openspaces.collections.queue.operations.PeekOperation;
-import org.openspaces.collections.queue.operations.PollOperation;
-import org.openspaces.collections.queue.operations.QueueHeadResult;
-import org.openspaces.collections.queue.operations.RemoveOperation;
-import org.openspaces.collections.queue.operations.SizeOperation;
-import org.openspaces.collections.serialization.ElementSerializer;
-import org.openspaces.collections.util.MiscUtils;
-import org.openspaces.collections.util.Pair;
-import org.openspaces.core.EntryAlreadyInSpaceException;
-import org.openspaces.core.GigaSpace;
-
-import com.gigaspaces.client.ChangeResult;
-import com.gigaspaces.client.ChangeSet;
-import com.gigaspaces.client.WriteModifiers;
-import com.gigaspaces.query.IdQuery;
-import com.gigaspaces.query.aggregators.AggregationResult;
-import com.gigaspaces.query.aggregators.AggregationSet;
-import com.j_spaces.core.client.SQLQuery;
+import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
+import static java.lang.System.currentTimeMillis;
+import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.springframework.util.Assert.notNull;
 
 /**
  * @author Oleksiy_Dyagilev
@@ -437,7 +431,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
         return MiscUtils.hasCause(e, InterruptedException.class);
     }
 
-    private boolean isClosedResource(Throwable e){
+    private boolean isClosedResource(Throwable e) {
         return MiscUtils.hasCause(e, com.j_spaces.core.exception.ClosedResourceException.class);
     }
 

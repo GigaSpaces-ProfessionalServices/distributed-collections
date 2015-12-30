@@ -4,7 +4,6 @@ import java.util.Queue;
 
 /**
  * @author Svitlana_Pogrebna
- *
  */
 public class EmbeddedPollOperation extends EmbeddedChangeOperation<Object> {
 

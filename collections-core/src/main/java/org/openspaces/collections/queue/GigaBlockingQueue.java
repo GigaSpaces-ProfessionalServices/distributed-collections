@@ -1,8 +1,8 @@
 package org.openspaces.collections.queue;
 
-import java.util.concurrent.BlockingQueue;
-
 import org.openspaces.collections.DistributedCollection;
+
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Distributed Blocking Queue

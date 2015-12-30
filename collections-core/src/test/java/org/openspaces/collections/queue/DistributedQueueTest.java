@@ -1,24 +1,20 @@
 package org.openspaces.collections.queue;
 
-import static org.junit.Assert.assertEquals;
-import static org.openspaces.collections.CollectionUtils.MEDIUM_COLLECTION_SIZE;
-import static org.openspaces.collections.CollectionUtils.createSerializableType;
-import static org.openspaces.collections.CollectionUtils.createSerializableTypeList;
+import com.j_spaces.core.client.SQLQuery;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.openspaces.collections.queue.data.QueueItem;
+import org.openspaces.collections.set.SerializableType;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import com.j_spaces.core.client.SQLQuery;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.openspaces.collections.CollocationMode;
-import org.openspaces.collections.queue.data.QueueItem;
-import org.openspaces.collections.set.SerializableType;
-import org.springframework.test.context.ContextConfiguration;
+import static org.junit.Assert.assertEquals;
+import static org.openspaces.collections.CollectionUtils.createSerializableType;
+import static org.openspaces.collections.CollectionUtils.createSerializableTypeList;
 
 @RunWith(Parameterized.class)
 @ContextConfiguration(locations = "classpath:/gigaqueue-distributed-test-context.xml")

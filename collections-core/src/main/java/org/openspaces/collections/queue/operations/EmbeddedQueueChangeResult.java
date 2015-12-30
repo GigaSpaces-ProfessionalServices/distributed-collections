@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.openspaces.collections.queue.operations;
 
@@ -10,21 +10,21 @@ import java.io.ObjectOutput;
 
 import static org.openspaces.collections.util.SerializationUtils.readNullableObject;
 import static org.openspaces.collections.util.SerializationUtils.writeNullableObject;
+
 /**
  * @author Svitlana_Pogrebna
- *
  */
 public class EmbeddedQueueChangeResult<T> implements Externalizable {
 
-    private T result; 
-    
+    private T result;
+
     public EmbeddedQueueChangeResult() {
     }
-    
+
     public EmbeddedQueueChangeResult(T result) {
         this.result = result;
     }
-    
+
     public T getResult() {
         return result;
     }
@@ -38,10 +38,10 @@ public class EmbeddedQueueChangeResult<T> implements Externalizable {
         writeNullableObject(out, getResult());
     }
 
-   
+
     @SuppressWarnings("unchecked")
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        setResult((T)readNullableObject(in));
+        setResult((T) readNullableObject(in));
     }
 }
