@@ -392,38 +392,6 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         });
     }
 
-//    @Test(expected = IllegalStateException.class)
-//    public void testOfferAfterClose() throws Exception {
-//        gigaQueue.close();
-//        gigaQueue.offer(newElement());
-//
-//    }
-
-    protected void assertQueueClosed() throws InterruptedException {
-        assertEquals(0, gigaSpace.count(new Object()));
-
-        // make sure there is no running 'size change listener' thread
-//        if (checkQueueSizeListenerThread()) {
-//            // if it was in native call - give it a time, we cannot interrupt that call
-//            System.out.println("waiting 5.5 seconds to check size change listener thread");
-//            Thread.sleep(5500);
-//            if (checkQueueSizeListenerThread()) {
-//                fail("found queue size check listener thread");
-//            }
-//        }
-    }
-
-    private boolean checkQueueSizeListenerThread() {
-        Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-        for (Thread thread : threadSet) {
-            if (thread.getName().startsWith(AbstractGigaBlockingQueue.QUEUE_SIZE_CHANGE_LISTENER_THREAD_NAME)) {
-               return true;
-            }
-        }
-        return false;
-    }
-
-
     @Test
     public void testCallingRemoveOnIteratorConcurrently() {
         Assume.assumeTrue(testedElements.size() >= 2);
