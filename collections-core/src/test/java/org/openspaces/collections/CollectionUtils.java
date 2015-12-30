@@ -13,7 +13,7 @@ public final class CollectionUtils {
     private CollectionUtils() {
     }
     
-    public static final int MEDIUM_COLLECTION_SIZE = 500;
+    public static final int MEDIUM_COLLECTION_SIZE = 100;
     
     public static final long LARGE_COLLECTION_SIZE = (long)Integer.MAX_VALUE + 1;
     

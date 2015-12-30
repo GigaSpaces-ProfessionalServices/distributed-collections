@@ -1,8 +1,19 @@
 package org.openspaces.collections.queue;
 
-import com.j_spaces.core.client.SQLQuery;
+import static org.junit.Assert.assertEquals;
+import static org.openspaces.collections.CollectionUtils.MEDIUM_COLLECTION_SIZE;
+import static org.openspaces.collections.CollectionUtils.createSerializableType;
+import static org.openspaces.collections.CollectionUtils.createSerializableTypeList;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.openspaces.collections.CollocationMode;
 import org.openspaces.collections.queue.data.QueueItem;
 import org.openspaces.collections.set.SerializableType;
 import org.springframework.test.context.ContextConfiguration;
@@ -34,6 +45,18 @@ public class DistributedQueueTest extends AbstractQueueTest<SerializableType> {
         });
     }
 
+    @Before
+    public void setUp() {
+        this.gigaQueue = new DistributedGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, CollocationMode.DISTRIBUTED);
+        gigaQueue.addAll(testedElements);
+    }
+
+    @After
+    public void after() throws Exception {
+        gigaQueue.close();
+        assertQueueClosed();
+    }
+    
     @Override
     protected Class<? extends SerializableType> getElementType() {
         return SerializableType.class;

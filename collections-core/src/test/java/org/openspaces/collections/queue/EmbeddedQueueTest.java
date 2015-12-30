@@ -334,4 +334,11 @@ public class EmbeddedQueueTest extends AbstractQueueTest<SerializableType> {
     public void testToArray() {
         super.testToArray();
     }
+
+    @Override
+    @Test
+    @Ignore
+    public void testOfferAfterClose() throws Exception {
+        super.testOfferAfterClose();
+    }
 }

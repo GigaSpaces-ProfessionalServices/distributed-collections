@@ -1,19 +1,19 @@
 /**
- *
+ * 
  */
 package org.openspaces.collections.queue;
 
-import com.gigaspaces.client.ChangeResult;
-import com.gigaspaces.query.aggregators.AggregationResult;
-import org.openspaces.collections.queue.data.QueueMetadata;
-import org.openspaces.collections.serialization.ElementSerializer;
-import org.openspaces.core.GigaSpace;
+import static java.util.Objects.requireNonNull;
 
 import java.io.Serializable;
 import java.util.AbstractQueue;
 import java.util.Collection;
 
-import static java.util.Objects.requireNonNull;
+import org.openspaces.collections.queue.data.QueueMetadata;
+import org.openspaces.core.GigaSpace;
+
+import com.gigaspaces.client.ChangeResult;
+import com.gigaspaces.query.aggregators.AggregationResult;
 
 /**
  * @author Svitlana_Pogrebna
@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> implements GigaBlockingQueue<E> {
 
     protected static final String NULL_ELEMENT_ERR_MSG = "Queue doesn't support null elements";
+    protected static final String QUEUE_SIZE_CHANGE_LISTENER_THREAD_NAME = "Queue size change listener - ";
 
     protected final GigaSpace space;
     protected final String queueName;
@@ -28,16 +29,17 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
     protected final int capacity;
     protected final ElementSerializer serializer;
 
+    protected volatile boolean queueClosed;
+
     /**
      * Creates blocking queue
      *
-     * @param space      giga space
-     * @param queueName  unique queue queueName
-     * @param capacity   queue capacity
-     * @param bounded    flag whether queue is bounded
-     * @param serializer
+     * @param space           giga space
+     * @param queueName       unique queue queueName
+     * @param capacity        queue capacity
+     * @param bounded         flag whether queue is bounded
      */
-    public AbstractGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded, ElementSerializer serializer) {
+    public AbstractGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded) {
         if (queueName == null || queueName.isEmpty()) {
             throw new IllegalArgumentException("'queueName' parameter must not be null or empty");
         }
@@ -55,12 +57,12 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
 
         createNewMetadataIfRequired();
     }
-
+    
     @Override
     public String getName() {
         return queueName;
     }
-
+    
     @Override
     public int drainTo(Collection<? super E> c) {
         return drainTo(c, Integer.MAX_VALUE);
@@ -85,13 +87,13 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
 
         return max;
     }
-
+    
     @Override
     public boolean removeAll(Collection<?> c) {
         requireNonNull(c, "Collection parameter must not be null");
         return super.removeAll(c);
     }
-
+    
     @Override
     public boolean retainAll(Collection<?> c) {
         requireNonNull(c, "Collection parameter must not be null");
@@ -125,8 +127,10 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
      * extract single result from the generic change api result
      */
     @SuppressWarnings("unchecked")
-    protected static <T extends Serializable> T toSingleResult(ChangeResult<?> changeResult) {
-        if (changeResult.getNumberOfChangedEntries() != 1) {
+    protected <T extends Serializable> T toSingleResult(ChangeResult<QueueMetadata> changeResult) {
+        if (changeResult.getNumberOfChangedEntries() == 0 && queueClosed){
+            throw new IllegalStateException("Queue has been closed(deleted) from the grid: " + queueName);
+        } else if (changeResult.getNumberOfChangedEntries() > 1) {
             throw new IllegalStateException("Unexpected number of changed entries: " + changeResult.getNumberOfChangedEntries());
         }
 

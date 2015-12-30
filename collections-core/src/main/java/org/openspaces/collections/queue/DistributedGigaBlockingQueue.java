@@ -1,21 +1,10 @@
 package org.openspaces.collections.queue;
 
-import com.gigaspaces.client.ChangeResult;
-import com.gigaspaces.client.ChangeSet;
-import com.gigaspaces.client.WriteModifiers;
-import com.gigaspaces.query.IdQuery;
-import com.gigaspaces.query.aggregators.AggregationResult;
-import com.gigaspaces.query.aggregators.AggregationSet;
-import com.j_spaces.core.client.SQLQuery;
-import org.openspaces.collections.CollocationMode;
-import org.openspaces.collections.queue.data.QueueItem;
-import org.openspaces.collections.queue.data.QueueItemKey;
-import org.openspaces.collections.queue.data.QueueMetadata;
-import org.openspaces.collections.queue.operations.*;
-import org.openspaces.collections.serialization.ElementSerializer;
-import org.openspaces.collections.util.Pair;
-import org.openspaces.core.EntryAlreadyInSpaceException;
-import org.openspaces.core.GigaSpace;
+import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
+import static java.lang.System.currentTimeMillis;
+import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.springframework.util.Assert.notNull;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,11 +13,27 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
-import static java.lang.System.currentTimeMillis;
-import static java.util.Objects.requireNonNull;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.springframework.util.Assert.notNull;
+import org.openspaces.collections.CollocationMode;
+import org.openspaces.collections.queue.data.QueueItem;
+import org.openspaces.collections.queue.data.QueueItemKey;
+import org.openspaces.collections.queue.data.QueueMetadata;
+import org.openspaces.collections.queue.operations.OfferOperation;
+import org.openspaces.collections.queue.operations.PeekOperation;
+import org.openspaces.collections.queue.operations.PollOperation;
+import org.openspaces.collections.queue.operations.QueueHeadResult;
+import org.openspaces.collections.queue.operations.RemoveOperation;
+import org.openspaces.collections.queue.operations.SizeOperation;
+import org.openspaces.collections.util.Pair;
+import org.openspaces.core.EntryAlreadyInSpaceException;
+import org.openspaces.core.GigaSpace;
+
+import com.gigaspaces.client.ChangeResult;
+import com.gigaspaces.client.ChangeSet;
+import com.gigaspaces.client.WriteModifiers;
+import com.gigaspaces.query.IdQuery;
+import com.gigaspaces.query.aggregators.AggregationResult;
+import com.gigaspaces.query.aggregators.AggregationSet;
+import com.j_spaces.core.client.SQLQuery;
 
 /**
  * @author Oleksiy_Dyagilev
@@ -99,7 +104,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
         // start size change listener thread
         SizeChangeListener sizeChangeListener = new SizeChangeListener(tail, head, removedIndexesSize);
-        this.sizeChangeListenerThread = new Thread(sizeChangeListener, "Queue size change listener - " + queueName);
+        this.sizeChangeListenerThread = new Thread(sizeChangeListener, QUEUE_SIZE_CHANGE_LISTENER_THREAD_NAME + queueName);
         this.sizeChangeListenerThread.start();
     }
 
@@ -402,18 +407,36 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
             SQLQuery<QueueMetadata> query = new SQLQuery<>(QueueMetadata.class, "name = ? AND (tail <> ? OR head <> ? OR removedIndexesSize <> ?)");
             query.setProjections("tail", "head", "removedIndexesSize");
 
-            while (true) {
+            while (!queueClosed) {
                 query.setParameters(queueName, tail, head, removedIndexesSize);
-                QueueMetadata foundMetadata = space.read(query, SIZE_CHANGE_LISTENER_TIMEOUT_MS);
-                if (foundMetadata != null) {
-                    this.tail = foundMetadata.getTail();
-                    this.head = foundMetadata.getHead();
-                    this.removedIndexesSize = foundMetadata.getRemovedIndexesSize();
+                try {
+                    QueueMetadata foundMetadata = space.read(query, SIZE_CHANGE_LISTENER_TIMEOUT_MS);
+                    if (foundMetadata != null) {
+                        this.tail = foundMetadata.getTail();
+                        this.head = foundMetadata.getHead();
+                        this.removedIndexesSize = foundMetadata.getRemovedIndexesSize();
 
-                    onSizeChanged(tail, head, removedIndexesSize);
+                        onSizeChanged(tail, head, removedIndexesSize);
+                    }
+                } catch (Exception e) {
+                    if (isInterrupted(e) || isClosedResource(e)) {
+                        return;
+                    } else {
+                        if (!queueClosed) {
+                            throw e;
+                        }
+                    }
                 }
             }
         }
+    }
+
+    private boolean isInterrupted(Throwable e) {
+        return MiscUtils.hasCause(e, InterruptedException.class);
+    }
+
+    private boolean isClosedResource(Throwable e){
+        return MiscUtils.hasCause(e, com.j_spaces.core.exception.ClosedResourceException.class);
     }
 
     private Integer calculateRouting(QueueItemKey itemKey) {
@@ -434,5 +457,14 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
     @Override
     public void close() throws Exception {
+        this.queueClosed = true;
+        this.sizeChangeListenerThread.interrupt();
+        space.clear(queueMetadataQuery);
+
+        // cannot use space.clear() because we need to match by nested template
+        SQLQuery<QueueItem> itemQuery = new SQLQuery<>(QueueItem.class, "itemKey.queueName = ?");
+        itemQuery.setParameters(queueName);
+        itemQuery.setProjections("");
+        space.takeMultiple(itemQuery);
     }
 }
