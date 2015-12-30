@@ -1,6 +1,7 @@
 package org.openspaces.collections.queue;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openspaces.collections.CollocationMode;
@@ -36,10 +37,11 @@ public class QueueCloseTest {
     }
 
     @Before
-    public void before(){
+    public void before() {
         gigaSpace.clear(null);
     }
 
+    @Ignore
     @Test(expected = IllegalStateException.class)
     public void testOfferAfterClose() throws Exception {
         DistributedGigaBlockingQueue<SerializableType> queue = createDistributedQueue();
