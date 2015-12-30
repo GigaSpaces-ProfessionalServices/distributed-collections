@@ -22,10 +22,12 @@ public class QueueHeadTransformer {
         if (head == tail) {
             throw new IllegalArgumentException("Queue should not be empty");
         }
+        int sizeBefore = removedIndexes.size();
 
         // skip elements that were removed with iterator.remove()
         long nextNonRemovedIndex = nextNonRemovedIndex(head, removedIndexes);
-        return nextNonRemovedIndex > tail ? QueueHeadResult.emptyQueueResult(tail) : QueueHeadResult.headIndexResult(nextNonRemovedIndex);
+        boolean changed = removedIndexes.size() != sizeBefore;
+        return nextNonRemovedIndex > tail ? QueueHeadResult.emptyQueueResult(tail, changed) : QueueHeadResult.headIndexResult(nextNonRemovedIndex, changed);
     }
     
 

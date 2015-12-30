@@ -1,50 +1,39 @@
 package org.openspaces.collections.queue;
 
-import static org.junit.Assert.assertEquals;
-import static org.openspaces.collections.CollectionUtils.MEDIUM_COLLECTION_SIZE;
-import static org.openspaces.collections.CollectionUtils.createSerializableType;
-import static org.openspaces.collections.CollectionUtils.createSerializableTypeList;
+import com.j_spaces.core.client.SQLQuery;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.openspaces.collections.queue.data.QueueItem;
+import org.openspaces.collections.set.SerializableType;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.openspaces.collections.CollocationMode;
-import org.openspaces.collections.queue.data.QueueItem;
-import org.openspaces.collections.set.SerializableType;
-import org.springframework.test.context.ContextConfiguration;
-
-import com.j_spaces.core.client.SQLQuery;
+import static org.junit.Assert.*;
+import static org.openspaces.collections.CollectionUtils.createSerializableType;
+import static org.openspaces.collections.CollectionUtils.createSerializableTypeList;
 
 @RunWith(Parameterized.class)
-@ContextConfiguration(locations = "classpath:/partitioned-space-test-config.xml")
+@ContextConfiguration(locations = "classpath:/gigaqueue-distributed-test-context.xml")
 public class DistributedQueueTest extends AbstractQueueTest<SerializableType> {
 
-    private static final String QUEUE_NAME = "TestDistributedGigaBlockingQueue";
-    
     public DistributedQueueTest(List<SerializableType> elements) {
-        super(elements);
+        super(createSerializableTypeList(10));
     }
 
     @Parameterized.Parameters
     public static Collection<Object[]> testData() {
-        return Arrays.asList(new Object[][] { 
-                { Collections.emptyList() },
-                { Collections.singletonList(createSerializableType()) },
+        return Arrays.asList(new Object[][]{
+                {Collections.emptyList()},
+                {Collections.singletonList(createSerializableType())},
+                {createSerializableTypeList(10)},
 //                { createSerializableTypeList(MEDIUM_COLLECTION_SIZE) },
         });
     }
 
-    @Before
-    public void setUp() {
-        this.gigaQueue = new DistributedGigaBlockingQueue<>(gigaSpace, QUEUE_NAME, CollocationMode.DISTRIBUTED);
-        gigaQueue.addAll(testedElements);
-    }
-    
     @Override
     protected Class<? extends SerializableType> getElementType() {
         return SerializableType.class;
@@ -59,10 +48,10 @@ public class DistributedQueueTest extends AbstractQueueTest<SerializableType> {
     protected SerializableType newElement() {
         return createSerializableType();
     }
-    
+
     @Override
     protected void assertSize(String msg, int expectedSize) {
-        SQLQuery<QueueItem> query = new SQLQuery<QueueItem>(QueueItem.class, "itemKey.queueName = ?", QUEUE_NAME);
+        SQLQuery<QueueItem> query = new SQLQuery<>(QueueItem.class, "itemKey.queueName = ?", queueName);
         assertEquals(msg, expectedSize, gigaSpace.count(query));
     }
 }

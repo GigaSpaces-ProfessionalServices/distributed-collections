@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.openspaces.collections.queue;
 
@@ -17,6 +17,7 @@ import org.openspaces.collections.queue.operations.EmbeddedOfferOperation;
 import org.openspaces.collections.queue.operations.EmbeddedPeekOperation;
 import org.openspaces.collections.queue.operations.EmbeddedPollOperation;
 import org.openspaces.collections.queue.operations.EmbeddedQueueChangeResult;
+import org.openspaces.collections.serialization.ElementSerializer;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
 
@@ -29,16 +30,15 @@ import static org.openspaces.collections.queue.data.EmbeddedQueue.QUEUE_CONTAINE
 import static org.openspaces.collections.queue.data.EmbeddedQueueContainer.QUEUE_SIZE_PATH;
 /**
  * @author Svitlana_Pogrebna
- *
  */
 public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
 
-    public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName) {
-        super(space, queueName, 0, false);
+    public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName, ElementSerializer serializer) {
+        super(space, queueName, 0, false, serializer);
     }
-    
-    public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName, int capacity) {
-        super(space, queueName, capacity, true);
+
+    public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, ElementSerializer serializer) {
+        super(space, queueName, capacity, true, serializer);
     }
 
     @Override

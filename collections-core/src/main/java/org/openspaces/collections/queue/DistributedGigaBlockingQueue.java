@@ -1,10 +1,21 @@
 package org.openspaces.collections.queue;
 
-import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
-import static java.lang.System.currentTimeMillis;
-import static java.util.Objects.requireNonNull;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.springframework.util.Assert.notNull;
+import com.gigaspaces.client.ChangeResult;
+import com.gigaspaces.client.ChangeSet;
+import com.gigaspaces.client.WriteModifiers;
+import com.gigaspaces.query.IdQuery;
+import com.gigaspaces.query.aggregators.AggregationResult;
+import com.gigaspaces.query.aggregators.AggregationSet;
+import com.j_spaces.core.client.SQLQuery;
+import org.openspaces.collections.CollocationMode;
+import org.openspaces.collections.queue.data.QueueItem;
+import org.openspaces.collections.queue.data.QueueItemKey;
+import org.openspaces.collections.queue.data.QueueMetadata;
+import org.openspaces.collections.queue.operations.*;
+import org.openspaces.collections.serialization.ElementSerializer;
+import org.openspaces.collections.util.Pair;
+import org.openspaces.core.EntryAlreadyInSpaceException;
+import org.openspaces.core.GigaSpace;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -13,33 +24,16 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import org.openspaces.collections.CollocationMode;
-import org.openspaces.collections.queue.data.QueueItem;
-import org.openspaces.collections.queue.data.QueueItemKey;
-import org.openspaces.collections.queue.data.QueueMetadata;
-import org.openspaces.collections.queue.operations.OfferOperation;
-import org.openspaces.collections.queue.operations.PeekOperation;
-import org.openspaces.collections.queue.operations.PollOperation;
-import org.openspaces.collections.queue.operations.QueueHeadResult;
-import org.openspaces.collections.queue.operations.RemoveOperation;
-import org.openspaces.collections.queue.operations.SizeOperation;
-import org.openspaces.collections.util.Pair;
-import org.openspaces.core.EntryAlreadyInSpaceException;
-import org.openspaces.core.GigaSpace;
-
-import com.gigaspaces.client.ChangeResult;
-import com.gigaspaces.client.ChangeSet;
-import com.gigaspaces.client.WriteModifiers;
-import com.gigaspaces.query.IdQuery;
-import com.gigaspaces.query.aggregators.AggregationResult;
-import com.gigaspaces.query.aggregators.AggregationSet;
-import com.j_spaces.core.client.SQLQuery;
+import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
+import static java.lang.System.currentTimeMillis;
+import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.springframework.util.Assert.notNull;
 
 /**
  * @author Oleksiy_Dyagilev
  */
 public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
-
     private static final long WAIT_ITEM_TIMEOUT_MS = 5000;
     private static final long SIZE_CHANGE_LISTENER_TIMEOUT_MS = 5000;
 
@@ -59,8 +53,8 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
      * @param queueName       unique queue name
      * @param collocationMode collocation mode
      */
-    public DistributedGigaBlockingQueue(GigaSpace space, String queueName, CollocationMode collocationMode) {
-        this(space, queueName, 0, false, collocationMode);
+    public DistributedGigaBlockingQueue(GigaSpace space, String queueName, CollocationMode collocationMode, ElementSerializer serializer) {
+        this(space, queueName, 0, false, collocationMode, serializer);
     }
 
     /**
@@ -71,8 +65,8 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
      * @param capacity        queue capacity
      * @param collocationMode collocation mode
      */
-    public DistributedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, CollocationMode collocationMode) {
-        this(space, queueName, capacity, true, collocationMode);
+    public DistributedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, CollocationMode collocationMode, ElementSerializer serializer) {
+        this(space, queueName, capacity, true, collocationMode, serializer);
     }
 
     /**
@@ -83,8 +77,8 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
      * @param bounded         flag whether queue is bounded
      * @param collocationMode collocation mode
      */
-    private DistributedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded, CollocationMode collocationMode) {
-        super(space, queueName, capacity, bounded);
+    private DistributedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded, CollocationMode collocationMode, ElementSerializer serializer) {
+        super(space, queueName, capacity, bounded, serializer);
         notNull(collocationMode, "Collocation mode is null");
         if (collocationMode != CollocationMode.LOCAL && collocationMode != CollocationMode.DISTRIBUTED) {
             throw new IllegalArgumentException("Invalid collocation mode = " + collocationMode);
@@ -122,7 +116,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
         if (offerResult.isChanged()) {
             QueueItemKey itemKey = new QueueItemKey(queueName, offerResult.getNewTail());
             Integer routing = calculateRouting(itemKey);
-            QueueItem<E> item = new QueueItem<>(itemKey, element, routing);
+            QueueItem item = new QueueItem(itemKey, serialize(element), routing);
             space.write(item);
             return true;
         } else {
@@ -208,12 +202,12 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
                 // there is a time window when queue tail changed, but item is not in the space yet
                 // to handle that we do take with timeout
-                QueueItem<E> queueItem = space.takeById(itemQuery, WAIT_ITEM_TIMEOUT_MS);
+                QueueItem queueItem = space.takeById(itemQuery, WAIT_ITEM_TIMEOUT_MS);
 
                 // we may not find item if producer failed in the middle of modifying tail and writing item to space
                 // just skip that item and poll the next one (see while loop)
                 if (queueItem != null) {
-                    return queueItem.getItem();
+                    return deserialize(queueItem.getItem());
                 }
             }
         }
@@ -234,12 +228,12 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
                 Long headIndex = result.getHeadIndex();
                 // there is a time window when queue tail changed, but item is not in the space yet
                 // to handle that we do take with timeout
-                QueueItem<E> queueItem = space.readById(itemQueryByIndex(headIndex), WAIT_ITEM_TIMEOUT_MS);
+                QueueItem queueItem = space.readById(itemQueryByIndex(headIndex), WAIT_ITEM_TIMEOUT_MS);
 
                 // we may not find item if producer failed in the middle of modifying tail and writing item to space
                 // just skip that item and peek the next one (see while loop)
                 if (queueItem != null) {
-                    return queueItem.getItem();
+                    return deserialize(queueItem.getItem());
                 }
             }
         }
@@ -305,8 +299,8 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
     /**
      * @return template to find item by index
      */
-    private QueueItem<?> itemTemplateByIndex(long index) {
-        QueueItem<?> itemTemplate = new QueueItem<>();
+    private QueueItem itemTemplateByIndex(long index) {
+        QueueItem itemTemplate = new QueueItem();
         QueueItemKey itemKey = new QueueItemKey(queueName, index);
         itemTemplate.setItemKey(itemKey);
         itemTemplate.setRouting(calculateRouting(itemKey));
@@ -381,9 +375,9 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
                 }
 
                 IdQuery<QueueItem> itemQuery = itemQueryByIndex(index);
-                QueueItem<E> queueItem = space.readById(itemQuery, WAIT_ITEM_TIMEOUT_MS);
+                QueueItem queueItem = space.readById(itemQuery);
                 if (queueItem != null) {
-                    return new Pair<>(queueItem.getItem(), index);
+                    return new Pair<>(deserialize(queueItem.getItem()), index);
                 } else {
                     index++;
                 }
