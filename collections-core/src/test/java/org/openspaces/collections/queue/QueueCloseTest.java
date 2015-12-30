@@ -1,6 +1,7 @@
 package org.openspaces.collections.queue;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openspaces.collections.CollocationMode;
@@ -27,6 +28,7 @@ public class QueueCloseTest {
     @Autowired
     private GigaSpace gigaSpace;
 
+    @Ignore
     @Test
     public void testQueueClose() throws Exception {
         DistributedGigaBlockingQueue<SerializableType> queue = createDistributedQueue();
@@ -36,7 +38,7 @@ public class QueueCloseTest {
     }
 
     @Before
-    public void before(){
+    public void before() {
         gigaSpace.clear(null);
     }
 

@@ -116,5 +116,6 @@ public class GigaQueueFactoryBean implements InitializingBean, DisposableBean, F
 
     @Override
     public void destroy() throws Exception {
+        gigaQueue.close();
     }
 }
