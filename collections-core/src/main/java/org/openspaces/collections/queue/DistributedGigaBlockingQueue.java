@@ -336,12 +336,12 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
         @Override
         public boolean hasNext() {
-            return nextIndex != null;
+            return next != null;
         }
 
         @Override
         public E next() {
-            if (nextIndex == null) {
+            if (next == null) {
                 throw new NoSuchElementException();
             }
             curr = next;
@@ -352,7 +352,6 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
                 next = itemAndIndex.getFirst();
                 nextIndex = itemAndIndex.getSecond();
             } else {
-                nextIndex = null;
                 next = null;
             }
 
@@ -361,7 +360,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
         @Override
         public void remove() {
-            if (currIndex == null) {
+            if (curr == null) {
                 throw new IllegalStateException();
             }
 
@@ -441,6 +440,5 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
     @Override
     public void close() throws Exception {
-        // TODO: implement removing the queue
     }
 }
