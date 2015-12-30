@@ -118,24 +118,6 @@ public class EmbeddedQueueTest extends AbstractQueueTest<SerializableType> {
 
     @Override
     @Test
-    @Ignore public void testRemoveEmptyQueue() {
-        super.testRemoveEmptyQueue();
-    }
-
-    @Override
-    @Test
-    @Ignore public void testRemoveHead() {
-        super.testRemoveHead();
-    }
-
-    @Override
-    @Test
-    @Ignore public void testPoll() {
-        super.testPoll();
-    }
-
-    @Override
-    @Test
     @Ignore public void testAdd() {
         super.testAdd();
     }
@@ -168,42 +150,6 @@ public class EmbeddedQueueTest extends AbstractQueueTest<SerializableType> {
     @Test
     public void testRemainingCapacity() {
         assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
-    }
-
-    @Override
-    @Test
-    @Ignore public void testDrainToSameCollection() {
-        super.testDrainToSameCollection();
-    }
-
-    @Override
-    @Test
-    @Ignore public void testDrainTo() {
-        super.testDrainTo();
-    }
-
-    @Override
-    @Test
-    @Ignore public void testDrainToNullCollection() {
-        super.testDrainToNullCollection();
-    }
-
-    @Override
-    @Test
-    @Ignore public void testDrainToMaxElementsNullCollection() {
-        super.testDrainToMaxElementsNullCollection();
-    }
-
-    @Override
-    @Test
-    @Ignore public void testDrainToMaxElementsSameCollection() {
-        super.testDrainToMaxElementsSameCollection();
-    }
-
-    @Override
-    @Test
-    @Ignore public void testDrainToMaxElements() {
-        super.testDrainToMaxElements();
     }
 
     @Override

@@ -3,13 +3,13 @@
  */
 package org.openspaces.collections.queue.operations;
 
-import static org.openspaces.collections.util.SerializationUtils.readNullableObject;
-import static org.openspaces.collections.util.SerializationUtils.writeNullableObject;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+
+import static org.openspaces.collections.util.SerializationUtils.readNullableObject;
+import static org.openspaces.collections.util.SerializationUtils.writeNullableObject;
 /**
  * @author Svitlana_Pogrebna
  *

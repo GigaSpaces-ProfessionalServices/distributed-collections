@@ -3,13 +3,13 @@
  */
 package org.openspaces.collections.queue.operations;
 
-import static org.openspaces.collections.queue.data.EmbeddedQueue.QUEUE_CONTAINER_PATH;
-import static org.openspaces.collections.queue.data.EmbeddedQueueContainer.QUEUE_PATH;
+import com.gigaspaces.query.aggregators.SpaceEntriesAggregator;
+import com.gigaspaces.query.aggregators.SpaceEntriesAggregatorContext;
 
 import java.util.Queue;
 
-import com.gigaspaces.query.aggregators.SpaceEntriesAggregator;
-import com.gigaspaces.query.aggregators.SpaceEntriesAggregatorContext;
+import static org.openspaces.collections.queue.data.EmbeddedQueue.QUEUE_CONTAINER_PATH;
+import static org.openspaces.collections.queue.data.EmbeddedQueueContainer.QUEUE_PATH;
 
 /**
  * @author Svitlana_Pogrebna

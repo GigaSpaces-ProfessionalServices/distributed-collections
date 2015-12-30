@@ -119,7 +119,7 @@ public abstract class AbstractGigaBlockingQueue<E> extends AbstractQueue<E> impl
      * extract single result from the generic change api result
      */
     @SuppressWarnings("unchecked")
-    protected static <T extends Serializable> T toSingleResult(ChangeResult<QueueMetadata> changeResult) {
+    protected static <T extends Serializable> T toSingleResult(ChangeResult<?> changeResult) {
         if (changeResult.getNumberOfChangedEntries() != 1) {
             throw new IllegalStateException("Unexpected number of changed entries: " + changeResult.getNumberOfChangedEntries());
         }

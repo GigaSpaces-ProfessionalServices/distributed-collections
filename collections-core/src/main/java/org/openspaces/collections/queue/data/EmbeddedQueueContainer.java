@@ -36,7 +36,6 @@ public class EmbeddedQueueContainer implements Externalizable {
 
     public void setQueue(Queue<Object> queue) {
         this.queue = queue;
-        this.size = queue.size();
     }
 
     public Integer getSize() {

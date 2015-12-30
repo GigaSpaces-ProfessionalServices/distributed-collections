@@ -3,26 +3,29 @@
  */
 package org.openspaces.collections.queue;
 
-import static org.openspaces.collections.queue.data.EmbeddedQueue.QUEUE_CONTAINER_PATH;
-import static org.openspaces.collections.queue.data.EmbeddedQueueContainer.QUEUE_SIZE_PATH;
+import com.gigaspaces.client.ChangeModifiers;
+import com.gigaspaces.client.ChangeResult;
+import com.gigaspaces.client.ChangeSet;
+import com.gigaspaces.client.WriteModifiers;
+import com.gigaspaces.query.IdQuery;
+import com.gigaspaces.query.aggregators.AggregationResult;
+import com.gigaspaces.query.aggregators.AggregationSet;
+import org.openspaces.collections.CollocationMode;
+import org.openspaces.collections.queue.data.EmbeddedQueue;
+import org.openspaces.collections.queue.data.EmbeddedQueueContainer;
+import org.openspaces.collections.queue.operations.EmbeddedPeekOperation;
+import org.openspaces.collections.queue.operations.EmbeddedPollOperation;
+import org.openspaces.collections.queue.operations.EmbeddedQueueItemResult;
+import org.openspaces.core.EntryAlreadyInSpaceException;
+import org.openspaces.core.GigaSpace;
 
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.openspaces.collections.CollocationMode;
-import org.openspaces.collections.queue.data.EmbeddedQueue;
-import org.openspaces.collections.queue.data.EmbeddedQueueContainer;
-import org.openspaces.collections.queue.operations.EmbeddedPeekOperation;
-import org.openspaces.collections.queue.operations.EmbeddedQueueItemResult;
-import org.openspaces.core.EntryAlreadyInSpaceException;
-import org.openspaces.core.GigaSpace;
-
-import com.gigaspaces.client.WriteModifiers;
-import com.gigaspaces.query.IdQuery;
-import com.gigaspaces.query.aggregators.AggregationResult;
-import com.gigaspaces.query.aggregators.AggregationSet;
+import static org.openspaces.collections.queue.data.EmbeddedQueue.QUEUE_CONTAINER_PATH;
+import static org.openspaces.collections.queue.data.EmbeddedQueueContainer.QUEUE_SIZE_PATH;
 /**
  * @author Svitlana_Pogrebna
  *
@@ -64,14 +67,21 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
 
     @Override
     public E poll() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedPollOperation());
+        
+        final ChangeResult<EmbeddedQueue> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
+        
+        final EmbeddedQueueItemResult result = toSingleResult(changeResult);
+        //TODO: add deserialization 
+        return (E) result.getItem();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public E peek() {
-        AggregationResult aggregationResult = space.aggregate(idQuery(), new AggregationSet().add(new EmbeddedPeekOperation()));
-        EmbeddedQueueItemResult result = toSingleResult(aggregationResult);
+        final AggregationResult aggregationResult = space.aggregate(idQuery(), new AggregationSet().add(new EmbeddedPeekOperation()));
+        
+        final EmbeddedQueueItemResult result = toSingleResult(aggregationResult);
         //TODO: add deserialization 
         return (E) result.getItem();
     }
