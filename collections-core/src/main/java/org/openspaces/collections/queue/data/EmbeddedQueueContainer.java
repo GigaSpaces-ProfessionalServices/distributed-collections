@@ -7,35 +7,40 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.List;
 import java.util.Objects;
-import java.util.Queue;
 
+import static org.openspaces.collections.util.SerializationUtils.readNullableObject;
+import static org.openspaces.collections.util.SerializationUtils.writeNullableObject;
 /**
  * @author Svitlana_Pogrebna
  *
  */
 public class EmbeddedQueueContainer implements Externalizable {
     
-    public static final String QUEUE_PATH = "queue";
-    public static final String QUEUE_SIZE_PATH = "size";
+    public static final String ITEMS_PATH = "items";
+    public static final String SIZE_PATH = "size";
+    public static final String CAPACITY_PATH = "capacity";
     
-    private Queue<Object> queue;
+    private List<Object> items;
     private Integer size;
+    private Integer capacity;
     
     public EmbeddedQueueContainer() {
     }
     
-    public EmbeddedQueueContainer(Queue<Object> queue) {
-        this.queue = Objects.requireNonNull(queue, "'queue' parameter must not be null");
-        this.size = queue.size();
+    public EmbeddedQueueContainer(List<Object> items, Integer capacity) {
+        this.items = Objects.requireNonNull(items, "'items' parameter must not be null");
+        this.size = items.size();
+        this.capacity = capacity;
     }
     
-    public Queue<Object> getQueue() {
-        return queue;
+    public List<Object> getItems() {
+        return items;
     }
 
-    public void setQueue(Queue<Object> queue) {
-        this.queue = queue;
+    public void setItems(List<Object> list) {
+        this.items = list;
     }
 
     public Integer getSize() {
@@ -46,16 +51,26 @@ public class EmbeddedQueueContainer implements Externalizable {
         this.size = size;
     }
     
+    public Integer getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
+    }
+
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject(getQueue());
+        out.writeObject(getItems());
         out.writeInt(getSize());
+        writeNullableObject(out, getCapacity());
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        setQueue((Queue<Object>)in.readObject());
+        setItems((List<Object>)in.readObject());
         setSize(in.readInt());
+        setCapacity((Integer)readNullableObject(in));
     }
 }

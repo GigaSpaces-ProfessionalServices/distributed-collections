@@ -20,13 +20,13 @@ import org.openspaces.collections.queue.operations.EmbeddedQueueChangeResult;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.openspaces.collections.queue.data.EmbeddedQueue.QUEUE_CONTAINER_PATH;
-import static org.openspaces.collections.queue.data.EmbeddedQueueContainer.QUEUE_SIZE_PATH;
+import static org.openspaces.collections.queue.data.EmbeddedQueueContainer.SIZE_PATH;
 /**
  * @author Svitlana_Pogrebna
  *
@@ -104,8 +104,8 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
     protected void createNewMetadataIfRequired() {
         try {
             //TODO: replace LinkedBlockingQueue with more efficient implementation
-            Queue<Object> queue = bounded ? new LinkedBlockingQueue<Object>(capacity) : new LinkedBlockingQueue<Object>();
-            EmbeddedQueue embeddedQueue = new EmbeddedQueue(queueName, new EmbeddedQueueContainer(queue));
+            List<Object> items = bounded ? new ArrayList<>(capacity) :  new ArrayList<>();
+            EmbeddedQueue embeddedQueue = new EmbeddedQueue(queueName, new EmbeddedQueueContainer(items, bounded ? capacity : null));
             space.write(embeddedQueue, WriteModifiers.WRITE_ONLY);
         } catch (EntryAlreadyInSpaceException e) {
             // no-op
@@ -119,7 +119,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
 
     @Override
     public int size() {
-        final IdQuery<EmbeddedQueue> idQuery = idQuery().setProjections(QUEUE_CONTAINER_PATH + "." + QUEUE_SIZE_PATH);
+        final IdQuery<EmbeddedQueue> idQuery = idQuery().setProjections(QUEUE_CONTAINER_PATH + "." + SIZE_PATH);
         return space.read(idQuery).getContainer().getSize();
     }
     

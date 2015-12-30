@@ -3,17 +3,15 @@
  */
 package org.openspaces.collections.queue;
 
-import static java.util.Objects.requireNonNull;
+import com.gigaspaces.client.ChangeResult;
+import com.gigaspaces.query.aggregators.AggregationResult;
+import org.openspaces.core.GigaSpace;
 
 import java.io.Serializable;
 import java.util.AbstractQueue;
 import java.util.Collection;
 
-import org.openspaces.collections.queue.data.QueueMetadata;
-import org.openspaces.core.GigaSpace;
-
-import com.gigaspaces.client.ChangeResult;
-import com.gigaspaces.query.aggregators.AggregationResult;
+import static java.util.Objects.requireNonNull;
 
 /**
  * @author Svitlana_Pogrebna
