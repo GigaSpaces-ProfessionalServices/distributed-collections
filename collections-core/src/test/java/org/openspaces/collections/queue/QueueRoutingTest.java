@@ -5,6 +5,8 @@ package org.openspaces.collections.queue;
 
 import com.j_spaces.core.client.SQLQuery;
 import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openspaces.collections.queue.data.QueueItem;
@@ -34,12 +36,27 @@ public class QueueRoutingTest {
     private GigaSpace gigaSpace;
     @Resource
     private GigaBlockingQueue<SerializableType> gigaQueue;
+
+    /** static reference to use junit @AfterClass **/
+    private static GigaBlockingQueue gigaQueueStaticReference;
+
     @Value("${queue.name}")
     private String queueName;
+
+    @Before
+    public void setUp() {
+        gigaQueueStaticReference = gigaQueue;
+    }
 
     @After
     public void tearDown() {
         gigaSpace.clear(null);
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        System.out.println("Closing queue");
+        gigaQueueStaticReference.close();
     }
 
     @Test

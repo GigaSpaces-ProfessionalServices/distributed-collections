@@ -1,5 +1,6 @@
 package org.openspaces.collections.queue;
 
+import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,6 +23,9 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
     @Resource
     protected GigaBlockingQueue<T> gigaQueue;
 
+    /** static reference to use junit @AfterClass **/
+    private static GigaBlockingQueue gigaQueueStaticReference;
+
     private static final long TIMEOUT = 1000; // in milliseconds
     private static final long TIMEOUT_ACCURACY = 10; // in milliseconds
 
@@ -41,6 +45,13 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
     public void setUp() {
         gigaQueue.clear();
         gigaQueue.addAll(testedElements);
+        gigaQueueStaticReference = gigaQueue;
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        System.out.println("Closing queue");
+        gigaQueueStaticReference.close();
     }
 
     @Test(expected = NullPointerException.class)

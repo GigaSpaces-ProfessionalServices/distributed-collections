@@ -28,7 +28,6 @@ public class QueueCloseTest {
     @Autowired
     private GigaSpace gigaSpace;
 
-    @Ignore
     @Test
     public void testQueueClose() throws Exception {
         DistributedGigaBlockingQueue<SerializableType> queue = createDistributedQueue();

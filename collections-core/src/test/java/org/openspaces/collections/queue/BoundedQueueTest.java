@@ -1,9 +1,6 @@
 package org.openspaces.collections.queue;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.openspaces.collections.set.SerializableType;
 import org.openspaces.core.GigaSpace;
@@ -35,6 +32,8 @@ public class BoundedQueueTest {
     private GigaSpace gigaSpace;
     @Resource
     private GigaBlockingQueue<SerializableType> gigaQueue;
+    /** static reference to use junit @AfterClass **/
+    private static GigaBlockingQueue gigaQueueStaticReference;
 
     @Before
     public void setUp() {
@@ -44,6 +43,12 @@ public class BoundedQueueTest {
     @After
     public void tearDown() {
         gigaSpace.clear(null);
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        System.out.println("Closing queue");
+        gigaQueueStaticReference.close();
     }
 
     @Test(expected = IllegalStateException.class)
