@@ -118,7 +118,7 @@ public class GigaSetTest extends AbstractCollectionTest<SerializableType> {
 
     @Override
     protected void assertSize(String msg, int expectedSize) {
-        assertEquals(msg, expectedSize, gigaSpace.count(null));
+        assertEquals(msg, expectedSize, getCollection().size());
     }
 
     @Test(expected = NullPointerException.class)
