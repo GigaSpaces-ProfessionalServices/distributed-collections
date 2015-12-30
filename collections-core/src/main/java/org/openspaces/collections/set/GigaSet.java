@@ -1,17 +1,16 @@
 package org.openspaces.collections.set;
 
-import java.io.Serializable;
-import java.util.Set;
-
 import net.jini.core.transaction.Transaction;
-
 import org.openspaces.core.map.LockHandle;
 import org.openspaces.core.transaction.TransactionProvider;
 
+import java.io.Serializable;
+import java.util.Set;
+
 public interface GigaSet<T extends Serializable> extends Set<T> {
-    
+
     /**
-     * Returns the transaction provider allowing accessing the current running transaction. 
+     * Returns the transaction provider allowing accessing the current running transaction.
      */
     TransactionProvider getTxProvider();
 
@@ -21,43 +20,40 @@ public interface GigaSet<T extends Serializable> extends Set<T> {
     Transaction getCurrentTransaction();
 
     /**
-     * @param e element to be added to this set
+     * @param e          element to be added to this set
      * @param timeToLive time to keep object in this cache, in milliseconds
      * @return <tt>true</tt> if this set did not already contain the specified
-     *         element
+     * element
      */
     boolean add(T e, long timeToLive);
 
     /**
-     * @param e element to be added to this set
+     * @param e          element to be added to this set
      * @param timeToLive time to keep object in this cache, in milliseconds
-     * @param timeout A timeout to use if the object is locked under a transaction (in milliseconds)
+     * @param timeout    A timeout to use if the object is locked under a transaction (in milliseconds)
      * @return <tt>true</tt> if this set did not already contain the specified
-     *         element
+     * element
      */
     boolean add(T e, long timeToLive, long timeout);
 
     /**
-     * @param e element to be added to this set
+     * @param e          element to be added to this set
      * @param lockHandle If the element is locked, will perform the operation within the same lock
      * @return <tt>true</tt> if this set did not already contain the specified
-     *         element
+     * element
      */
     boolean add(T e, LockHandle lockHandle);
 
     /**
-     *     
-     * @param e element to be added to this set
+     * @param e          element to be added to this set
      * @param timeToLive time to keep object in this cache, in milliseconds
      * @param lockHandle If the element is locked, will perform the operation within the same lock
      * @return <tt>true</tt> if this set did not already contain the specified
-     *         element
+     * element
      */
     boolean add(T e, long timeToLive, LockHandle lockHandle);
 
     /**
-     * 
-     *
      * @param element         element to be removed from this set
      * @param waitForResponse time to wait for response
      * @return The removed object
@@ -65,7 +61,6 @@ public interface GigaSet<T extends Serializable> extends Set<T> {
     boolean remove(Object e, long waitForResponse);
 
     /**
-     *
      * @param element         element to be removed from this set
      * @param waitForResponse time to wait for response
      * @param lockHandle      If the element is locked, will perform the operation within the same lock
@@ -76,8 +71,8 @@ public interface GigaSet<T extends Serializable> extends Set<T> {
     /**
      * Locks the given element for any updates. Returns a {@link org.openspaces.core.map.LockHandle}
      * that can be bused to perform specific updates under the same lock (by calling
-     * {@link #put(Object,Object,org.openspaces.core.map.LockHandle)} for example).
-     *
+     * {@link #put(Object, Object, org.openspaces.core.map.LockHandle)} for example).
+     * <p/>
      * <p>Will use the configured default lock time to live and default waiting for lock timeout
      * values. By default the lock time to live is 60 seconds and waiting for lock timeout is
      * 10 seconds.

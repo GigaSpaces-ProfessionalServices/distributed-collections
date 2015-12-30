@@ -1,25 +1,25 @@
 package org.openspaces.collections.queue.data;
 
-import java.util.Objects;
-
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
 import com.gigaspaces.annotation.pojo.SpaceRouting;
+
+import java.util.Objects;
 
 /**
  * @author Oleksiy_Dyagilev
  */
 @SpaceClass
-public class QueueItem<T> {
+public class QueueItem {
 
     private QueueItemKey itemKey;
     private Integer routing;
-    private T item;
-    
+    private Object item;
+
     public QueueItem() {
     }
 
-    public QueueItem(QueueItemKey itemKey, T item, Integer routing) {
+    public QueueItem(QueueItemKey itemKey, Object item, Integer routing) {
         this.itemKey = Objects.requireNonNull(itemKey, "'itemKey' parameter must not be null");
         this.routing = Objects.requireNonNull(routing, "'routing' parameter must not be null");
         this.item = item;
@@ -42,12 +42,12 @@ public class QueueItem<T> {
     public void setRouting(Integer routing) {
         this.routing = routing;
     }
-    
-    public T getItem() {
+
+    public Object getItem() {
         return item;
     }
 
-    public void setItem(T item) {
+    public void setItem(Object item) {
         this.item = item;
     }
 }

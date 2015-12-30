@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.openspaces.collections.queue.data;
 
@@ -14,27 +14,26 @@ import static org.openspaces.collections.util.SerializationUtils.readNullableObj
 import static org.openspaces.collections.util.SerializationUtils.writeNullableObject;
 /**
  * @author Svitlana_Pogrebna
- *
  */
 public class EmbeddedQueueContainer implements Externalizable {
-    
+
     public static final String ITEMS_PATH = "items";
     public static final String SIZE_PATH = "size";
     public static final String CAPACITY_PATH = "capacity";
-    
+
     private List<Object> items;
     private Integer size;
     private Integer capacity;
-    
+
     public EmbeddedQueueContainer() {
     }
-    
+
     public EmbeddedQueueContainer(List<Object> items, Integer capacity) {
         this.items = Objects.requireNonNull(items, "'items' parameter must not be null");
         this.size = items.size();
         this.capacity = capacity;
     }
-    
+
     public List<Object> getItems() {
         return items;
     }
@@ -50,7 +49,7 @@ public class EmbeddedQueueContainer implements Externalizable {
     public void setSize(Integer size) {
         this.size = size;
     }
-    
+
     public Integer getCapacity() {
         return capacity;
     }

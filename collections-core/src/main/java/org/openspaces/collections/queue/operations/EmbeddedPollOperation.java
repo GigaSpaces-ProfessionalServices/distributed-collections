@@ -6,7 +6,6 @@ import java.util.List;
 
 /**
  * @author Svitlana_Pogrebna
- *
  */
 public class EmbeddedPollOperation extends EmbeddedChangeOperation<Object> {
 

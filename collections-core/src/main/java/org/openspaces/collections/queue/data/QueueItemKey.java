@@ -12,7 +12,7 @@ import java.util.Objects;
 public class QueueItemKey implements Externalizable {
 
     private static final long serialVersionUID = 1L;
-    
+
     private String queueName;
     private Long queueIndex;
 
@@ -67,7 +67,7 @@ public class QueueItemKey implements Externalizable {
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-       setQueueName(in.readUTF());
-       setQueueIndex(in.readLong());
+        setQueueName(in.readUTF());
+        setQueueIndex(in.readLong());
     }
 }

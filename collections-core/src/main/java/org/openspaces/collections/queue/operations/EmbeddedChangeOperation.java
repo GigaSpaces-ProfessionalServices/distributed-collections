@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.openspaces.collections.queue.operations;
 
@@ -15,7 +15,6 @@ import static org.openspaces.collections.queue.data.EmbeddedQueueContainer.SIZE_
 
 /**
  * @author Svitlana_Pogrebna
- *
  */
 public abstract class EmbeddedChangeOperation<T> extends CustomChangeOperation {
 

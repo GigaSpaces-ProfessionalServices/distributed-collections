@@ -1,19 +1,15 @@
 package org.openspaces.collections.queue.operations;
 
-import static org.openspaces.collections.queue.data.QueueMetadata.HEAD_PATH;
-import static org.openspaces.collections.queue.data.QueueMetadata.REMOVED_INDEXES_PATH;
-import static org.openspaces.collections.queue.data.QueueMetadata.TAIL_PATH;
+import com.gigaspaces.query.aggregators.SpaceEntriesAggregator;
+import com.gigaspaces.query.aggregators.SpaceEntriesAggregatorContext;
+import org.openspaces.collections.queue.operations.SizeOperation.Result;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Set;
 
-import org.openspaces.collections.queue.operations.SizeOperation.Result;
-
-import com.gigaspaces.query.aggregators.SpaceEntriesAggregator;
-import com.gigaspaces.query.aggregators.SpaceEntriesAggregatorContext;
+import static org.openspaces.collections.queue.data.QueueMetadata.*;
 
 /**
  * @author Oleksiy_Dyagilev
@@ -23,7 +19,7 @@ public class SizeOperation extends SpaceEntriesAggregator<Result> {
     private static final long serialVersionUID = 1L;
 
     private transient Result sizeResult;
-    
+
     @Override
     public String getDefaultAlias() {
         return "size";
@@ -34,9 +30,8 @@ public class SizeOperation extends SpaceEntriesAggregator<Result> {
     public void aggregate(SpaceEntriesAggregatorContext context) {
         Long tail = (Long) context.getPathValue(TAIL_PATH);
         Long head = (Long) context.getPathValue(HEAD_PATH);
-        Set<Long> removedIndexes = (Set<Long>) context.getPathValue(REMOVED_INDEXES_PATH);
 
-        long size = tail - head - removedIndexes.size();
+        long size = tail - head - (Integer) context.getPathValue(REMOVED_INDEXES_SIZE_PATH);
 
         this.sizeResult = new Result((int) size);
     }
@@ -50,7 +45,7 @@ public class SizeOperation extends SpaceEntriesAggregator<Result> {
     public void aggregateIntermediateResult(Result partitionResult) {
         this.sizeResult = partitionResult;
     }
-    
+
     /**
      * Operation result
      */
@@ -67,7 +62,7 @@ public class SizeOperation extends SpaceEntriesAggregator<Result> {
         public int getSize() {
             return size;
         }
-        
+
         @Override
         public void writeExternal(ObjectOutput out) throws IOException {
             out.writeInt(getSize());

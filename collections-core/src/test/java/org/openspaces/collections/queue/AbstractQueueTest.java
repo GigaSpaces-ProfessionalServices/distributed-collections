@@ -1,16 +1,25 @@
 package org.openspaces.collections.queue;
 
 import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.openspaces.collections.AbstractCollectionTest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
 public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractQueueTest.class);
 
+    @Value("${queue.name:}")
+    protected String queueName;
+    @Resource
     protected GigaBlockingQueue<T> gigaQueue;
 
     private static final long TIMEOUT = 1000; // in milliseconds
@@ -27,6 +36,12 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
 
     @Override
     protected abstract void assertSize(String msg, int expectedSize);
+
+    @Before
+    public void setUp() {
+        gigaQueue.clear();
+        gigaQueue.addAll(testedElements);
+    }
 
     @Test(expected = NullPointerException.class)
     public void testOfferNull() {
@@ -210,7 +225,7 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         });
     }
 
-    @Test
+    @Test(timeout = 5000)
     public void testTake() {
         Assume.assumeFalse(testedElements.isEmpty());
 
@@ -358,6 +373,42 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
                 return null;
             }
         });
+    }
+
+    @Test
+    public void testCallingRemoveOnIteratorConcurrently() {
+        Assume.assumeTrue(testedElements.size() >= 2);
+
+        // creating iterator before the polling
+        Iterator<T> iterator = gigaQueue.iterator();
+
+        // polling half of the elements
+        for (int index = 0; index < testedElements.size() / 2; index++) {
+            gigaQueue.poll();
+        }
+        int expectedSize = testedElements.size() - testedElements.size() / 2;
+
+        // removing first item from iterator - that should be polled in loop above
+        assertTrue(iterator.hasNext());
+        iterator.next();
+        iterator.remove();
+
+        // checking queue size - should not be affected by iterator
+        assertEquals(expectedSize, gigaQueue.size());
+    }
+
+    @Test
+    public void testCallingRemoveOnLastElement() {
+        Assume.assumeFalse(testedElements.isEmpty());
+
+        T element = newElement();
+        gigaQueue.add(element);
+        gigaQueue.remove(element);
+
+        assertEquals(testedElements.size(), gigaQueue.size());
+
+        gigaQueue.clear();
+        assertEquals(0, gigaQueue.size());
     }
 
     private interface AddOperation<T> {

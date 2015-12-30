@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.openspaces.collections.queue;
 
@@ -17,6 +17,7 @@ import org.openspaces.collections.queue.operations.EmbeddedOfferOperation;
 import org.openspaces.collections.queue.operations.EmbeddedPeekOperation;
 import org.openspaces.collections.queue.operations.EmbeddedPollOperation;
 import org.openspaces.collections.queue.operations.EmbeddedQueueChangeResult;
+import org.openspaces.collections.serialization.ElementSerializer;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
 
@@ -27,18 +28,18 @@ import java.util.concurrent.TimeUnit;
 
 import static org.openspaces.collections.queue.data.EmbeddedQueue.QUEUE_CONTAINER_PATH;
 import static org.openspaces.collections.queue.data.EmbeddedQueueContainer.SIZE_PATH;
+
 /**
  * @author Svitlana_Pogrebna
- *
  */
 public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
 
-    public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName) {
-        super(space, queueName, 0, false);
+    public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName, ElementSerializer serializer) {
+        super(space, queueName, 0, false, serializer);
     }
-    
-    public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName, int capacity) {
-        super(space, queueName, capacity, true);
+
+    public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, ElementSerializer serializer) {
+        super(space, queueName, capacity, true, serializer);
     }
 
     @Override
@@ -122,11 +123,11 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
         final IdQuery<EmbeddedQueue> idQuery = idQuery().setProjections(QUEUE_CONTAINER_PATH + "." + SIZE_PATH);
         return space.read(idQuery).getContainer().getSize();
     }
-    
+
     private IdQuery<EmbeddedQueue> idQuery() {
         return new IdQuery<EmbeddedQueue>(EmbeddedQueue.class, queueName);
     }
-    
+
     @Override
     public void close() throws Exception {
         throw new UnsupportedOperationException("Not implemented yet");

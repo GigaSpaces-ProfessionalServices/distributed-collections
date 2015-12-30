@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.openspaces.collections.queue.operations;
 
@@ -13,7 +13,6 @@ import static org.openspaces.collections.queue.data.EmbeddedQueueContainer.ITEMS
 
 /**
  * @author Svitlana_Pogrebna
- *
  */
 public class EmbeddedPeekOperation extends SpaceEntriesAggregator<EmbeddedQueueChangeResult<Object>> {
 

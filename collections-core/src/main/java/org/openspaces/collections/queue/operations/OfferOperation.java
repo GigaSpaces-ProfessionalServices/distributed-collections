@@ -1,19 +1,17 @@
 package org.openspaces.collections.queue.operations;
 
-import static org.openspaces.collections.queue.data.QueueMetadata.BOUNDED_PATH;
-import static org.openspaces.collections.queue.data.QueueMetadata.CAPACITY_PATH;
-import static org.openspaces.collections.queue.data.QueueMetadata.HEAD_PATH;
-import static org.openspaces.collections.queue.data.QueueMetadata.TAIL_PATH;
-import static org.openspaces.collections.util.SerializationUtils.readNullableObject;
-import static org.openspaces.collections.util.SerializationUtils.writeNullableObject;
+import com.gigaspaces.client.CustomChangeOperation;
+import com.gigaspaces.server.MutableServerEntry;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import com.gigaspaces.client.CustomChangeOperation;
-import com.gigaspaces.server.MutableServerEntry;
+import static org.openspaces.collections.queue.data.QueueMetadata.*;
+import static org.openspaces.collections.util.SerializationUtils.readNullableObject;
+import static org.openspaces.collections.util.SerializationUtils.writeNullableObject;
+
 /**
  * @author Oleksiy_Dyagilev
  */
@@ -26,13 +24,15 @@ public class OfferOperation extends CustomChangeOperation {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Object change(MutableServerEntry entry) {
         Long tail = (Long) entry.getPathValue(TAIL_PATH);
         Long head = (Long) entry.getPathValue(HEAD_PATH);
         boolean bounded = (Boolean) entry.getPathValue(BOUNDED_PATH);
         int capacity = (Integer) entry.getPathValue(CAPACITY_PATH);
+        int removedIndexesSize = (Integer) entry.getPathValue(REMOVED_INDEXES_SIZE_PATH);
 
-        if (hasSpaceAvailable(bounded, tail, head, capacity)) {
+        if (hasSpaceAvailable(bounded, tail, head, capacity, removedIndexesSize)) {
             long newTail = tail + itemsNumber;
             entry.setPathValue(TAIL_PATH, newTail);
             return Result.changed(newTail);
@@ -42,8 +42,8 @@ public class OfferOperation extends CustomChangeOperation {
     }
 
     // TODO: removed indexes?
-    private boolean hasSpaceAvailable(boolean bounded, Long tail, Long head, int capacity) {
-        return !bounded || (capacity >= (tail - head + itemsNumber));
+    private boolean hasSpaceAvailable(boolean bounded, Long tail, Long head, int capacity, int removedIndexesSize) {
+        return !bounded || (capacity >= (tail - head + itemsNumber - removedIndexesSize));
     }
 
     @Override
@@ -80,7 +80,7 @@ public class OfferOperation extends CustomChangeOperation {
         public long getNewTail() {
             return newTail;
         }
-        
+
         @Override
         public void writeExternal(ObjectOutput out) throws IOException {
             out.writeBoolean(isChanged());
@@ -89,8 +89,8 @@ public class OfferOperation extends CustomChangeOperation {
 
         @Override
         public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-           this.changed = in.readBoolean();
-           this.newTail = readNullableObject(in);
+            this.changed = in.readBoolean();
+            this.newTail = readNullableObject(in);
         }
     }
 }
