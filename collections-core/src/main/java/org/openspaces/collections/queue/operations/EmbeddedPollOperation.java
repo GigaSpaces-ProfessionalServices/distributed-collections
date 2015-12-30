@@ -1,6 +1,8 @@
 package org.openspaces.collections.queue.operations;
 
-import java.util.Queue;
+import com.gigaspaces.server.MutableServerEntry;
+
+import java.util.List;
 
 /**
  * @author Svitlana_Pogrebna
@@ -15,7 +17,7 @@ public class EmbeddedPollOperation extends EmbeddedChangeOperation<Object> {
     }
 
     @Override
-    protected Object change(Queue<Object> queue) {
-        return queue.poll();
+    protected Object change(MutableServerEntry entry, List<Object> items) {
+        return items.isEmpty() ? null : items.remove(0);
     }
 }

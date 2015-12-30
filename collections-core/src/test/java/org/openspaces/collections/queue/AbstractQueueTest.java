@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractQueueTest.class);
@@ -79,7 +80,7 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
 
     @Test
     public void testElement() {
-        Assume.assumeFalse(testedElements.isEmpty());
+        assumeFalse(testedElements.isEmpty());
 
         testRetrieveHead(new RetrieveOperation<T>() {
 
@@ -125,7 +126,7 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
 
     @Test
     public void testRemoveHead() {
-        Assume.assumeFalse(testedElements.isEmpty());
+        assumeFalse(testedElements.isEmpty());
 
         testRemoveInternal(new RetrieveOperation<T>() {
             @Override
@@ -193,7 +194,7 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
 
     @Test
     public void testAddAll() {
-        assertFalse("Blocking queue should not be changed", gigaQueue.addAll(Collections.<T>emptySet()));
+        assertFalse("Blocking queue should not be changed", gigaQueue.addAll(Collections.<T> emptySet()));
         int size = testedElements.size();
         assertSize("Invalid blocking queue size", testedElements.size());
 
@@ -238,7 +239,7 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
 
     @Test(timeout = 5000)
     public void testTake() {
-        Assume.assumeFalse(testedElements.isEmpty());
+        assumeFalse(testedElements.isEmpty());
 
         RetrieveOperation<T> operation = new RetrieveOperation<T>() {
 
@@ -335,7 +336,7 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
 
             T element = result.iterator().next();
             assertNotNull("Element should not be null", element);
-            //relies on the elements order preserving
+            // relies on the elements order preserving
             assertEquals("Invalid element transferred", testedElements.iterator().next(), element);
         }
 
@@ -353,7 +354,7 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
 
     @Test
     public void testPollWithTimeout() throws InterruptedException {
-        Assume.assumeFalse(testedElements.isEmpty());
+        assumeFalse(testedElements.isEmpty());
 
         RetrieveOperation<T> operation = new RetrieveOperation<T>() {
             @Override
@@ -386,6 +387,7 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
         });
     }
 
+    // iterator.remove() tests
     @Test
     public void testCallingRemoveOnIteratorConcurrently() {
         Assume.assumeTrue(testedElements.size() >= 2);
@@ -410,16 +412,55 @@ public abstract class AbstractQueueTest<T> extends AbstractCollectionTest<T> {
 
     @Test
     public void testCallingRemoveOnLastElement() {
-        Assume.assumeFalse(testedElements.isEmpty());
+        assumeFalse(testedElements.isEmpty());
 
         T element = newElement();
         gigaQueue.add(element);
+        // calls iterator.remove() inside
         gigaQueue.remove(element);
 
         assertEquals(testedElements.size(), gigaQueue.size());
 
         gigaQueue.clear();
         assertEquals(0, gigaQueue.size());
+    }
+
+    @Test
+    public void testRemovingWholeQueueWithIterator() {
+        Iterator<T> iterator = gigaQueue.iterator();
+        while (iterator.hasNext()) {
+            assertNotNull(iterator.next());
+            iterator.remove();
+        }
+        assertSize("Queue must be empty", 0);
+    }
+
+    @Test
+    public void testRemovingMiddleElementWithIterator() {
+        assumeFalse(testedElements.isEmpty());
+
+        int middleIndex = testedElements.size() / 2 - 1;
+        Iterator<T> iterator = gigaQueue.iterator();
+        for (int index = 0; index <= middleIndex; index++) {
+            assertTrue(iterator.hasNext());
+            assertNotNull(iterator.next());
+        }
+        iterator.remove();
+
+        assertSize("Queue must be missing one element", testedElements.size() - 1);
+
+        for (int index = 0; index < testedElements.size(); index++) {
+            // skip middle element
+            if (index != middleIndex) {
+                T expected = testedElements.get(index);
+                assertEquals(expected, gigaQueue.poll());
+            }
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testIteratorRemoveWithoutNext() {
+        gigaQueue.iterator().remove();
     }
 
     private interface AddOperation<T> {

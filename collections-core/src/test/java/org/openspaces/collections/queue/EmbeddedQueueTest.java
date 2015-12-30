@@ -60,7 +60,7 @@ public class EmbeddedQueueTest extends AbstractQueueTest<SerializableType> {
     @Override
     protected void assertSize(String msg, int expectedSize) {
         SQLQuery<EmbeddedQueue> query = new SQLQuery<>(EmbeddedQueue.class, "name = ?", queueName);
-        int size = gigaSpace.read(query).getContainer().getQueue().size();
+        int size = gigaSpace.read(query).getContainer().getItems().size();
         assertEquals(msg, expectedSize, size);
     }
 

@@ -10,6 +10,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.annotation.Resource;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -21,7 +22,6 @@ import static org.openspaces.collections.CollectionUtils.createSerializableTypeL
 @ContextConfiguration(locations = "classpath:/gigaqueue-bounded-test-context.xml")
 @Ignore
 public class BoundedQueueTest {
-
     private static final long TIMEOUT = 1000; // in milliseconds
     private static final long TIMEOUT_ACCURACY = 10; // in milliseconds
 
@@ -37,6 +37,7 @@ public class BoundedQueueTest {
 
     @Before
     public void setUp() {
+        gigaQueue.clear();
         gigaQueue.addAll(createSerializableTypeList(capacity));
     }
 
@@ -94,8 +95,41 @@ public class BoundedQueueTest {
         assertEquals("Invalid remaining capacity", expectedCapacity, gigaQueue.remainingCapacity());
     }
 
-    @Test(timeout = TIMEOUT)
+    @Test
     public void testOfferWithTimeoutFullQueue() throws InterruptedException {
         gigaQueue.offer(createSerializableType(), TIMEOUT - TIMEOUT_ACCURACY, TimeUnit.MILLISECONDS);
+    }
+
+    @Test(timeout = TIMEOUT)
+    @Ignore
+    public void testPutIntoFullQueueAndRemoveWithIterator() throws InterruptedException {
+        final SerializableType element = createSerializableType();
+        Thread puttingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    gigaQueue.put(element);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        puttingThread.start();
+
+        int middleIndex = capacity / 2;
+        Iterator<SerializableType> iterator = gigaQueue.iterator();
+        for (int index = 0; index <= middleIndex; index++) {
+            assertTrue(iterator.hasNext());
+            assertNotNull(iterator.next());
+        }
+        iterator.remove();
+
+        puttingThread.join();
+
+        assertEquals(capacity, gigaQueue.size());
+        for (int index = 0; index < middleIndex; index++) {
+            assertNotNull(gigaQueue.poll());
+        }
+        assertEquals(element, gigaQueue.poll());
     }
 }
