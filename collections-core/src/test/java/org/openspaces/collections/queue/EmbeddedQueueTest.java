@@ -3,18 +3,7 @@
  */
 package org.openspaces.collections.queue;
 
-import static org.junit.Assert.assertEquals;
-import static org.openspaces.collections.CollectionUtils.MEDIUM_COLLECTION_SIZE;
-import static org.openspaces.collections.CollectionUtils.createSerializableType;
-import static org.openspaces.collections.CollectionUtils.createSerializableTypeList;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
-
+import com.j_spaces.core.client.SQLQuery;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -22,13 +11,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.openspaces.collections.queue.data.EmbeddedQueue;
-import org.openspaces.collections.queue.data.EmbeddedQueueContainer;
 import org.openspaces.collections.set.SerializableType;
-import org.openspaces.core.GigaSpace;
 import org.springframework.test.context.ContextConfiguration;
 
-import com.gigaspaces.client.WriteModifiers;
-import com.j_spaces.core.client.SQLQuery;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.openspaces.collections.CollectionUtils.*;
 
 /**
  * @author Svitlana_Pogrebna
@@ -55,25 +47,8 @@ public class EmbeddedQueueTest extends AbstractQueueTest<SerializableType> {
 
     @Before
     public void setUp() throws Exception {
-        //TODO: replace EmbeddedGigaBlockingQueue instantiation when 'addAll' operation is implemented
-       
-        /* this.gigaQueue = new EmbeddedGigaBlockingQueue<>(gigaSpace, QUEUE_NAME);
-        gigaQueue.addAll(testedElements);*/
-        
-        class TestEmbeddedGigaBlockingQueue<E> extends EmbeddedGigaBlockingQueue<E> {
-            public TestEmbeddedGigaBlockingQueue(GigaSpace space, String queueName) {
-                super(space, queueName);
-            }
-
-            @Override
-            protected void createNewMetadataIfRequired() {
-                Queue<Object> queue = new LinkedBlockingQueue<Object>(testedElements);
-                EmbeddedQueue embeddedQueue = new EmbeddedQueue(QUEUE_NAME, new EmbeddedQueueContainer(queue));
-                space.write(embeddedQueue, WriteModifiers.WRITE_ONLY);
-            }
-        }
-        
-        this.gigaQueue = new TestEmbeddedGigaBlockingQueue<SerializableType>(gigaSpace, QUEUE_NAME);
+        this.gigaQueue = new EmbeddedGigaBlockingQueue<>(gigaSpace, QUEUE_NAME);
+        gigaQueue.addAll(testedElements);
     }
     
     @Override
@@ -100,12 +75,6 @@ public class EmbeddedQueueTest extends AbstractQueueTest<SerializableType> {
 
     @Override
     @Test
-    @Ignore public void testOfferNull() {
-        super.testOfferNull();
-    }
-
-    @Override
-    @Test
     @Ignore public void testPutNull() throws InterruptedException {
         super.testPutNull();
     }
@@ -114,24 +83,6 @@ public class EmbeddedQueueTest extends AbstractQueueTest<SerializableType> {
     @Test
     @Ignore public void testOfferNullWithTimeout() throws InterruptedException {
         super.testOfferNullWithTimeout();
-    }
-
-    @Override
-    @Test
-    @Ignore public void testAdd() {
-        super.testAdd();
-    }
-
-    @Override
-    @Test
-    @Ignore public void testAddAll() {
-        super.testAddAll();
-    }
-
-    @Override
-    @Test
-    @Ignore public void testOffer() {
-        super.testOffer();
     }
 
     @Override
@@ -172,12 +123,6 @@ public class EmbeddedQueueTest extends AbstractQueueTest<SerializableType> {
 
     @Override
     @Test
-    @Ignore public void testAddAllNull() {
-        super.testAddAllNull();
-    }
-
-    @Override
-    @Test
     @Ignore public void testRemoveAllNull() {
         super.testRemoveAllNull();
     }
@@ -196,20 +141,8 @@ public class EmbeddedQueueTest extends AbstractQueueTest<SerializableType> {
 
     @Override
     @Test
-    @Ignore public void testAddAllWithNull() throws InterruptedException {
-        super.testAddAllWithNull();
-    }
-
-    @Override
-    @Test
     @Ignore public void testRemoveAllWithNull() throws InterruptedException {
         super.testRemoveAllWithNull();
-    }
-
-    @Override
-    @Test
-    @Ignore public void testClear() {
-        super.testClear();
     }
 
     @Override
@@ -230,7 +163,7 @@ public class EmbeddedQueueTest extends AbstractQueueTest<SerializableType> {
         Assume.assumeTrue(testedElements.isEmpty());
         assertSize("Invalid queue size", 0);
     }
-
+    
     @Override
     @Test
     @Ignore public void testIterator() {

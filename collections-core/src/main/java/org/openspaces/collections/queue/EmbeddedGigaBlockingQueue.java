@@ -13,9 +13,10 @@ import com.gigaspaces.query.aggregators.AggregationSet;
 import org.openspaces.collections.CollocationMode;
 import org.openspaces.collections.queue.data.EmbeddedQueue;
 import org.openspaces.collections.queue.data.EmbeddedQueueContainer;
+import org.openspaces.collections.queue.operations.EmbeddedOfferOperation;
 import org.openspaces.collections.queue.operations.EmbeddedPeekOperation;
 import org.openspaces.collections.queue.operations.EmbeddedPollOperation;
-import org.openspaces.collections.queue.operations.EmbeddedQueueItemResult;
+import org.openspaces.collections.queue.operations.EmbeddedQueueChangeResult;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
 
@@ -42,7 +43,14 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
 
     @Override
     public boolean offer(E e) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        // TODO: add serialization
+        final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedOfferOperation(e));
+
+        final ChangeResult<EmbeddedQueue> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
+
+        final EmbeddedQueueChangeResult<Boolean> result = toSingleResult(changeResult);
+
+        return result.getResult();
     }
 
     @Override
@@ -65,25 +73,26 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public E poll() {
         final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedPollOperation());
-        
+
         final ChangeResult<EmbeddedQueue> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
-        
-        final EmbeddedQueueItemResult result = toSingleResult(changeResult);
-        //TODO: add deserialization 
-        return (E) result.getItem();
+
+        final EmbeddedQueueChangeResult<Object> result = toSingleResult(changeResult);
+        // TODO: add deserialization
+        return (E) result.getResult();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public E peek() {
         final AggregationResult aggregationResult = space.aggregate(idQuery(), new AggregationSet().add(new EmbeddedPeekOperation()));
-        
-        final EmbeddedQueueItemResult result = toSingleResult(aggregationResult);
-        //TODO: add deserialization 
-        return (E) result.getItem();
+
+        final EmbeddedQueueChangeResult<Object> result = toSingleResult(aggregationResult);
+        // TODO: add deserialization
+        return (E) result.getResult();
     }
 
     @Override

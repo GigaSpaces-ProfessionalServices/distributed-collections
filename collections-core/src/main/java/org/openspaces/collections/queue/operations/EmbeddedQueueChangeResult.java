@@ -14,33 +14,34 @@ import static org.openspaces.collections.util.SerializationUtils.writeNullableOb
  * @author Svitlana_Pogrebna
  *
  */
-public class EmbeddedQueueItemResult implements Externalizable {
+public class EmbeddedQueueChangeResult<T> implements Externalizable {
 
-    private Object item; 
+    private T result; 
     
-    public EmbeddedQueueItemResult() {
+    public EmbeddedQueueChangeResult() {
     }
     
-    public EmbeddedQueueItemResult(Object item) {
-        this.item = item;
+    public EmbeddedQueueChangeResult(T result) {
+        this.result = result;
     }
     
-    public Object getItem() {
-        return item;
+    public T getResult() {
+        return result;
     }
 
-    public void setItem(Object item) {
-        this.item = item;
+    public void setResult(T result) {
+        this.result = result;
     }
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-        writeNullableObject(out, getItem());
+        writeNullableObject(out, getResult());
     }
 
    
+    @SuppressWarnings("unchecked")
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        setItem(readNullableObject(in));
+        setResult((T)readNullableObject(in));
     }
 }
