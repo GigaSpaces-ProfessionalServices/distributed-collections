@@ -19,7 +19,7 @@ import static org.openspaces.collections.CollectionUtils.createSerializableType;
 import static org.openspaces.collections.CollectionUtils.createSerializableTypeList;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "classpath:/gigaqueue-bounded-test-context.xml")
+@ContextConfiguration
 @Ignore
 public class BoundedQueueTest {
     private static final long TIMEOUT = 1000; // in milliseconds

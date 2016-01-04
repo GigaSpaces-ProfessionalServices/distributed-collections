@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 import static org.openspaces.collections.CollectionUtils.*;
 
 @RunWith(Parameterized.class)
-@ContextConfiguration(locations = "classpath:/gigaset-test-context.xml")
+@ContextConfiguration
 public class GigaSetTest extends AbstractCollectionTest<SerializableType> {
 
     @Resource

@@ -29,7 +29,7 @@ import static org.openspaces.collections.CollectionUtils.createSerializableTypeL
  * @author Svitlana_Pogrebna
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "classpath:/gigaqueue-local-test-context.xml")
+@ContextConfiguration
 public class QueueRoutingTest {
 
     @Autowired

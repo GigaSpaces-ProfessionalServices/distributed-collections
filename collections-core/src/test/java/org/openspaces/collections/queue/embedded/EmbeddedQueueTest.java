@@ -26,7 +26,7 @@ import static org.openspaces.collections.CollectionUtils.*;
  * @author Svitlana_Pogrebna
  */
 @RunWith(Parameterized.class)
-@ContextConfiguration(locations = "classpath:/gigaqueue-embedded-test-context.xml")
+@ContextConfiguration
 @Ignore
 public class EmbeddedQueueTest extends AbstractQueueTest<SerializableType> {
 

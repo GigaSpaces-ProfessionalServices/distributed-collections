@@ -18,7 +18,7 @@ import static org.openspaces.collections.CollectionUtils.createSerializableType;
 import static org.openspaces.collections.CollectionUtils.createSerializableTypeList;
 
 @RunWith(Parameterized.class)
-@ContextConfiguration(locations = "classpath:/gigaqueue-distributed-test-context.xml")
+@ContextConfiguration
 public class DistributedQueueTest extends AbstractQueueTest<SerializableType> {
 
     public DistributedQueueTest(List<SerializableType> elements) {
