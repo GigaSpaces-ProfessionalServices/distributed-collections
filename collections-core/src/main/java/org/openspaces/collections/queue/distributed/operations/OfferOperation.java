@@ -1,4 +1,4 @@
-package org.openspaces.collections.queue.operations;
+package org.openspaces.collections.queue.distributed.operations;
 
 import com.gigaspaces.client.CustomChangeOperation;
 import com.gigaspaces.server.MutableServerEntry;
@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import static org.openspaces.collections.queue.data.QueueMetadata.*;
+import static org.openspaces.collections.queue.distributed.data.QueueMetadata.*;
 import static org.openspaces.collections.util.SerializationUtils.readNullableObject;
 import static org.openspaces.collections.util.SerializationUtils.writeNullableObject;
 

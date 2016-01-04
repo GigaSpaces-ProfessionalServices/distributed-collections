@@ -1,15 +1,15 @@
-package org.openspaces.collections.queue.operations;
+package org.openspaces.collections.queue.distributed.operations;
 
 import com.gigaspaces.query.aggregators.SpaceEntriesAggregator;
 import com.gigaspaces.query.aggregators.SpaceEntriesAggregatorContext;
-import org.openspaces.collections.queue.operations.SizeOperation.Result;
+import org.openspaces.collections.queue.distributed.operations.SizeOperation.Result;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import static org.openspaces.collections.queue.data.QueueMetadata.*;
+import static org.openspaces.collections.queue.distributed.data.QueueMetadata.*;
 
 /**
  * @author Oleksiy_Dyagilev

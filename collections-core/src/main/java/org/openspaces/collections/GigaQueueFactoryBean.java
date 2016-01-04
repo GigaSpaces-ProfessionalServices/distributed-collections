@@ -1,7 +1,7 @@
 package org.openspaces.collections;
 
-import org.openspaces.collections.queue.DistributedGigaBlockingQueue;
-import org.openspaces.collections.queue.EmbeddedGigaBlockingQueue;
+import org.openspaces.collections.queue.distributed.DistributedGigaBlockingQueue;
+import org.openspaces.collections.queue.embedded.EmbeddedGigaBlockingQueue;
 import org.openspaces.collections.queue.GigaBlockingQueue;
 import org.openspaces.collections.serialization.DefaultSerializerProvider;
 import org.openspaces.collections.serialization.ElementSerializer;

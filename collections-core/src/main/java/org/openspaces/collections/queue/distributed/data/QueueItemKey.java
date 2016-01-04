@@ -1,4 +1,4 @@
-package org.openspaces.collections.queue.data;
+package org.openspaces.collections.queue.distributed.data;
 
 import java.io.Externalizable;
 import java.io.IOException;

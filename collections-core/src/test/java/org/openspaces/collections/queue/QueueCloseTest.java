@@ -1,10 +1,10 @@
 package org.openspaces.collections.queue;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openspaces.collections.CollocationMode;
+import org.openspaces.collections.queue.distributed.DistributedGigaBlockingQueue;
 import org.openspaces.collections.serialization.DefaultSerializerProvider;
 import org.openspaces.collections.serialization.ElementSerializer;
 import org.openspaces.collections.set.SerializableType;

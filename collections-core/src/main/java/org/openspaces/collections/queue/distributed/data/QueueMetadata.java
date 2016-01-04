@@ -1,4 +1,4 @@
-package org.openspaces.collections.queue.data;
+package org.openspaces.collections.queue.distributed.data;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;

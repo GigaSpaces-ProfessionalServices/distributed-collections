@@ -1,4 +1,4 @@
-package org.openspaces.collections.queue.operations;
+package org.openspaces.collections.queue.distributed.operations;
 
 import com.gigaspaces.client.CustomChangeOperation;
 import com.gigaspaces.server.MutableServerEntry;
@@ -6,7 +6,7 @@ import com.gigaspaces.server.MutableServerEntry;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.openspaces.collections.queue.data.QueueMetadata.*;
+import static org.openspaces.collections.queue.distributed.data.QueueMetadata.*;
 
 /**
  * @author Oleksiy_Dyagilev
