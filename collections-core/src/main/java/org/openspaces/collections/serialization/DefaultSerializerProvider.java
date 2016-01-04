@@ -14,7 +14,7 @@ public class DefaultSerializerProvider implements ElementSerializerProvider {
             return new KryoElementSerializer();
         }
         if (Serializable.class.isAssignableFrom(clazz)) {
-            return new JavaElementSerializer();
+            return new EmptyElementSerializer();
         }
         return new KryoElementSerializer();
     }

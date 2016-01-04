@@ -1,6 +1,8 @@
 package org.openspaces.collections;
 
 import com.j_spaces.map.IMap;
+import org.openspaces.collections.serialization.DefaultSerializerProvider;
+import org.openspaces.collections.serialization.ElementSerializer;
 import org.openspaces.collections.set.DefaultGigaSet;
 import org.openspaces.collections.set.GigaSet;
 import org.openspaces.core.GigaMap;
@@ -13,16 +15,18 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
+import java.io.Serializable;
+
 /**
  * TODO: add gigamap and map features, javadocs
  *
  * @author Leonid_Poliakov
  */
-public class GigaSetFactoryBean implements InitializingBean, DisposableBean, FactoryBean, BeanNameAware {
+public class GigaSetFactoryBean<T extends Serializable> implements InitializingBean, DisposableBean, FactoryBean, BeanNameAware {
     private String beanName;
     private GigaSpace gigaSpace;
     private Boolean clustered;
-    private DefaultGigaSet gigaSet;
+    private DefaultGigaSet<T> gigaSet;
 
     public void setGigaSpace(GigaSpace gigaSpace) {
         this.gigaSpace = gigaSpace;
@@ -46,11 +50,11 @@ public class GigaSetFactoryBean implements InitializingBean, DisposableBean, Fac
         }
         IMap map = mapConfigurer.createMap();
         GigaMap gigaMap = new GigaMapConfigurer(map).gigaMap();
-        gigaSet = new DefaultGigaSet(gigaMap);
+        gigaSet = new DefaultGigaSet<>(gigaMap);
     }
 
     @Override
-    public Object getObject() {
+    public GigaSet<T> getObject() {
         return gigaSet;
     }
 

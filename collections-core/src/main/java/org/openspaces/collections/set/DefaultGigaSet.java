@@ -14,9 +14,7 @@ import java.util.Objects;
 import static java.util.Objects.requireNonNull;
 
 public class DefaultGigaSet<T extends Serializable> extends AbstractCollection<T> implements GigaSet<T> {
-
     private static final String NULL_ELEMENT_ERR_MSG = "'GigaSet' does not permit null elements";
-
     private static final Serializable DUMMY = new DummyValue();
 
     private GigaMap gigaMap;
@@ -136,27 +134,32 @@ public class DefaultGigaSet<T extends Serializable> extends AbstractCollection<T
 
     @Override
     public LockHandle lock(T e) {
-        return gigaMap.lock(e);
+        final Object element = requireNonNull(e, NULL_ELEMENT_ERR_MSG);
+        return gigaMap.lock(element);
     }
 
     @Override
     public LockHandle lock(T e, long lockTimeToLive, long waitingForLockTimeout) {
-        return gigaMap.lock(e, lockTimeToLive, waitingForLockTimeout);
+        final Object element = requireNonNull(e, NULL_ELEMENT_ERR_MSG);
+        return gigaMap.lock(element, lockTimeToLive, waitingForLockTimeout);
     }
 
     @Override
     public void unlock(T e) {
-        gigaMap.unlock(e);
+        final Object element = requireNonNull(e, NULL_ELEMENT_ERR_MSG);
+        gigaMap.unlock(element);
     }
 
     @Override
     public boolean isLocked(T e) {
-        return gigaMap.isLocked(e);
+        final Object element = requireNonNull(e, NULL_ELEMENT_ERR_MSG);
+        return gigaMap.isLocked(element);
     }
 
     @Override
     public void addAndUnlock(T e) {
-        gigaMap.putAndUnlock(e, DUMMY);
+        final Object element = requireNonNull(e, NULL_ELEMENT_ERR_MSG);
+        gigaMap.putAndUnlock(element, DUMMY);
     }
 
     @Override

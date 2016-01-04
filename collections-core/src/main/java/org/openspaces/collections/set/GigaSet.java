@@ -20,45 +20,45 @@ public interface GigaSet<T extends Serializable> extends Set<T> {
     Transaction getCurrentTransaction();
 
     /**
-     * @param e          element to be added to this set
+     * @param element    element to be added to this set
      * @param timeToLive time to keep object in this cache, in milliseconds
      * @return <tt>true</tt> if this set did not already contain the specified
      * element
      */
-    boolean add(T e, long timeToLive);
+    boolean add(T element, long timeToLive);
 
     /**
-     * @param e          element to be added to this set
+     * @param element    element to be added to this set
      * @param timeToLive time to keep object in this cache, in milliseconds
      * @param timeout    A timeout to use if the object is locked under a transaction (in milliseconds)
      * @return <tt>true</tt> if this set did not already contain the specified
      * element
      */
-    boolean add(T e, long timeToLive, long timeout);
+    boolean add(T element, long timeToLive, long timeout);
 
     /**
-     * @param e          element to be added to this set
+     * @param element    element to be added to this set
      * @param lockHandle If the element is locked, will perform the operation within the same lock
      * @return <tt>true</tt> if this set did not already contain the specified
      * element
      */
-    boolean add(T e, LockHandle lockHandle);
+    boolean add(T element, LockHandle lockHandle);
 
     /**
-     * @param e          element to be added to this set
+     * @param element    element to be added to this set
      * @param timeToLive time to keep object in this cache, in milliseconds
      * @param lockHandle If the element is locked, will perform the operation within the same lock
      * @return <tt>true</tt> if this set did not already contain the specified
      * element
      */
-    boolean add(T e, long timeToLive, LockHandle lockHandle);
+    boolean add(T element, long timeToLive, LockHandle lockHandle);
 
     /**
      * @param element         element to be removed from this set
      * @param waitForResponse time to wait for response
      * @return The removed object
      */
-    boolean remove(Object e, long waitForResponse);
+    boolean remove(Object element, long waitForResponse);
 
     /**
      * @param element         element to be removed from this set
@@ -66,7 +66,7 @@ public interface GigaSet<T extends Serializable> extends Set<T> {
      * @param lockHandle      If the element is locked, will perform the operation within the same lock
      * @return The removed object
      */
-    boolean remove(Object e, long waitForResponse, LockHandle lockHandle);
+    boolean remove(Object element, long waitForResponse, LockHandle lockHandle);
 
     /**
      * Locks the given element for any updates. Returns a {@link org.openspaces.core.map.LockHandle}
@@ -77,10 +77,10 @@ public interface GigaSet<T extends Serializable> extends Set<T> {
      * values. By default the lock time to live is 60 seconds and waiting for lock timeout is
      * 10 seconds.
      *
-     * @param e The element The element to lock
+     * @param element The element The element to lock
      * @return LockHandle that can be used to perform operations under the given lock
      */
-    LockHandle lock(T e);
+    LockHandle lock(T element);
 
     /**
      * Locks the given element for any updates. Returns a {@link org.openspaces.core.map.LockHandle}
@@ -92,29 +92,29 @@ public interface GigaSet<T extends Serializable> extends Set<T> {
      * @param waitingForLockTimeout The time to wait for an already locked lock
      * @return LockHandle that can be used to perform operations under the given lock
      */
-    LockHandle lock(T e, long lockTimeToLive, long waitingForLockTimeout);
+    LockHandle lock(T element, long lockTimeToLive, long waitingForLockTimeout);
 
     /**
      * Unlocks the given lock on the element
      *
      * @param element The element to unlock
      */
-    void unlock(T e);
+    void unlock(T element);
 
     /**
      * Returns <code>true</code> if the given element is locked. Otherwise returns <code>false</code>.
      *
-     * @param e element to check if it locked or not.
+     * @param element element to check if it locked or not.
      * @return <code>true</code> if the given element is locked or not.
      */
-    boolean isLocked(T e);
+    boolean isLocked(T element);
 
     /**
      * Unlocks the given element and adds the given element in a single operation.
      *
-     * @param e element to be added to this set
+     * @param element element to be added to this set
      */
-    void addAndUnlock(T e);
+    void addAndUnlock(T element);
 
     /**
      * Returns the default time to live of entries in the map.
