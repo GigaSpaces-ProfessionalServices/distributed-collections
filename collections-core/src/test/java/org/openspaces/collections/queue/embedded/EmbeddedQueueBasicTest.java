@@ -101,6 +101,13 @@ public class EmbeddedQueueBasicTest extends BasicQueueTest<SerializableType> {
     @Override
     @Test
     @Ignore
+    public void testPollWithTimeoutEmptyQueue2() throws InterruptedException {
+        super.testPollWithTimeoutEmptyQueue2();
+    }
+
+    @Override
+    @Test
+    @Ignore
     public void testPollWithTimeout() throws InterruptedException {
         super.testPollWithTimeout();
     }

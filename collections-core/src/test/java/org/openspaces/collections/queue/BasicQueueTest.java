@@ -352,7 +352,18 @@ public abstract class BasicQueueTest<T> extends AbstractCollectionTest<T> {
     public void testPollWithTimeoutEmptyQueue() throws InterruptedException {
         Assume.assumeTrue(testedElements.isEmpty());
 
-        gigaQueue.poll(TIMEOUT - TIMEOUT_ACCURACY, TimeUnit.MILLISECONDS);
+        assertNull(gigaQueue.poll(TIMEOUT - TIMEOUT_ACCURACY, TimeUnit.MILLISECONDS));
+    }
+
+    @Test(timeout = TIMEOUT)
+    public void testPollWithTimeoutEmptyQueue2() throws InterruptedException {
+        Assume.assumeTrue(testedElements.isEmpty());
+
+        long start = System.currentTimeMillis();
+        assertNull(gigaQueue.poll(TIMEOUT + TIMEOUT_ACCURACY, TimeUnit.MILLISECONDS));
+        long end = System.currentTimeMillis();
+
+        assertTrue(end - start >= TIMEOUT + TIMEOUT_ACCURACY);
     }
 
     @Test
