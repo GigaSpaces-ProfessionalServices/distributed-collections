@@ -15,7 +15,7 @@ import static org.openspaces.collections.CollocationMode.LOCAL;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class LocalQueueCloseTest extends QueueCloseTest{
+public class LocalQueueCloseTest extends QueueCloseTest {
 
     @Override
     public GigaBlockingQueue<SerializableType> createQueue() {

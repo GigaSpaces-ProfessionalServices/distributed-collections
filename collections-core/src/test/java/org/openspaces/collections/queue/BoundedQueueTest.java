@@ -20,9 +20,7 @@ import static org.junit.Assert.*;
 import static org.openspaces.collections.CollectionUtils.createSerializableType;
 import static org.openspaces.collections.CollectionUtils.createSerializableTypeList;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
-public class BoundedQueueTest {
+public abstract class BoundedQueueTest {
     private static final long TIMEOUT = 1000; // in milliseconds
     private static final long TIMEOUT_ACCURACY = 10; // in milliseconds
 
