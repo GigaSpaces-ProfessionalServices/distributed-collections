@@ -9,7 +9,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.openspaces.collections.queue.AbstractQueueTest;
+import org.openspaces.collections.queue.BasicQueueTest;
 import org.openspaces.collections.queue.embedded.data.EmbeddedQueue;
 import org.openspaces.collections.set.SerializableType;
 import org.springframework.test.context.ContextConfiguration;
@@ -28,9 +28,9 @@ import static org.openspaces.collections.CollectionUtils.*;
 @RunWith(Parameterized.class)
 @ContextConfiguration
 @Ignore
-public class EmbeddedQueueTest extends AbstractQueueTest<SerializableType> {
+public class EmbeddedQueueBasicTest extends BasicQueueTest<SerializableType> {
 
-    public EmbeddedQueueTest(List<SerializableType> elements) {
+    public EmbeddedQueueBasicTest(List<SerializableType> elements) {
         super(elements);
     }
 

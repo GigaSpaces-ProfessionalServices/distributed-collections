@@ -3,7 +3,7 @@ package org.openspaces.collections.queue.distributed;
 import com.j_spaces.core.client.SQLQuery;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.openspaces.collections.queue.AbstractQueueTest;
+import org.openspaces.collections.queue.BasicQueueTest;
 import org.openspaces.collections.queue.distributed.data.QueueItem;
 import org.openspaces.collections.set.SerializableType;
 import org.springframework.test.context.ContextConfiguration;
@@ -19,9 +19,9 @@ import static org.openspaces.collections.CollectionUtils.createSerializableTypeL
 
 @RunWith(Parameterized.class)
 @ContextConfiguration
-public class DistributedQueueTest extends AbstractQueueTest<SerializableType> {
+public class DistributedQueueBasicTest extends BasicQueueTest<SerializableType> {
 
-    public DistributedQueueTest(List<SerializableType> elements) {
+    public DistributedQueueBasicTest(List<SerializableType> elements) {
         super(createSerializableTypeList(10));
     }
 
