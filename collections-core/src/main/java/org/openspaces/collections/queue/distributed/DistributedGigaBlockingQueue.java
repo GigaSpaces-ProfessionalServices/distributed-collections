@@ -33,7 +33,9 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.springframework.util.Assert.notNull;
 
 /**
- * Blocking queue implementation that supports distributed and local collocation modes
+ * Blocking queue implementation that supports distributed and local collocation modes.
+ * <p/>
+ * Queue elements are stored by index. The algorithm doesn't require the use of transactions.
  *
  * @author Oleksiy_Dyagilev
  */

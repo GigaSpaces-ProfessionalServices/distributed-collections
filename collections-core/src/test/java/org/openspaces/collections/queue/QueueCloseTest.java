@@ -49,6 +49,14 @@ public class QueueCloseTest {
 
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testPollAfterClose() throws Exception {
+        DistributedGigaBlockingQueue<SerializableType> queue = createDistributedQueue();
+        queue.offer(new SerializableType());
+        queue.close();
+        queue.poll();
+    }
+
     private DistributedGigaBlockingQueue<SerializableType> createDistributedQueue() {
         ElementSerializer serializer = new DefaultSerializerProvider().pickSerializer(SerializableType.class);
         return new DistributedGigaBlockingQueue<>(gigaSpace, "test-queue", 100, CollocationMode.DISTRIBUTED, serializer);
