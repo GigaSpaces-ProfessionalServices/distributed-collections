@@ -1,5 +1,6 @@
-package org.openspaces.collections.queue.distributed;
+package org.openspaces.collections.queue.embedded;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.openspaces.collections.queue.ProducerConsumerTest;
 import org.springframework.test.context.ContextConfiguration;
@@ -10,5 +11,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class DistributedQueueProducerConsumerTest extends ProducerConsumerTest {
+@Ignore
+public class EmbeddedQueueProducerConsumerTest extends ProducerConsumerTest {
 }
