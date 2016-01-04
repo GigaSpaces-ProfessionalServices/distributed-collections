@@ -1,5 +1,7 @@
 package org.openspaces.collections;
 
+import org.openspaces.collections.set.NonSerializableType;
+import org.openspaces.collections.set.NonSerializableTypeBuilder;
 import org.openspaces.collections.set.SerializableType;
 import org.openspaces.collections.set.SerializableTypeBuilder;
 
@@ -29,6 +31,17 @@ public final class CollectionUtils {
         final ThreadLocalRandom random = ThreadLocalRandom.current();
         Long id = random.nextLong();
         return new SerializableTypeBuilder(id)
+                .setNumber(random.nextLong())
+                .setDescription("Test data" + id)
+                .addChild(random.nextLong())
+                .addChild(random.nextLong())
+                .build();
+    }
+
+    public static NonSerializableType createNonSerializableType() {
+        final ThreadLocalRandom random = ThreadLocalRandom.current();
+        Long id = random.nextLong();
+        return new NonSerializableTypeBuilder(id)
                 .setNumber(random.nextLong())
                 .setDescription("Test data" + id)
                 .addChild(random.nextLong())
