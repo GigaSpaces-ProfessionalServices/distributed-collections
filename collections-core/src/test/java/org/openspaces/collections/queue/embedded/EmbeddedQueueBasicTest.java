@@ -26,7 +26,6 @@ import static org.openspaces.collections.CollectionUtils.*;
  */
 @RunWith(Parameterized.class)
 @ContextConfiguration
-@Ignore
 public class EmbeddedQueueBasicTest extends BasicQueueTest<SerializableType> {
 
     public EmbeddedQueueBasicTest(List<SerializableType> elements) {
