@@ -1,5 +1,6 @@
-package org.openspaces.collections.queue.distributed;
+package org.openspaces.collections.queue.embedded;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.openspaces.collections.GigaQueueConfigurer;
 import org.openspaces.collections.queue.GigaBlockingQueue;
@@ -8,17 +9,18 @@ import org.openspaces.collections.set.SerializableType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.openspaces.collections.CollocationMode.DISTRIBUTED;
+import static org.openspaces.collections.CollocationMode.EMBEDDED;
 
 /**
  * @author Oleksiy_Dyagilev
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "classpath:/partitioned-space-test-config.xml")
-public class DistributedQueueCloseTest extends QueueCloseTest {
+@ContextConfiguration
+@Ignore
+public class EmbeddedQueueCloseTest extends QueueCloseTest {
 
     @Override
     public GigaBlockingQueue<SerializableType> createQueue() {
-        return new GigaQueueConfigurer<SerializableType>(gigaSpace, "TestClosingDistrGigaBlockingQueue", DISTRIBUTED).gigaQueue();
+        return new GigaQueueConfigurer<SerializableType>(gigaSpace, "TestClosingEmbeddedGigaBlockingQueue", EMBEDDED).gigaQueue();
     }
 }
