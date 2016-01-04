@@ -1,6 +1,8 @@
 package org.openspaces.collections.queue;
 
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openspaces.collections.set.SerializableType;
 import org.openspaces.core.GigaSpace;
@@ -31,7 +33,9 @@ public class BoundedQueueTest {
     private GigaSpace gigaSpace;
     @Resource
     private GigaBlockingQueue<SerializableType> gigaQueue;
-    /** static reference to use junit @AfterClass **/
+    /**
+     * static reference to use junit @AfterClass
+     **/
     private static GigaBlockingQueue gigaQueueStaticReference;
 
     @Before
@@ -96,7 +100,6 @@ public class BoundedQueueTest {
     }
 
     @Test(timeout = TIMEOUT)
-    @Ignore
     public void testPutIntoFullQueueAndRemoveWithIterator() throws InterruptedException {
         final SerializableType element = createSerializableType();
         Thread puttingThread = new Thread(new Runnable() {
@@ -121,8 +124,9 @@ public class BoundedQueueTest {
 
         puttingThread.join();
 
-        assertEquals(capacity, gigaQueue.size());
-        for (int index = 0; index < middleIndex; index++) {
+        int size = gigaQueue.size();
+        assertEquals(capacity, size);
+        for (int index = 0; index < size - 1; index++) {
             assertNotNull(gigaQueue.poll());
         }
         assertEquals(element, gigaQueue.poll());
