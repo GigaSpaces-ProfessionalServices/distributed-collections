@@ -1,4 +1,4 @@
-package org.openspaces.collections.queue.concurrent;
+package org.openspaces.collections.queue.distributed;
 
 import org.junit.*;
 import org.junit.runner.RunWith;
