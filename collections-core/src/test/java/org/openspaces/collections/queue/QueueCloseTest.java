@@ -19,16 +19,16 @@ import static org.openspaces.collections.CollocationMode.DISTRIBUTED;
 /**
  * @author Oleksiy_Dyagilev
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "classpath:/partitioned-space-test-config.xml")
-public class QueueCloseTest {
+public abstract class QueueCloseTest {
 
     @Autowired
-    private GigaSpace gigaSpace;
+    protected GigaSpace gigaSpace;
+
+    public abstract GigaBlockingQueue<SerializableType> createQueue();
 
     @Test
     public void testQueueClose() throws Exception {
-        GigaBlockingQueue<SerializableType> queue = createDistributedQueue();
+        GigaBlockingQueue<SerializableType> queue = createQueue();
         queue.offer(new SerializableType());
         queue.close();
         assertQueueClosed();
@@ -41,7 +41,7 @@ public class QueueCloseTest {
 
     @Test(expected = IllegalStateException.class)
     public void testOfferAfterClose() throws Exception {
-        GigaBlockingQueue<SerializableType> queue = createDistributedQueue();
+        GigaBlockingQueue<SerializableType> queue = createQueue();
         queue.close();
         queue.offer(new SerializableType());
 
@@ -49,14 +49,10 @@ public class QueueCloseTest {
 
     @Test(expected = IllegalStateException.class)
     public void testPollAfterClose() throws Exception {
-        GigaBlockingQueue<SerializableType> queue = createDistributedQueue();
+        GigaBlockingQueue<SerializableType> queue = createQueue();
         queue.offer(new SerializableType());
         queue.close();
         queue.poll();
-    }
-
-    private GigaBlockingQueue<SerializableType> createDistributedQueue() {
-        return new GigaQueueConfigurer<SerializableType>(gigaSpace, "TestClosingGigaBlockingQueue", DISTRIBUTED).gigaQueue();
     }
 
     private void assertQueueClosed() throws InterruptedException {

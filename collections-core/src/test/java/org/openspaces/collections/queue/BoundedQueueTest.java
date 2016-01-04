@@ -38,6 +38,7 @@ public class BoundedQueueTest {
     public void setUp() {
         gigaQueue.clear();
         gigaQueue.addAll(createSerializableTypeList(capacity));
+        gigaQueueStaticReference = gigaQueue;
     }
 
     @AfterClass
