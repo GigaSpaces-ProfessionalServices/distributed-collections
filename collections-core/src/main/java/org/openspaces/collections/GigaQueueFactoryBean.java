@@ -1,8 +1,8 @@
 package org.openspaces.collections;
 
+import org.openspaces.collections.queue.GigaBlockingQueue;
 import org.openspaces.collections.queue.distributed.DistributedGigaBlockingQueue;
 import org.openspaces.collections.queue.embedded.EmbeddedGigaBlockingQueue;
-import org.openspaces.collections.queue.GigaBlockingQueue;
 import org.openspaces.collections.serialization.DefaultSerializerProvider;
 import org.openspaces.collections.serialization.ElementSerializer;
 import org.openspaces.collections.serialization.ElementSerializerProvider;
@@ -16,7 +16,7 @@ import org.springframework.util.Assert;
 /**
  * @author Leonid_Poliakov
  */
-public class GigaQueueFactoryBean implements InitializingBean, DisposableBean, FactoryBean, BeanNameAware {
+public class GigaQueueFactoryBean<T> implements InitializingBean, DisposableBean, FactoryBean, BeanNameAware {
     private String beanName;
     private GigaSpace gigaSpace;
     private String queueName;
@@ -25,7 +25,7 @@ public class GigaQueueFactoryBean implements InitializingBean, DisposableBean, F
     private Class elementType;
     private ElementSerializer serializer;
     private ElementSerializerProvider serializerProvider;
-    private GigaBlockingQueue gigaQueue;
+    private GigaBlockingQueue<T> gigaQueue;
 
     public void setGigaSpace(GigaSpace gigaSpace) {
         this.gigaSpace = gigaSpace;
@@ -71,9 +71,9 @@ public class GigaQueueFactoryBean implements InitializingBean, DisposableBean, F
         switch (collocationMode) {
             case EMBEDDED:
                 if (capacity != null) {
-                    gigaQueue = new EmbeddedGigaBlockingQueue(gigaSpace, queueName, capacity, serializer);
+                    gigaQueue = new EmbeddedGigaBlockingQueue<>(gigaSpace, queueName, capacity, serializer);
                 } else {
-                    gigaQueue = new EmbeddedGigaBlockingQueue(gigaSpace, queueName, serializer);
+                    gigaQueue = new EmbeddedGigaBlockingQueue<>(gigaSpace, queueName, serializer);
                 }
                 break;
 
@@ -81,9 +81,9 @@ public class GigaQueueFactoryBean implements InitializingBean, DisposableBean, F
                 // fall through
             case DISTRIBUTED:
                 if (capacity != null) {
-                    gigaQueue = new DistributedGigaBlockingQueue(gigaSpace, queueName, capacity, collocationMode, serializer);
+                    gigaQueue = new DistributedGigaBlockingQueue<>(gigaSpace, queueName, capacity, collocationMode, serializer);
                 } else {
-                    gigaQueue = new DistributedGigaBlockingQueue(gigaSpace, queueName, collocationMode, serializer);
+                    gigaQueue = new DistributedGigaBlockingQueue<>(gigaSpace, queueName, collocationMode, serializer);
                 }
                 break;
         }
@@ -100,7 +100,7 @@ public class GigaQueueFactoryBean implements InitializingBean, DisposableBean, F
     }
 
     @Override
-    public Object getObject() {
+    public GigaBlockingQueue<T> getObject() {
         return gigaQueue;
     }
 

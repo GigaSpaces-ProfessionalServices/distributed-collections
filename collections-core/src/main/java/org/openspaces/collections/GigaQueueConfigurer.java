@@ -6,9 +6,9 @@ import org.openspaces.core.GigaSpace;
 /**
  * @author Leonid_Poliakov
  */
-public class GigaQueueConfigurer {
-    private final GigaQueueFactoryBean gigaQueueFactoryBean = new GigaQueueFactoryBean();
-    private GigaBlockingQueue gigaQueue;
+public class GigaQueueConfigurer<T> {
+    private final GigaQueueFactoryBean<T> gigaQueueFactoryBean = new GigaQueueFactoryBean<>();
+    private GigaBlockingQueue<T> gigaQueue;
 
     public GigaQueueConfigurer(GigaSpace gigaSpace, String queueName, CollocationMode collocationMode) {
         gigaQueueFactoryBean.setGigaSpace(gigaSpace);
@@ -16,15 +16,20 @@ public class GigaQueueConfigurer {
         gigaQueueFactoryBean.setCollocationMode(collocationMode);
     }
 
-    public GigaQueueConfigurer capacity(Integer capacity) {
+    public GigaQueueConfigurer<T> capacity(Integer capacity) {
         gigaQueueFactoryBean.setCapacity(capacity);
         return this;
     }
 
-    public GigaBlockingQueue gigaQueue() {
+    public GigaQueueConfigurer<T> elementType(Class<T> elementType) {
+        gigaQueueFactoryBean.setElementType(elementType);
+        return this;
+    }
+
+    public GigaBlockingQueue<T> gigaQueue() {
         if (gigaQueue == null) {
             gigaQueueFactoryBean.afterPropertiesSet();
-            gigaQueue = (GigaBlockingQueue) gigaQueueFactoryBean.getObject();
+            gigaQueue = gigaQueueFactoryBean.getObject();
         }
 
         return this.gigaQueue;

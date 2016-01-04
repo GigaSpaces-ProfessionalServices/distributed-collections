@@ -256,7 +256,7 @@ public abstract class AbstractCollectionTest<T> {
         assertSize("Invalid collection elements count", objectArray.length);
         for (Object o : objectArray) {
             assertNotNull("Collection elements must not be null", o);
-            assertTrue("Invalid element type", o.getClass().isAssignableFrom(getElementType()));
+            assertTrue("Invalid element elementType", o.getClass().isAssignableFrom(getElementType()));
         }
 
         T[] elementArray = collection.toArray(getElementArray());

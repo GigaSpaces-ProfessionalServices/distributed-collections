@@ -3,10 +3,7 @@ package org.openspaces.collections.queue;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openspaces.collections.CollocationMode;
-import org.openspaces.collections.queue.distributed.DistributedGigaBlockingQueue;
-import org.openspaces.collections.serialization.DefaultSerializerProvider;
-import org.openspaces.collections.serialization.ElementSerializer;
+import org.openspaces.collections.GigaQueueConfigurer;
 import org.openspaces.collections.set.SerializableType;
 import org.openspaces.core.GigaSpace;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +14,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.openspaces.collections.CollocationMode.DISTRIBUTED;
 
 /**
  * @author Oleksiy_Dyagilev
@@ -30,7 +28,7 @@ public class QueueCloseTest {
 
     @Test
     public void testQueueClose() throws Exception {
-        DistributedGigaBlockingQueue<SerializableType> queue = createDistributedQueue();
+        GigaBlockingQueue<SerializableType> queue = createDistributedQueue();
         queue.offer(new SerializableType());
         queue.close();
         assertQueueClosed();
@@ -43,7 +41,7 @@ public class QueueCloseTest {
 
     @Test(expected = IllegalStateException.class)
     public void testOfferAfterClose() throws Exception {
-        DistributedGigaBlockingQueue<SerializableType> queue = createDistributedQueue();
+        GigaBlockingQueue<SerializableType> queue = createDistributedQueue();
         queue.close();
         queue.offer(new SerializableType());
 
@@ -51,15 +49,14 @@ public class QueueCloseTest {
 
     @Test(expected = IllegalStateException.class)
     public void testPollAfterClose() throws Exception {
-        DistributedGigaBlockingQueue<SerializableType> queue = createDistributedQueue();
+        GigaBlockingQueue<SerializableType> queue = createDistributedQueue();
         queue.offer(new SerializableType());
         queue.close();
         queue.poll();
     }
 
-    private DistributedGigaBlockingQueue<SerializableType> createDistributedQueue() {
-        ElementSerializer serializer = new DefaultSerializerProvider().pickSerializer(SerializableType.class);
-        return new DistributedGigaBlockingQueue<>(gigaSpace, "test-queue", 100, CollocationMode.DISTRIBUTED, serializer);
+    private GigaBlockingQueue<SerializableType> createDistributedQueue() {
+        return new GigaQueueConfigurer<SerializableType>(gigaSpace, "TestClosingGigaBlockingQueue", DISTRIBUTED).gigaQueue();
     }
 
     private void assertQueueClosed() throws InterruptedException {
