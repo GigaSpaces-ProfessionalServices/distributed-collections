@@ -41,7 +41,6 @@ public class OfferOperation extends CustomChangeOperation {
         }
     }
 
-    // TODO: removed indexes?
     private boolean hasSpaceAvailable(boolean bounded, Long tail, Long head, int capacity, int removedIndexesSize) {
         return !bounded || (capacity >= (tail - head + itemsNumber - removedIndexesSize));
     }
