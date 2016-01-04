@@ -14,10 +14,7 @@ import org.openspaces.collections.CollocationMode;
 import org.openspaces.collections.queue.AbstractGigaBlockingQueue;
 import org.openspaces.collections.queue.embedded.data.EmbeddedQueue;
 import org.openspaces.collections.queue.embedded.data.EmbeddedQueueContainer;
-import org.openspaces.collections.queue.embedded.operations.EmbeddedOfferOperation;
-import org.openspaces.collections.queue.embedded.operations.EmbeddedPeekOperation;
-import org.openspaces.collections.queue.embedded.operations.EmbeddedPollOperation;
-import org.openspaces.collections.queue.embedded.operations.EmbeddedQueueChangeResult;
+import org.openspaces.collections.queue.embedded.operations.*;
 import org.openspaces.collections.serialization.ElementSerializer;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
@@ -25,6 +22,7 @@ import org.openspaces.core.GigaSpace;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 import static org.openspaces.collections.queue.embedded.data.EmbeddedQueue.QUEUE_CONTAINER_PATH;
@@ -50,7 +48,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
 
         final ChangeResult<EmbeddedQueue> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
 
-        final EmbeddedQueueChangeResult<Boolean> result = toSingleResult(changeResult);
+        final SerializableResult<Boolean> result = toSingleResult(changeResult);
 
         return result.getResult();
     }
@@ -82,7 +80,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
 
         final ChangeResult<EmbeddedQueue> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
 
-        final EmbeddedQueueChangeResult<Object> result = toSingleResult(changeResult);
+        final SerializableResult<Object> result = toSingleResult(changeResult);
         // TODO: add deserialization
         return (E) result.getResult();
     }
@@ -92,7 +90,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
     public E peek() {
         final AggregationResult aggregationResult = space.aggregate(idQuery(), new AggregationSet().add(new EmbeddedPeekOperation()));
 
-        final EmbeddedQueueChangeResult<Object> result = toSingleResult(aggregationResult);
+        final SerializableResult<Object> result = toSingleResult(aggregationResult);
         // TODO: add deserialization
         return (E) result.getResult();
     }
@@ -106,7 +104,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
     protected void createNewMetadataIfRequired() {
         try {
             //TODO: replace LinkedBlockingQueue with more efficient implementation
-            List<Object> items = bounded ? new ArrayList<>(capacity) :  new ArrayList<>();
+            List<Object> items = bounded ? new ArrayList<>(capacity) : new ArrayList<>();
             EmbeddedQueue embeddedQueue = new EmbeddedQueue(queueName, new EmbeddedQueueContainer(items, bounded ? capacity : null));
             space.write(embeddedQueue, WriteModifiers.WRITE_ONLY);
         } catch (EntryAlreadyInSpaceException e) {
@@ -116,7 +114,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
 
     @Override
     public Iterator<E> iterator() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        return new QueueIterator();
     }
 
     @Override
@@ -131,7 +129,78 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
 
     @Override
     public void close() throws Exception {
-        throw new UnsupportedOperationException("Not implemented yet");
+        // TODO: to be implemented
     }
 
+    private class QueueIterator implements Iterator<E> {
+
+        private static final int DEFAULT_MAX_ENTRIES = 100;
+
+        private final int maxEntries; 
+        
+        private Object curr;
+        
+        private int batchIndex;
+        private Iterator<Object> iterator;
+
+        public QueueIterator() {
+            this(DEFAULT_MAX_ENTRIES);
+        }
+
+        public QueueIterator(int maxEntries) {
+            if (maxEntries <= 0) {
+                throw new IllegalArgumentException("'maxEntries' parameter must be positive");
+            }
+            this.maxEntries = maxEntries;
+            
+            // load the first batch
+            this.iterator = nextBatch();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return iterator != null && iterator.hasNext();
+        }
+
+        @Override
+        public E next() {
+            if (iterator == null) {
+                throw new NoSuchElementException();
+            }
+            this.curr = iterator.next();
+
+            if (!hasNext()) {
+                iterator = nextBatch();
+            }
+            
+            // TODO: add deserialization
+            return (E) curr;
+        }
+
+        private Iterator<Object> nextBatch() {
+            final EmbeddedRetrieveOperation operation = new EmbeddedRetrieveOperation(batchIndex, maxEntries);
+            final AggregationResult aggregationResult = space.aggregate(idQuery(), new AggregationSet().add(operation));
+
+            final SerializableResult<List<Object>> result = toSingleResult(aggregationResult);
+            final List<Object> items = result.getResult();
+            if (items == null) {
+                return null;
+            }
+
+            batchIndex += items.size();
+            return items.iterator();
+        }
+
+        @Override
+        public void remove() {
+            if (curr == null) {
+                throw new IllegalStateException();
+            }
+            final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedRemoveOperation(curr));
+            space.change(idQuery(), changeSet);
+
+            batchIndex--;
+            curr = null;
+        }
+    }
 }

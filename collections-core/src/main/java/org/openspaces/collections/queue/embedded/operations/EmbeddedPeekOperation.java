@@ -14,11 +14,11 @@ import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContai
 /**
  * @author Svitlana_Pogrebna
  */
-public class EmbeddedPeekOperation extends SpaceEntriesAggregator<EmbeddedQueueChangeResult<Object>> {
+public class EmbeddedPeekOperation extends SpaceEntriesAggregator<SerializableResult<Object>> {
 
     private static final long serialVersionUID = 1L;
 
-    private transient EmbeddedQueueChangeResult<Object> result;
+    private transient SerializableResult<Object> result;
 
     @Override
     public String getDefaultAlias() {
@@ -28,16 +28,16 @@ public class EmbeddedPeekOperation extends SpaceEntriesAggregator<EmbeddedQueueC
     @Override
     public void aggregate(SpaceEntriesAggregatorContext context) {
         final List<Object> items = (List<Object>) context.getPathValue(QUEUE_CONTAINER_PATH + "." + ITEMS_PATH);
-        result = new EmbeddedQueueChangeResult<Object>(items.isEmpty() ? null : items.get(0));
+        result = new SerializableResult<Object>(items.isEmpty() ? null : items.get(0));
     }
 
     @Override
-    public EmbeddedQueueChangeResult<Object> getIntermediateResult() {
+    public SerializableResult<Object> getIntermediateResult() {
         return result;
     }
 
     @Override
-    public void aggregateIntermediateResult(EmbeddedQueueChangeResult<Object> partitionResult) {
+    public void aggregateIntermediateResult(SerializableResult<Object> partitionResult) {
         this.result = partitionResult;
     }
 }

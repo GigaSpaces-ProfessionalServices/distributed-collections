@@ -14,14 +14,14 @@ import static org.openspaces.collections.util.SerializationUtils.writeNullableOb
 /**
  * @author Svitlana_Pogrebna
  */
-public class EmbeddedQueueChangeResult<T> implements Externalizable {
+public class SerializableResult<T> implements Externalizable {
 
     private T result;
 
-    public EmbeddedQueueChangeResult() {
+    public SerializableResult() {
     }
 
-    public EmbeddedQueueChangeResult(T result) {
+    public SerializableResult(T result) {
         this.result = result;
     }
 
@@ -37,7 +37,6 @@ public class EmbeddedQueueChangeResult<T> implements Externalizable {
     public void writeExternal(ObjectOutput out) throws IOException {
         writeNullableObject(out, getResult());
     }
-
 
     @SuppressWarnings("unchecked")
     @Override

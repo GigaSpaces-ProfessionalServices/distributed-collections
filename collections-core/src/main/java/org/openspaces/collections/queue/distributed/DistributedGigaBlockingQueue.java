@@ -370,6 +370,8 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
             // remove element
             space.clear(itemTemplateByIndex(currIndex));
+            
+            curr = null;
         }
 
         @SuppressWarnings("unchecked")

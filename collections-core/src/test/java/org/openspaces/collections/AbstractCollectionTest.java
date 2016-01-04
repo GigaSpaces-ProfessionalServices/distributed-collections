@@ -185,6 +185,7 @@ public abstract class AbstractCollectionTest<T> {
 
         List<T> newElementsList = Collections.singletonList(newElement());
         assertFalse("Collection should not be changed after removing list with unexisting elements", collection.removeAll(newElementsList));
+        assertSize("Invalid collection size", expectedSize);
 
         Collection<T> subCollection = getTestedDataSubCollection();
         expectedSize -= subCollection.size();

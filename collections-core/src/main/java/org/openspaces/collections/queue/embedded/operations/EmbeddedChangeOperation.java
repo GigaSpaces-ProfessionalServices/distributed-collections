@@ -32,7 +32,7 @@ public abstract class EmbeddedChangeOperation<T> extends CustomChangeOperation {
 
         entry.setPathValue(FULL_SIZE_PATH, items.size());
         entry.setPathValue(FULL_QUEUE_PATH, items);
-        return new EmbeddedQueueChangeResult<T>(result);
+        return new SerializableResult<T>(result);
     }
 
     protected abstract T change(MutableServerEntry entry, List<Object> items);

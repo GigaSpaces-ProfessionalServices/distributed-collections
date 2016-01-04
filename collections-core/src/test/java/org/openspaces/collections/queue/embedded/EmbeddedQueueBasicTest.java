@@ -4,7 +4,6 @@
 package org.openspaces.collections.queue.embedded;
 
 import com.j_spaces.core.client.SQLQuery;
-import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,70 +63,14 @@ public class EmbeddedQueueBasicTest extends BasicQueueTest<SerializableType> {
         int size = gigaSpace.read(query).getContainer().getItems().size();
         assertEquals(msg, expectedSize, size);
     }
-
-    @Override
-    @Test
-    @Ignore
-    public void testOfferNull() {
-        super.testOfferNull();
-    }
-
+    
     @Override
     @Test
     @Ignore
     public void testPutNull() throws InterruptedException {
         super.testPutNull();
     }
-
-    @Override
-    @Test
-    @Ignore
-    public void testOfferNullWithTimeout() throws InterruptedException {
-        super.testOfferNullWithTimeout();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testRemoveEmptyQueue() {
-        super.testRemoveEmptyQueue();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testRemoveHead() {
-        super.testRemoveHead();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testPoll() {
-        super.testPoll();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testAdd() {
-        super.testAdd();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testAddAll() {
-        super.testAddAll();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testOffer() {
-        super.testOffer();
-    }
-
+    
     @Override
     @Test
     @Ignore
@@ -141,53 +84,12 @@ public class EmbeddedQueueBasicTest extends BasicQueueTest<SerializableType> {
     public void testTake() {
         super.testTake();
     }
-
-    @Override
-    @Test
-    public void testRemainingCapacity() {
-        assertEquals("Invalid remaining capacity", Integer.MAX_VALUE, gigaQueue.remainingCapacity());
-    }
-
+    
     @Override
     @Test
     @Ignore
-    public void testDrainToSameCollection() {
-        super.testDrainToSameCollection();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testDrainTo() {
-        super.testDrainTo();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testDrainToNullCollection() {
-        super.testDrainToNullCollection();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testDrainToMaxElementsNullCollection() {
-        super.testDrainToMaxElementsNullCollection();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testDrainToMaxElementsSameCollection() {
-        super.testDrainToMaxElementsSameCollection();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testDrainToMaxElements() {
-        super.testDrainToMaxElements();
+    public void testOfferNullWithTimeout() throws InterruptedException {
+        super.testOfferNullWithTimeout();
     }
 
     @Override
@@ -210,136 +112,4 @@ public class EmbeddedQueueBasicTest extends BasicQueueTest<SerializableType> {
     public void testOfferWithTimeout() {
         super.testOfferWithTimeout();
     }
-
-    @Override
-    @Test
-    @Ignore
-    public void testAddAllNull() {
-        super.testAddAllNull();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testRemoveAllNull() {
-        super.testRemoveAllNull();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testContainsAllNull() {
-        super.testContainsAllNull();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testRetainAllNull() {
-        super.testRetainAllNull();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testAddAllWithNull() throws InterruptedException {
-        super.testAddAllWithNull();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testRemoveAllWithNull() throws InterruptedException {
-        super.testRemoveAllWithNull();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testClear() {
-        super.testClear();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testContains() {
-        super.testContains();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testContainsAll() {
-        super.testContainsAll();
-    }
-
-    @Override
-    @Test
-    public void testIsEmpty() {
-        Assume.assumeTrue(testedElements.isEmpty());
-        assertSize("Invalid queue size", 0);
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testIterator() {
-        super.testIterator();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testRemove() {
-        super.testRemove();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testRemoveAll() {
-        super.testRemoveAll();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testRemoveAllElements() {
-        super.testRemoveAllElements();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testRetainAll() {
-        super.testRetainAll();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testRetainAllEmptyCollection() {
-        super.testRetainAllEmptyCollection();
-    }
-
-    @Override
-    @Test
-    public void testSize() {
-        assertSize("Invalid queue size", testedElements.size());
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testToArray() {
-        super.testToArray();
-    }
-
-//    @Override
-//    @Test
-//    @Ignore
-//    public void testOfferAfterClose() throws Exception {
-//        super.testOfferAfterClose();
-//    }
 }

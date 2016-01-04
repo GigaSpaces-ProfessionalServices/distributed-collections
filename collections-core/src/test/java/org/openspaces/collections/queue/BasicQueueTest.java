@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.*;
 
 /**
  * Tests for basic queue operations
@@ -440,8 +440,8 @@ public abstract class BasicQueueTest<T> extends AbstractCollectionTest<T> {
 
     @Test
     public void testRemovingMiddleElementWithIterator() {
-        assumeFalse(testedElements.isEmpty());
-
+        assumeTrue(testedElements.size() > 1);
+        
         int middleIndex = testedElements.size() / 2 - 1;
         Iterator<T> iterator = gigaQueue.iterator();
         for (int index = 0; index <= middleIndex; index++) {
@@ -466,6 +466,16 @@ public abstract class BasicQueueTest<T> extends AbstractCollectionTest<T> {
         gigaQueue.iterator().remove();
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testIteratorRemoveTwiceWithoutNext() {
+        assumeFalse(testedElements.isEmpty());
+        
+        Iterator<T> iterator = gigaQueue.iterator();
+        iterator.next();
+        iterator.remove();
+        iterator.remove();
+    }
+    
     private interface AddOperation<T> {
         Boolean perform(T element);
     }
