@@ -20,7 +20,6 @@ import static org.openspaces.collections.CollectionUtils.createSerializableTypeL
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-@Ignore
 public class BoundedQueueTest {
     private static final long TIMEOUT = 1000; // in milliseconds
     private static final long TIMEOUT_ACCURACY = 10; // in milliseconds
@@ -39,11 +38,6 @@ public class BoundedQueueTest {
     public void setUp() {
         gigaQueue.clear();
         gigaQueue.addAll(createSerializableTypeList(capacity));
-    }
-
-    @After
-    public void tearDown() {
-        gigaSpace.clear(null);
     }
 
     @AfterClass
