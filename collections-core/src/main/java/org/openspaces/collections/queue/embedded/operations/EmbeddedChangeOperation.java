@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.openspaces.collections.queue.embedded.operations;
 
 import com.gigaspaces.client.CustomChangeOperation;
@@ -13,6 +10,7 @@ import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContai
 import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContainer.SIZE_PATH;
 
 /**
+ *
  * @author Svitlana_Pogrebna
  */
 public abstract class EmbeddedChangeOperation<T> extends CustomChangeOperation {

@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.openspaces.collections.queue.embedded.operations;
 
 import java.io.Externalizable;

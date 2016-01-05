@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.openspaces.collections.queue;
 
 import com.gigaspaces.client.ChangeResult;
@@ -21,6 +18,8 @@ import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
+ * The class provides implementation of some blocking queue operations
+ * 
  * @author Svitlana_Pogrebna
  */
 public abstract class AbstractGigaBlockingQueue<E, M extends QueueMetadata> extends AbstractQueue<E> implements GigaBlockingQueue<E> {
@@ -46,10 +45,11 @@ public abstract class AbstractGigaBlockingQueue<E, M extends QueueMetadata> exte
     /**
      * Creates blocking queue
      *
-     * @param space     giga space
-     * @param queueName unique queue queueName
-     * @param capacity  queue capacity
-     * @param bounded   flag whether queue is bounded
+     * @param space      giga space
+     * @param queueName  unique queue queueName
+     * @param capacity   queue capacity
+     * @param bounded    flag whether queue is bounded
+     * @param serializer element serializer/deserializer
      */
     public AbstractGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded, ElementSerializer serializer) {
         if (queueName == null || queueName.isEmpty()) {

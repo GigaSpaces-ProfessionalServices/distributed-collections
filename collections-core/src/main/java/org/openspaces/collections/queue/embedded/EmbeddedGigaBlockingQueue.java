@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.openspaces.collections.queue.embedded;
 
 import com.gigaspaces.client.ChangeModifiers;
@@ -28,14 +25,31 @@ import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContai
 import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContainer.SIZE_PATH;
 
 /**
+ * Blocking queue implementation, that supports embedded collocation mode. 
+ * 
  * @author Svitlana_Pogrebna
  */
 public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, EmbeddedQueueContainer> {
 
+    /**
+     * Creates not bounded queue
+     * 
+     * @param space      space used to hold queue
+     * @param queueName  unique queue name
+     * @param serializer element serializer/deserializer
+     */
     public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName, ElementSerializer serializer) {
         super(space, queueName, 0, false, serializer);
     }
 
+    
+    /**
+     * Creates bounded queue
+     * @param space      space used to hold queue
+     * @param queueName  unique queue name
+     * @param capacity   queue capacity
+     * @param serializer element serializer/deserializer
+     */
     public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, ElementSerializer serializer) {
         super(space, queueName, capacity, true, serializer);
     }
@@ -69,7 +83,6 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
         return (E) result.getResult();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public E peek() {
         final AggregationResult aggregationResult = space.aggregate(idQuery(), new AggregationSet().add(new EmbeddedPeekOperation()));
@@ -87,7 +100,6 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
     @Override
     protected EmbeddedQueueContainer getOrCreate() {
         try {
-            //TODO: replace LinkedBlockingQueue with more efficient implementation
             List<Object> items = bounded ? new ArrayList<>(capacity) : new ArrayList<>();
             EmbeddedQueueContainer container = new EmbeddedQueueContainer(queueName, items, bounded ? capacity : null);
             space.write(container, WriteModifiers.WRITE_ONLY);
@@ -155,6 +167,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
             return iterator != null && iterator.hasNext();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public E next() {
             if (iterator == null) {
@@ -166,8 +179,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
             if (!hasNext()) {
                 iterator = nextBatch();
             }
-            
-            // TODO: add deserialization
+
             return (E) curr;
         }
 

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.openspaces.collections.queue.embedded.operations;
 
 import com.gigaspaces.query.aggregators.SpaceEntriesAggregator;
@@ -52,7 +49,7 @@ public class EmbeddedRetrieveOperation extends SpaceEntriesAggregator<Serializab
         }
         
         final int toIndex = index + maxEntries;
-        final List<Object> subList = new ArrayList<Object>(items.subList(index, toIndex < size ? toIndex : size));
+        final List<Object> subList = new ArrayList<>(items.subList(index, toIndex < size ? toIndex : size));
         result = new SerializableResult<>(subList);
     }
 

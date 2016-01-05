@@ -8,8 +8,9 @@ import org.openspaces.collections.queue.QueueMetadata;
 import java.util.List;
 import java.util.Objects;
 
-
 /**
+ * The space class that holds queue metadata and items
+ *
  * @author Svitlana_Pogrebna
  */
 @SpaceClass
