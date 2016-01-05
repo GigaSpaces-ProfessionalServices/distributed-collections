@@ -30,6 +30,7 @@
     <classes>
       <class name="org.openspaces.collections.queue.QueueCloseTest"/>
       <class name="org.openspaces.collections.queue.ProducerConsumerTest"/>
+      <class name="org.openspaces.collections.queue.LocalQueueRoutingTest"/>
     </classes>
   </test>
 
