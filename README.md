@@ -23,7 +23,7 @@ You can also find build configuration and artifacts for this project at our [Tea
 This project contains code for benchmarking the implementation using Java Microbenchmark Harness tool ([JMH](http://openjdk.java.net/projects/code-tools/jmh/)). The `collections-benchmark` module is packed into runnable `collections-benchmark/target/benchmarks.jar` when you build the project. With that, you can use the next command to run the benchmarking process:
 
 ```bash
-java -jar benchmarks.jar -Dcom.gs.home=<path to xap install>
+java -jar -Dcom.gs.home=<path to xap install> benchmarks.jar
 ```
 
 If you want to see runtime options for benchmarking, consider running the next command:
