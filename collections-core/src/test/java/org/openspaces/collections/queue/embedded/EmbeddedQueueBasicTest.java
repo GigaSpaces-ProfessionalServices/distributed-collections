@@ -4,12 +4,10 @@
 package org.openspaces.collections.queue.embedded;
 
 import com.j_spaces.core.client.SQLQuery;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.openspaces.collections.queue.BasicQueueTest;
-import org.openspaces.collections.queue.embedded.data.EmbeddedQueue;
+import org.openspaces.collections.queue.embedded.data.EmbeddedQueueContainer;
 import org.openspaces.collections.set.SerializableType;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -58,64 +56,8 @@ public class EmbeddedQueueBasicTest extends BasicQueueTest<SerializableType> {
 
     @Override
     protected void assertSize(String msg, int expectedSize) {
-        SQLQuery<EmbeddedQueue> query = new SQLQuery<>(EmbeddedQueue.class, "name = ?", queueName);
-        int size = gigaSpace.read(query).getContainer().getItems().size();
+        SQLQuery<EmbeddedQueueContainer> query = new SQLQuery<>(EmbeddedQueueContainer.class, "name = ?", queueName);
+        int size = gigaSpace.read(query).getItems().size();
         assertEquals(msg, expectedSize, size);
-    }
-    
-    @Override
-    @Test
-    @Ignore
-    public void testPutNull() throws InterruptedException {
-        super.testPutNull();
-    }
-    
-    @Override
-    @Test
-    @Ignore
-    public void testPut() {
-        super.testPut();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testTake() {
-        super.testTake();
-    }
-    
-    @Override
-    @Test
-    @Ignore
-    public void testOfferNullWithTimeout() throws InterruptedException {
-        super.testOfferNullWithTimeout();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testPollWithTimeoutEmptyQueue() throws InterruptedException {
-        super.testPollWithTimeoutEmptyQueue();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testPollWithTimeoutEmptyQueue2() throws InterruptedException {
-        super.testPollWithTimeoutEmptyQueue2();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testPollWithTimeout() throws InterruptedException {
-        super.testPollWithTimeout();
-    }
-
-    @Override
-    @Test
-    @Ignore
-    public void testOfferWithTimeout() {
-        super.testOfferWithTimeout();
     }
 }

@@ -3,24 +3,25 @@
  */
 package org.openspaces.collections.queue.embedded.data;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import com.gigaspaces.annotation.pojo.SpaceClass;
+import com.gigaspaces.annotation.pojo.SpaceId;
+import com.gigaspaces.annotation.pojo.SpaceRouting;
+import org.openspaces.collections.queue.QueueContainer;
+
 import java.util.List;
 import java.util.Objects;
-
-import static org.openspaces.collections.util.SerializationUtils.readNullableObject;
-import static org.openspaces.collections.util.SerializationUtils.writeNullableObject;
 /**
  * @author Svitlana_Pogrebna
  */
-public class EmbeddedQueueContainer implements Externalizable {
+@SpaceClass
+public class EmbeddedQueueContainer implements QueueContainer {
 
+    public static final String QUEUE_NAME_PATH = "name";
     public static final String ITEMS_PATH = "items";
     public static final String SIZE_PATH = "size";
     public static final String CAPACITY_PATH = "capacity";
 
+    private String name;
     private List<Object> items;
     private Integer size;
     private Integer capacity;
@@ -28,12 +29,26 @@ public class EmbeddedQueueContainer implements Externalizable {
     public EmbeddedQueueContainer() {
     }
 
-    public EmbeddedQueueContainer(List<Object> items, Integer capacity) {
+    public EmbeddedQueueContainer(String name, List<Object> items, Integer capacity) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("'name' parameter must not be null or empty");
+        }
+        this.name = name;
         this.items = Objects.requireNonNull(items, "'items' parameter must not be null");
         this.size = items.size();
         this.capacity = capacity;
     }
 
+    @SpaceId
+    @SpaceRouting
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    
     public List<Object> getItems() {
         return items;
     }
@@ -42,6 +57,7 @@ public class EmbeddedQueueContainer implements Externalizable {
         this.items = list;
     }
 
+    @Override
     public Integer getSize() {
         return size;
     }
@@ -56,20 +72,5 @@ public class EmbeddedQueueContainer implements Externalizable {
 
     public void setCapacity(Integer capacity) {
         this.capacity = capacity;
-    }
-
-    @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject(getItems());
-        out.writeInt(getSize());
-        writeNullableObject(out, getCapacity());
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        setItems((List<Object>)in.readObject());
-        setSize(in.readInt());
-        setCapacity((Integer)readNullableObject(in));
     }
 }

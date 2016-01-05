@@ -9,7 +9,6 @@ import com.gigaspaces.query.aggregators.SpaceEntriesAggregatorContext;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.openspaces.collections.queue.embedded.data.EmbeddedQueue.QUEUE_CONTAINER_PATH;
 import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContainer.ITEMS_PATH;
 
 /**
@@ -44,7 +43,7 @@ public class EmbeddedRetrieveOperation extends SpaceEntriesAggregator<Serializab
     @Override
     public void aggregate(SpaceEntriesAggregatorContext context) {
         @SuppressWarnings("unchecked")
-        final List<Object> items = (List<Object>) context.getPathValue(QUEUE_CONTAINER_PATH + "." + ITEMS_PATH);
+        final List<Object> items = (List<Object>) context.getPathValue(ITEMS_PATH);
         final int size = items.size();
         
         if (index >= size) {

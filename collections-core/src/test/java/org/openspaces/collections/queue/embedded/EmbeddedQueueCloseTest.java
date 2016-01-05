@@ -1,6 +1,5 @@
 package org.openspaces.collections.queue.embedded;
 
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.openspaces.collections.GigaQueueConfigurer;
 import org.openspaces.collections.queue.GigaBlockingQueue;
@@ -16,7 +15,6 @@ import static org.openspaces.collections.CollocationMode.EMBEDDED;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-@Ignore
 public class EmbeddedQueueCloseTest extends QueueCloseTest {
 
     @Override

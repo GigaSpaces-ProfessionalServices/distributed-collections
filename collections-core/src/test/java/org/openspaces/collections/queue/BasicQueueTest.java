@@ -9,12 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Resource;
+
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests for basic queue operations
@@ -355,7 +357,7 @@ public abstract class BasicQueueTest<T> extends AbstractCollectionTest<T> {
         assertNull(gigaQueue.poll(TIMEOUT - TIMEOUT_ACCURACY, TimeUnit.MILLISECONDS));
     }
 
-    @Test(timeout = TIMEOUT)
+    @Test
     public void testPollWithTimeoutEmptyQueue2() throws InterruptedException {
         Assume.assumeTrue(testedElements.isEmpty());
 

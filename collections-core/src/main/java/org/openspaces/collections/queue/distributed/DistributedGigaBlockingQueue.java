@@ -14,7 +14,6 @@ import org.openspaces.collections.queue.distributed.data.QueueItemKey;
 import org.openspaces.collections.queue.distributed.data.QueueMetadata;
 import org.openspaces.collections.queue.distributed.operations.*;
 import org.openspaces.collections.serialization.ElementSerializer;
-import org.openspaces.collections.util.MiscUtils;
 import org.openspaces.collections.util.Pair;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
@@ -23,13 +22,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
-import static java.lang.System.currentTimeMillis;
 import static java.util.Objects.requireNonNull;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.springframework.util.Assert.notNull;
 
 /**
@@ -39,16 +34,10 @@ import static org.springframework.util.Assert.notNull;
  *
  * @author Oleksiy_Dyagilev
  */
-public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
+public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, QueueMetadata> {
     private static final long WAIT_ITEM_TIMEOUT_MS = 5000;
-    private static final long SIZE_CHANGE_LISTENER_TIMEOUT_MS = 5000;
 
     private final CollocationMode collocationMode;
-
-    private final Semaphore readSemaphore;
-    private final Semaphore writeSemaphore;
-
-    private final Thread sizeChangeListenerThread;
 
     private final IdQuery<QueueMetadata> queueMetadataQuery;
 
@@ -91,22 +80,11 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
         }
         this.collocationMode = collocationMode;
         this.queueMetadataQuery = new IdQuery<>(QueueMetadata.class, queueName);
-
-        // setup semaphores
-        QueueMetadata metadata = space.read(queueMetadataQuery);
-        long tail = metadata.getTail();
-        long head = metadata.getHead();
-        int removedIndexesSize = metadata.getRemovedIndexesSize();
-        int size = (int) (tail - head - removedIndexesSize);
-
-
-        this.readSemaphore = new Semaphore(size, true);
-        this.writeSemaphore = bounded ? new Semaphore(capacity - size) : null;
-
-        // start size change listener thread
-        SizeChangeListener sizeChangeListener = new SizeChangeListener(tail, head, removedIndexesSize);
-        this.sizeChangeListenerThread = new Thread(sizeChangeListener, QUEUE_SIZE_CHANGE_LISTENER_THREAD_NAME + queueName);
-        this.sizeChangeListenerThread.start();
+    }
+    
+    @Override
+    protected SizeChangeListener createSizeChangeListener(QueueMetadata container) {
+        return new SizeChangeListener(container);
     }
 
     @Override
@@ -128,66 +106,6 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
         } else {
             return false;
         }
-    }
-
-    @Override
-    public void put(E element) throws InterruptedException {
-        if (!bounded) {
-            offer(element);
-            return;
-        }
-
-        while (true) {
-            writeSemaphore.acquire();
-            if (offer(element)) {
-                return;
-            }
-        }
-    }
-
-    @Override
-    public boolean offer(E element, long timeout, TimeUnit unit) throws InterruptedException {
-        if (!bounded) {
-            return offer(element);
-        }
-
-        long endTime = currentTimeMillis() + MILLISECONDS.convert(timeout, unit);
-
-        while (currentTimeMillis() < endTime) {
-            if (writeSemaphore.tryAcquire(timeout, unit)) {
-                if (offer(element)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public E take() throws InterruptedException {
-        while (true) {
-            readSemaphore.acquire();
-            E e = poll();
-            if (e != null) {
-                return e;
-            }
-        }
-    }
-
-    @Override
-    public E poll(long timeout, TimeUnit unit) throws InterruptedException {
-        long endTime = currentTimeMillis() + MILLISECONDS.convert(timeout, unit);
-
-        while (currentTimeMillis() < endTime) {
-            if (readSemaphore.tryAcquire(timeout, unit)) {
-                E e = poll();
-                if (e != null) {
-                    return e;
-                }
-            }
-        }
-        return null;
     }
 
     @Override
@@ -262,35 +180,16 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
     }
 
     /**
-     * Set the proper number of permits for 'read' and 'write' semaphore based on the current state of metadata
-     */
-    private void onSizeChanged(long tail, long head, int removedIndexesSize) {
-        int size = (int) (tail - head - removedIndexesSize);
-
-        readSemaphore.drainPermits();
-        if (size > 0) {
-            readSemaphore.release(size);
-        }
-
-        if (bounded) {
-            writeSemaphore.drainPermits();
-            int availableSpace = capacity - size;
-            if (availableSpace > 0) {
-                writeSemaphore.release(availableSpace);
-            }
-        }
-    }
-
-    /**
      * create new queue in the grid if this is a first reference (queue doesn't exist yet)
      */
     @Override
-    protected void createNewMetadataIfRequired() {
+    protected QueueMetadata getOrCreate() {
         try {
             QueueMetadata queueMetadata = new QueueMetadata(queueName, 0L, 0L, bounded, capacity);
             space.write(queueMetadata, WriteModifiers.WRITE_ONLY);
+            return queueMetadata;
         } catch (EntryAlreadyInSpaceException e) {
-            // no-op
+            return space.read(queueMetadataQuery);
         }
     }
 
@@ -394,52 +293,23 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
         }
     }
 
-    private class SizeChangeListener implements Runnable {
-        private Long tail;
-        private Long head;
-        private Integer removedIndexesSize;
+    private class SizeChangeListener extends AbstractSizeChangeListener {
 
-        public SizeChangeListener(Long tail, Long head, Integer removedIndexesSize) {
-            this.tail = tail;
-            this.head = head;
-            this.removedIndexesSize = removedIndexesSize;
+        public SizeChangeListener(QueueMetadata container) {
+            super(container);
         }
 
         @Override
-        public void run() {
+        protected SQLQuery<QueueMetadata> query() {
             SQLQuery<QueueMetadata> query = new SQLQuery<>(QueueMetadata.class, "name = ? AND (tail <> ? OR head <> ? OR removedIndexesSize <> ?)");
             query.setProjections("tail", "head", "removedIndexesSize");
-
-            while (!queueClosed) {
-                query.setParameters(queueName, tail, head, removedIndexesSize);
-                try {
-                    QueueMetadata foundMetadata = space.read(query, SIZE_CHANGE_LISTENER_TIMEOUT_MS);
-                    if (foundMetadata != null) {
-                        this.tail = foundMetadata.getTail();
-                        this.head = foundMetadata.getHead();
-                        this.removedIndexesSize = foundMetadata.getRemovedIndexesSize();
-
-                        onSizeChanged(tail, head, removedIndexesSize);
-                    }
-                } catch (Exception e) {
-                    if (isInterrupted(e) || isClosedResource(e)) {
-                        return;
-                    } else {
-                        if (!queueClosed) {
-                            throw e;
-                        }
-                    }
-                }
-            }
+            return query;
         }
-    }
 
-    private boolean isInterrupted(Throwable e) {
-        return MiscUtils.hasCause(e, InterruptedException.class);
-    }
-
-    private boolean isClosedResource(Throwable e) {
-        return MiscUtils.hasCause(e, com.j_spaces.core.exception.ClosedResourceException.class);
+        @Override
+        protected void populateParams(SQLQuery<QueueMetadata> query) {
+            query.setParameters(queueName, container.getTail(), container.getHead(), container.getRemovedIndexesSize());
+        }
     }
 
     private Integer calculateRouting(QueueItemKey itemKey) {
@@ -460,8 +330,8 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
     @Override
     public void close() throws Exception {
-        this.queueClosed = true;
-        this.sizeChangeListenerThread.interrupt();
+        super.close();
+        
         space.clear(queueMetadataQuery);
 
         // cannot use space.clear() because we need to match by nested template

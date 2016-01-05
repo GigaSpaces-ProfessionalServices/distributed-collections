@@ -1,5 +1,7 @@
 package org.openspaces.collections.queue.distributed.data;
 
+import org.openspaces.collections.queue.QueueContainer;
+
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
 
@@ -10,7 +12,7 @@ import java.util.Set;
  * @author Oleksiy_Dyagilev
  */
 @SpaceClass
-public class QueueMetadata {
+public class QueueMetadata implements QueueContainer {
 
     /** path is used in change api **/
     public static final String HEAD_PATH = "head";
@@ -109,5 +111,10 @@ public class QueueMetadata {
                 ", removedIndexes=" + removedIndexes +
                 ", removedIndexesSize=" + removedIndexesSize +
                 '}';
+    }
+
+    @Override
+    public Integer getSize() {
+        return (int) (getTail() - getHead() - getRemovedIndexesSize());
     }
 }

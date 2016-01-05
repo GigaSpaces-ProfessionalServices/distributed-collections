@@ -8,7 +8,6 @@ import com.gigaspaces.server.MutableServerEntry;
 import java.util.List;
 import java.util.Objects;
 
-import static org.openspaces.collections.queue.embedded.data.EmbeddedQueue.QUEUE_CONTAINER_PATH;
 import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContainer.CAPACITY_PATH;
 
 /**
@@ -31,7 +30,7 @@ public class EmbeddedOfferOperation extends EmbeddedChangeOperation<Boolean> {
 
     @Override
     protected Boolean change(MutableServerEntry entry, List<Object> items) {
-        final Integer capacity = (Integer) entry.getPathValue(QUEUE_CONTAINER_PATH + "." + CAPACITY_PATH);
+        final Integer capacity = (Integer) entry.getPathValue(CAPACITY_PATH);
         return isSpaceAvailible(capacity, items.size()) ? items.add(element) : false;
     }
     

@@ -22,7 +22,7 @@ import static org.openspaces.collections.CollectionUtils.createSerializableTypeL
 public class DistributedQueueBasicTest extends BasicQueueTest<SerializableType> {
 
     public DistributedQueueBasicTest(List<SerializableType> elements) {
-        super(createSerializableTypeList(10));
+        super(elements);
     }
 
     @Parameterized.Parameters

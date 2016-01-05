@@ -8,7 +8,6 @@ import com.gigaspaces.query.aggregators.SpaceEntriesAggregatorContext;
 
 import java.util.List;
 
-import static org.openspaces.collections.queue.embedded.data.EmbeddedQueue.QUEUE_CONTAINER_PATH;
 import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContainer.ITEMS_PATH;
 
 /**
@@ -27,7 +26,7 @@ public class EmbeddedPeekOperation extends SpaceEntriesAggregator<SerializableRe
 
     @Override
     public void aggregate(SpaceEntriesAggregatorContext context) {
-        final List<Object> items = (List<Object>) context.getPathValue(QUEUE_CONTAINER_PATH + "." + ITEMS_PATH);
+        final List<Object> items = (List<Object>) context.getPathValue(ITEMS_PATH);
         result = new SerializableResult<Object>(items.isEmpty() ? null : items.get(0));
     }
 

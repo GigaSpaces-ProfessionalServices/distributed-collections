@@ -10,9 +10,9 @@ import com.gigaspaces.client.WriteModifiers;
 import com.gigaspaces.query.IdQuery;
 import com.gigaspaces.query.aggregators.AggregationResult;
 import com.gigaspaces.query.aggregators.AggregationSet;
+import com.j_spaces.core.client.SQLQuery;
 import org.openspaces.collections.CollocationMode;
 import org.openspaces.collections.queue.AbstractGigaBlockingQueue;
-import org.openspaces.collections.queue.embedded.data.EmbeddedQueue;
 import org.openspaces.collections.queue.embedded.data.EmbeddedQueueContainer;
 import org.openspaces.collections.queue.embedded.operations.*;
 import org.openspaces.collections.serialization.ElementSerializer;
@@ -23,15 +23,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.concurrent.TimeUnit;
 
-import static org.openspaces.collections.queue.embedded.data.EmbeddedQueue.QUEUE_CONTAINER_PATH;
+import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContainer.QUEUE_NAME_PATH;
 import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContainer.SIZE_PATH;
 
 /**
  * @author Svitlana_Pogrebna
  */
-public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
+public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, EmbeddedQueueContainer> {
 
     public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName, ElementSerializer serializer) {
         super(space, queueName, 0, false, serializer);
@@ -42,35 +41,20 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
     }
 
     @Override
+    protected EmbeddedSizeChangeListener createSizeChangeListener(EmbeddedQueueContainer container) {
+        return new EmbeddedSizeChangeListener(container);
+    }
+    
+    @Override
     public boolean offer(E e) {
         // TODO: add serialization
         final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedOfferOperation(e));
 
-        final ChangeResult<EmbeddedQueue> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
+        final ChangeResult<EmbeddedQueueContainer> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
 
         final SerializableResult<Boolean> result = toSingleResult(changeResult);
 
         return result.getResult();
-    }
-
-    @Override
-    public void put(E e) throws InterruptedException {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public E take() throws InterruptedException {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public E poll(long timeout, TimeUnit unit) throws InterruptedException {
-        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @SuppressWarnings("unchecked")
@@ -78,7 +62,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
     public E poll() {
         final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedPollOperation());
 
-        final ChangeResult<EmbeddedQueue> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
+        final ChangeResult<EmbeddedQueueContainer> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
 
         final SerializableResult<Object> result = toSingleResult(changeResult);
         // TODO: add deserialization
@@ -101,14 +85,15 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
     }
 
     @Override
-    protected void createNewMetadataIfRequired() {
+    protected EmbeddedQueueContainer getOrCreate() {
         try {
             //TODO: replace LinkedBlockingQueue with more efficient implementation
             List<Object> items = bounded ? new ArrayList<>(capacity) : new ArrayList<>();
-            EmbeddedQueue embeddedQueue = new EmbeddedQueue(queueName, new EmbeddedQueueContainer(items, bounded ? capacity : null));
-            space.write(embeddedQueue, WriteModifiers.WRITE_ONLY);
+            EmbeddedQueueContainer container = new EmbeddedQueueContainer(queueName, items, bounded ? capacity : null);
+            space.write(container, WriteModifiers.WRITE_ONLY);
+            return container;
         } catch (EntryAlreadyInSpaceException e) {
-            // no-op
+            return getLightweightContainer();
         }
     }
 
@@ -119,17 +104,23 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
 
     @Override
     public int size() {
-        final IdQuery<EmbeddedQueue> idQuery = idQuery().setProjections(QUEUE_CONTAINER_PATH + "." + SIZE_PATH);
-        return space.read(idQuery).getContainer().getSize();
+        return getLightweightContainer().getSize();
     }
 
-    private IdQuery<EmbeddedQueue> idQuery() {
-        return new IdQuery<EmbeddedQueue>(EmbeddedQueue.class, queueName);
+    private EmbeddedQueueContainer getLightweightContainer() {
+        final IdQuery<EmbeddedQueueContainer> idQuery = idQuery().setProjections(SIZE_PATH);
+        return space.read(idQuery);
+    }
+    
+    private IdQuery<EmbeddedQueueContainer> idQuery() {
+        return new IdQuery<EmbeddedQueueContainer>(EmbeddedQueueContainer.class, queueName);
     }
 
     @Override
     public void close() throws Exception {
-        // TODO: to be implemented
+        super.close();
+        
+        space.clear(idQuery());
     }
 
     private class QueueIterator implements Iterator<E> {
@@ -201,6 +192,25 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E> {
 
             batchIndex--;
             curr = null;
+        }
+    }
+    
+    private class EmbeddedSizeChangeListener extends AbstractSizeChangeListener {
+
+        public EmbeddedSizeChangeListener(EmbeddedQueueContainer container) {
+            super(container);
+        }
+
+        @Override
+        protected SQLQuery<EmbeddedQueueContainer> query() {
+            SQLQuery<EmbeddedQueueContainer> query = new SQLQuery<>(EmbeddedQueueContainer.class, QUEUE_NAME_PATH + " = ? AND " + SIZE_PATH + " <> ?");
+            query.setProjections(SIZE_PATH);
+            return query;
+        }
+
+        @Override
+        protected void populateParams(SQLQuery<EmbeddedQueueContainer> query) {
+            query.setParameters(queueName, container.getSize());
         }
     }
 }
