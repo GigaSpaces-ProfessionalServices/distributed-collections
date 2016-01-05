@@ -11,6 +11,7 @@ import java.util.Random;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
@@ -63,7 +64,7 @@ public abstract class ProducerConsumerTest {
     }
 
     class Producer implements Runnable {
-        private Random random = new Random();
+        private Random random = ThreadLocalRandom.current();
 
         @Override
         public void run() {
