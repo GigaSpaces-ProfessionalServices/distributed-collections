@@ -1,20 +1,19 @@
-/**
- *
- */
 package org.openspaces.collections.queue.embedded.data;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
 import com.gigaspaces.annotation.pojo.SpaceRouting;
-import org.openspaces.collections.queue.QueueContainer;
+import org.openspaces.collections.queue.QueueMetadata;
 
 import java.util.List;
 import java.util.Objects;
+
+
 /**
  * @author Svitlana_Pogrebna
  */
 @SpaceClass
-public class EmbeddedQueueContainer implements QueueContainer {
+public class EmbeddedQueueContainer implements QueueMetadata {
 
     public static final String QUEUE_NAME_PATH = "name";
     public static final String ITEMS_PATH = "items";

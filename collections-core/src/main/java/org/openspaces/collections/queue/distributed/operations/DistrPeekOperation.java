@@ -6,13 +6,13 @@ import com.gigaspaces.query.aggregators.SpaceEntriesAggregatorContext;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.openspaces.collections.queue.distributed.data.QueueMetadata.*;
+import static org.openspaces.collections.queue.distributed.data.DistrQueueMetadata.*;
 
-public class PeekOperation extends SpaceEntriesAggregator<QueueHeadResult> {
+public class DistrPeekOperation extends SpaceEntriesAggregator<DistrQueueHeadResult> {
 
     private static final long serialVersionUID = 1L;
 
-    private transient QueueHeadResult result;
+    private transient DistrQueueHeadResult result;
 
     @Override
     public String getDefaultAlias() {
@@ -26,20 +26,20 @@ public class PeekOperation extends SpaceEntriesAggregator<QueueHeadResult> {
         final long head = (long) context.getPathValue(HEAD_PATH);
 
         if (tail == head) {
-            this.result = QueueHeadResult.emptyQueueResult();
+            this.result = DistrQueueHeadResult.emptyQueueResult();
         } else {
             final Set<Long> removedIndexes = new HashSet<>((Set<Long>) context.getPathValue(REMOVED_INDEXES_PATH));
-            this.result = new QueueHeadTransformer().forwardQueueHead(head, tail, removedIndexes);
+            this.result = new DistrQueueHeadTransformer().forwardQueueHead(head, tail, removedIndexes);
         }
     }
 
     @Override
-    public QueueHeadResult getIntermediateResult() {
+    public DistrQueueHeadResult getIntermediateResult() {
         return result;
     }
 
     @Override
-    public void aggregateIntermediateResult(QueueHeadResult partitionResult) {
+    public void aggregateIntermediateResult(DistrQueueHeadResult partitionResult) {
         this.result = partitionResult;
     }
 }

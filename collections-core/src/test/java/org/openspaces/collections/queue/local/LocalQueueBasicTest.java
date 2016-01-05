@@ -4,7 +4,7 @@ import com.j_spaces.core.client.SQLQuery;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.openspaces.collections.queue.BasicQueueTest;
-import org.openspaces.collections.queue.distributed.data.QueueItem;
+import org.openspaces.collections.queue.distributed.data.DistrQueueItem;
 import org.openspaces.collections.set.SerializableType;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -55,7 +55,7 @@ public class LocalQueueBasicTest extends BasicQueueTest<SerializableType> {
 
     @Override
     protected void assertSize(String msg, int expectedSize) {
-        SQLQuery<QueueItem> query = new SQLQuery<>(QueueItem.class, "itemKey.queueName = ?", queueName);
+        SQLQuery<DistrQueueItem> query = new SQLQuery<>(DistrQueueItem.class, "itemKey.queueName = ?", queueName);
         assertEquals(msg, expectedSize, gigaSpace.count(query));
     }
 }

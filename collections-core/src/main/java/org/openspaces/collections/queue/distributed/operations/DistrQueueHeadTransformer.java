@@ -7,7 +7,7 @@ import java.util.Set;
  *
  * @author Svitlana_Pogrebna
  */
-public class QueueHeadTransformer {
+public class DistrQueueHeadTransformer {
 
     /**
      * Moves forward the queue head and skips the removedIndexes.
@@ -18,7 +18,7 @@ public class QueueHeadTransformer {
      * @param removedIndexes
      * @return queue head result.
      */
-    public QueueHeadResult forwardQueueHead(long head, long tail, Set<Long> removedIndexes) {
+    public DistrQueueHeadResult forwardQueueHead(long head, long tail, Set<Long> removedIndexes) {
         if (head == tail) {
             throw new IllegalArgumentException("Queue should not be empty");
         }
@@ -27,7 +27,7 @@ public class QueueHeadTransformer {
         // skip elements that were removed with iterator.remove()
         long nextNonRemovedIndex = nextNonRemovedIndex(head, removedIndexes);
         boolean changed = removedIndexes.size() != sizeBefore;
-        return nextNonRemovedIndex > tail ? QueueHeadResult.emptyQueueResult(tail, changed) : QueueHeadResult.headIndexResult(nextNonRemovedIndex, changed);
+        return nextNonRemovedIndex > tail ? DistrQueueHeadResult.emptyQueueResult(tail, changed) : DistrQueueHeadResult.headIndexResult(nextNonRemovedIndex, changed);
     }
 
 

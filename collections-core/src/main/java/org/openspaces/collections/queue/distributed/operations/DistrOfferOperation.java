@@ -8,18 +8,18 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import static org.openspaces.collections.queue.distributed.data.QueueMetadata.*;
+import static org.openspaces.collections.queue.distributed.data.DistrQueueMetadata.*;
 import static org.openspaces.collections.util.SerializationUtils.readNullableObject;
 import static org.openspaces.collections.util.SerializationUtils.writeNullableObject;
 
 /**
  * @author Oleksiy_Dyagilev
  */
-public class OfferOperation extends CustomChangeOperation {
+public class DistrOfferOperation extends CustomChangeOperation {
 
     private final int itemsNumber;
 
-    public OfferOperation(int itemsNumber) {
+    public DistrOfferOperation(int itemsNumber) {
         this.itemsNumber = itemsNumber;
     }
 

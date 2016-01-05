@@ -9,17 +9,17 @@ import java.util.Objects;
 /**
  * @author Oleksiy_Dyagilev
  */
-public class QueueItemKey implements Externalizable {
+public class DistrQueueItemKey implements Externalizable {
 
     private static final long serialVersionUID = 1L;
 
     private String queueName;
     private Long queueIndex;
 
-    public QueueItemKey() {
+    public DistrQueueItemKey() {
     }
 
-    public QueueItemKey(String queueName, Long queueIndex) {
+    public DistrQueueItemKey(String queueName, Long queueIndex) {
         this.queueName = Objects.requireNonNull(queueName, "'queueName' must not be null");
         this.queueIndex = Objects.requireNonNull(queueIndex, "'queueIndex' must not be null");
     }
@@ -45,7 +45,7 @@ public class QueueItemKey implements Externalizable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        QueueItemKey that = (QueueItemKey) o;
+        DistrQueueItemKey that = (DistrQueueItemKey) o;
 
         if (queueName != null ? !queueName.equals(that.queueName) : that.queueName != null) return false;
         return !(queueIndex != null ? !queueIndex.equals(that.queueIndex) : that.queueIndex != null);

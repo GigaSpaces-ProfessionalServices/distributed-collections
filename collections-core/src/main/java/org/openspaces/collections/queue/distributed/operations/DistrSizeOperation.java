@@ -2,19 +2,19 @@ package org.openspaces.collections.queue.distributed.operations;
 
 import com.gigaspaces.query.aggregators.SpaceEntriesAggregator;
 import com.gigaspaces.query.aggregators.SpaceEntriesAggregatorContext;
-import org.openspaces.collections.queue.distributed.operations.SizeOperation.Result;
+import org.openspaces.collections.queue.distributed.operations.DistrSizeOperation.Result;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import static org.openspaces.collections.queue.distributed.data.QueueMetadata.*;
+import static org.openspaces.collections.queue.distributed.data.DistrQueueMetadata.*;
 
 /**
  * @author Oleksiy_Dyagilev
  */
-public class SizeOperation extends SpaceEntriesAggregator<Result> {
+public class DistrSizeOperation extends SpaceEntriesAggregator<Result> {
 
     private static final long serialVersionUID = 1L;
 

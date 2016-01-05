@@ -41,8 +41,8 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
     }
 
     @Override
-    protected EmbeddedSizeChangeListener createSizeChangeListener(EmbeddedQueueContainer container) {
-        return new EmbeddedSizeChangeListener(container);
+    protected EmbeddedSizeChangeListener createSizeChangeListener(EmbeddedQueueContainer queueMetadata) {
+        return new EmbeddedSizeChangeListener(queueMetadata);
     }
     
     @Override
@@ -214,7 +214,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
 
         @Override
         protected void populateParams(SQLQuery<EmbeddedQueueContainer> query) {
-            query.setParameters(queueName, container.getSize());
+            query.setParameters(queueName, queueMetadata.getSize());
         }
     }
 }

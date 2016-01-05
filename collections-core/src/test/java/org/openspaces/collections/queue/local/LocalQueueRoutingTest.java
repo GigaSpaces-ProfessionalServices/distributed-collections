@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openspaces.collections.queue.GigaBlockingQueue;
-import org.openspaces.collections.queue.distributed.data.QueueItem;
+import org.openspaces.collections.queue.distributed.data.DistrQueueItem;
 import org.openspaces.collections.set.SerializableType;
 import org.openspaces.core.GigaSpace;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,11 +87,11 @@ public class LocalQueueRoutingTest {
     }
 
     private void checkRouting(int size) {
-        SQLQuery<QueueItem> query = new SQLQuery<>(QueueItem.class, "itemKey.queueName = ?", queueName);
-        QueueItem[] items = gigaSpace.readMultiple(query);
+        SQLQuery<DistrQueueItem> query = new SQLQuery<>(DistrQueueItem.class, "itemKey.queueName = ?", queueName);
+        DistrQueueItem[] items = gigaSpace.readMultiple(query);
         assertNotNull("Items should not be null", items);
         assertEquals("Invalid items count", size, items.length);
-        for (QueueItem item : items) {
+        for (DistrQueueItem item : items) {
             assertEquals("All itemKey should be routed to same partition", Integer.valueOf(queueName.hashCode()), item.getRouting());
         }
     }

@@ -9,9 +9,9 @@ import com.gigaspaces.query.aggregators.AggregationSet;
 import com.j_spaces.core.client.SQLQuery;
 import org.openspaces.collections.CollocationMode;
 import org.openspaces.collections.queue.AbstractGigaBlockingQueue;
-import org.openspaces.collections.queue.distributed.data.QueueItem;
-import org.openspaces.collections.queue.distributed.data.QueueItemKey;
-import org.openspaces.collections.queue.distributed.data.QueueMetadata;
+import org.openspaces.collections.queue.distributed.data.DistrQueueMetadata;
+import org.openspaces.collections.queue.distributed.data.DistrQueueItem;
+import org.openspaces.collections.queue.distributed.data.DistrQueueItemKey;
 import org.openspaces.collections.queue.distributed.operations.*;
 import org.openspaces.collections.serialization.ElementSerializer;
 import org.openspaces.collections.util.Pair;
@@ -34,12 +34,12 @@ import static org.springframework.util.Assert.notNull;
  *
  * @author Oleksiy_Dyagilev
  */
-public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, QueueMetadata> {
+public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, DistrQueueMetadata> {
     private static final long WAIT_ITEM_TIMEOUT_MS = 5000;
 
     private final CollocationMode collocationMode;
 
-    private final IdQuery<QueueMetadata> queueMetadataQuery;
+    private final IdQuery<DistrQueueMetadata> queueMetadataQuery;
 
     /**
      * Creates not bounded queue
@@ -79,28 +79,28 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
             throw new IllegalArgumentException("Invalid collocation mode = " + collocationMode);
         }
         this.collocationMode = collocationMode;
-        this.queueMetadataQuery = new IdQuery<>(QueueMetadata.class, queueName);
+        this.queueMetadataQuery = new IdQuery<>(DistrQueueMetadata.class, queueName);
     }
     
     @Override
-    protected SizeChangeListener createSizeChangeListener(QueueMetadata container) {
-        return new SizeChangeListener(container);
+    protected SizeChangeListener createSizeChangeListener(DistrQueueMetadata queueMetadata) {
+        return new SizeChangeListener(queueMetadata);
     }
 
     @Override
     public boolean offer(E element) {
         requireNonNull(element, NULL_ELEMENT_ERR_MSG);
 
-        ChangeSet offerChange = new ChangeSet().custom(new OfferOperation(1));
+        ChangeSet offerChange = new ChangeSet().custom(new DistrOfferOperation(1));
 
-        ChangeResult<QueueMetadata> changeResult = space.change(queueMetadataQuery, offerChange, RETURN_DETAILED_RESULTS);
+        ChangeResult<DistrQueueMetadata> changeResult = space.change(queueMetadataQuery, offerChange, RETURN_DETAILED_RESULTS);
 
-        OfferOperation.Result offerResult = toSingleResult(changeResult);
+        DistrOfferOperation.Result offerResult = toSingleResult(changeResult);
 
         if (offerResult.isChanged()) {
-            QueueItemKey itemKey = new QueueItemKey(queueName, offerResult.getNewTail());
+            DistrQueueItemKey itemKey = new DistrQueueItemKey(queueName, offerResult.getNewTail());
             Integer routing = calculateRouting(itemKey);
-            QueueItem item = new QueueItem(itemKey, serialize(element), routing);
+            DistrQueueItem item = new DistrQueueItem(itemKey, serialize(element), routing);
             space.write(item);
             return true;
         } else {
@@ -112,21 +112,21 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
     @SuppressWarnings("unchecked")
     public E poll() {
         while (true) {
-            ChangeSet pollChange = new ChangeSet().custom(new PollOperation());
+            ChangeSet pollChange = new ChangeSet().custom(new DistrPollOperation());
 
-            ChangeResult<QueueMetadata> changeResult = space.change(queueMetadataQuery, pollChange, RETURN_DETAILED_RESULTS);
+            ChangeResult<DistrQueueMetadata> changeResult = space.change(queueMetadataQuery, pollChange, RETURN_DETAILED_RESULTS);
 
-            QueueHeadResult pollResult = toSingleResult(changeResult);
+            DistrQueueHeadResult pollResult = toSingleResult(changeResult);
 
             if (pollResult.isQueueEmpty()) {
                 return null;
             } else {
                 Long polledIndex = pollResult.getHeadIndex();
-                IdQuery<QueueItem> itemQuery = itemQueryByIndex(polledIndex);
+                IdQuery<DistrQueueItem> itemQuery = itemQueryByIndex(polledIndex);
 
                 // there is a time window when queue tail changed, but item is not in the space yet
                 // to handle that we do take with timeout
-                QueueItem queueItem = space.takeById(itemQuery, WAIT_ITEM_TIMEOUT_MS);
+                DistrQueueItem queueItem = space.takeById(itemQuery, WAIT_ITEM_TIMEOUT_MS);
 
                 // we may not find item if producer failed in the middle of modifying tail and writing item to space
                 // just skip that item and poll the next one (see while loop)
@@ -141,10 +141,10 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
     @Override
     public E peek() {
         while (true) {
-            AggregationSet peekOperation = new AggregationSet().add(new PeekOperation());
+            AggregationSet peekOperation = new AggregationSet().add(new DistrPeekOperation());
 
             AggregationResult aggregationResult = space.aggregate(queueMetadataQuery, peekOperation);
-            QueueHeadResult result = toSingleResult(aggregationResult);
+            DistrQueueHeadResult result = toSingleResult(aggregationResult);
 
             if (result.isQueueEmpty()) {
                 return null;
@@ -152,7 +152,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
                 Long headIndex = result.getHeadIndex();
                 // there is a time window when queue tail changed, but item is not in the space yet
                 // to handle that we do take with timeout
-                QueueItem queueItem = space.readById(itemQueryByIndex(headIndex), WAIT_ITEM_TIMEOUT_MS);
+                DistrQueueItem queueItem = space.readById(itemQueryByIndex(headIndex), WAIT_ITEM_TIMEOUT_MS);
 
                 // we may not find item if producer failed in the middle of modifying tail and writing item to space
                 // just skip that item and peek the next one (see while loop)
@@ -165,17 +165,17 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
     @Override
     public Iterator<E> iterator() {
-        QueueMetadata queueMetadata = space.readById(queueMetadataQuery);
+        DistrQueueMetadata queueMetadata = space.readById(queueMetadataQuery);
         return new QueueIterator(queueMetadata.getHead(), queueMetadata.getTail(), queueMetadata.getRemovedIndexes());
     }
 
     @Override
     public int size() {
-        AggregationSet sizeOperation = new AggregationSet().add(new SizeOperation());
+        AggregationSet sizeOperation = new AggregationSet().add(new DistrSizeOperation());
 
         AggregationResult aggregationResult = space.aggregate(queueMetadataQuery, sizeOperation);
 
-        SizeOperation.Result sizeResult = toSingleResult(aggregationResult);
+        DistrSizeOperation.Result sizeResult = toSingleResult(aggregationResult);
         return sizeResult.getSize();
     }
 
@@ -183,9 +183,9 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
      * create new queue in the grid if this is a first reference (queue doesn't exist yet)
      */
     @Override
-    protected QueueMetadata getOrCreate() {
+    protected DistrQueueMetadata getOrCreate() {
         try {
-            QueueMetadata queueMetadata = new QueueMetadata(queueName, 0L, 0L, bounded, capacity);
+            DistrQueueMetadata queueMetadata = new DistrQueueMetadata(queueName, 0L, 0L, bounded, capacity);
             space.write(queueMetadata, WriteModifiers.WRITE_ONLY);
             return queueMetadata;
         } catch (EntryAlreadyInSpaceException e) {
@@ -196,17 +196,17 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
     /**
      * @return query to find item by index
      */
-    private IdQuery<QueueItem> itemQueryByIndex(long index) {
-        QueueItemKey itemKey = new QueueItemKey(queueName, index);
-        return new IdQuery<>(QueueItem.class, itemKey, calculateRouting(itemKey));
+    private IdQuery<DistrQueueItem> itemQueryByIndex(long index) {
+        DistrQueueItemKey itemKey = new DistrQueueItemKey(queueName, index);
+        return new IdQuery<>(DistrQueueItem.class, itemKey, calculateRouting(itemKey));
     }
 
     /**
      * @return template to find item by index
      */
-    private QueueItem itemTemplateByIndex(long index) {
-        QueueItem itemTemplate = new QueueItem();
-        QueueItemKey itemKey = new QueueItemKey(queueName, index);
+    private DistrQueueItem itemTemplateByIndex(long index) {
+        DistrQueueItem itemTemplate = new DistrQueueItem();
+        DistrQueueItemKey itemKey = new DistrQueueItemKey(queueName, index);
         itemTemplate.setItemKey(itemKey);
         itemTemplate.setRouting(calculateRouting(itemKey));
         return itemTemplate;
@@ -264,7 +264,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
             }
 
             // update queue
-            ChangeSet removeOperation = new ChangeSet().custom(new RemoveOperation(currIndex));
+            ChangeSet removeOperation = new ChangeSet().custom(new DistrRemoveOperation(currIndex));
             space.change(queueMetadataQuery, removeOperation);
 
             // remove element
@@ -281,8 +281,8 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
                     continue;
                 }
 
-                IdQuery<QueueItem> itemQuery = itemQueryByIndex(index);
-                QueueItem queueItem = space.readById(itemQuery);
+                IdQuery<DistrQueueItem> itemQuery = itemQueryByIndex(index);
+                DistrQueueItem queueItem = space.readById(itemQuery);
                 if (queueItem != null) {
                     return new Pair<>(deserialize(queueItem.getItem()), index);
                 } else {
@@ -295,24 +295,24 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
     private class SizeChangeListener extends AbstractSizeChangeListener {
 
-        public SizeChangeListener(QueueMetadata container) {
-            super(container);
+        public SizeChangeListener(DistrQueueMetadata queueMetadata) {
+            super(queueMetadata);
         }
 
         @Override
-        protected SQLQuery<QueueMetadata> query() {
-            SQLQuery<QueueMetadata> query = new SQLQuery<>(QueueMetadata.class, "name = ? AND (tail <> ? OR head <> ? OR removedIndexesSize <> ?)");
+        protected SQLQuery<DistrQueueMetadata> query() {
+            SQLQuery<DistrQueueMetadata> query = new SQLQuery<>(DistrQueueMetadata.class, "name = ? AND (tail <> ? OR head <> ? OR removedIndexesSize <> ?)");
             query.setProjections("tail", "head", "removedIndexesSize");
             return query;
         }
 
         @Override
-        protected void populateParams(SQLQuery<QueueMetadata> query) {
-            query.setParameters(queueName, container.getTail(), container.getHead(), container.getRemovedIndexesSize());
+        protected void populateParams(SQLQuery<DistrQueueMetadata> query) {
+            query.setParameters(queueName, queueMetadata.getTail(), queueMetadata.getHead(), queueMetadata.getRemovedIndexesSize());
         }
     }
 
-    private Integer calculateRouting(QueueItemKey itemKey) {
+    private Integer calculateRouting(DistrQueueItemKey itemKey) {
         switch (collocationMode) {
             case LOCAL:
                 return itemKey.getQueueName().hashCode();
@@ -335,7 +335,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
         space.clear(queueMetadataQuery);
 
         // cannot use space.clear() because we need to match by nested template
-        SQLQuery<QueueItem> itemQuery = new SQLQuery<>(QueueItem.class, "itemKey.queueName = ?");
+        SQLQuery<DistrQueueItem> itemQuery = new SQLQuery<>(DistrQueueItem.class, "itemKey.queueName = ?");
         itemQuery.setParameters(queueName);
         itemQuery.setProjections("");
         space.takeMultiple(itemQuery);

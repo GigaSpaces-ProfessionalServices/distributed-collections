@@ -6,12 +6,12 @@ import com.gigaspaces.server.MutableServerEntry;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.openspaces.collections.queue.distributed.data.QueueMetadata.*;
+import static org.openspaces.collections.queue.distributed.data.DistrQueueMetadata.*;
 
 /**
  * @author Oleksiy_Dyagilev
  */
-public class PollOperation extends CustomChangeOperation {
+public class DistrPollOperation extends CustomChangeOperation {
 
     private static final long serialVersionUID = 1L;
 
@@ -22,13 +22,13 @@ public class PollOperation extends CustomChangeOperation {
         final long head = (long) entry.getPathValue(HEAD_PATH);
 
         if (tail == head) {
-            return QueueHeadResult.emptyQueueResult();
+            return DistrQueueHeadResult.emptyQueueResult();
         }
 
         // skip elements that were removed with iterator.remove()
         final Set<Long> removedIndexes = new HashSet<>((Set<Long>) entry.getPathValue(REMOVED_INDEXES_PATH));
 
-        QueueHeadResult result = new QueueHeadTransformer().forwardQueueHead(head, tail, removedIndexes);
+        DistrQueueHeadResult result = new DistrQueueHeadTransformer().forwardQueueHead(head, tail, removedIndexes);
         entry.setPathValue(HEAD_PATH, result.getHeadIndex());
 
         // update removed indexes set if it was changed

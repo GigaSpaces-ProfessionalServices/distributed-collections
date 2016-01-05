@@ -6,16 +6,16 @@ import com.gigaspaces.server.MutableServerEntry;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.openspaces.collections.queue.distributed.data.QueueMetadata.*;
+import static org.openspaces.collections.queue.distributed.data.DistrQueueMetadata.*;
 
 /**
  * @author Oleksiy_Dyagilev
  */
-public class RemoveOperation extends CustomChangeOperation {
+public class DistrRemoveOperation extends CustomChangeOperation {
 
     private long index;
 
-    public RemoveOperation(long index) {
+    public DistrRemoveOperation(long index) {
         this.index = index;
     }
 

@@ -1,6 +1,6 @@
 package org.openspaces.collections.queue.distributed.data;
 
-import org.openspaces.collections.queue.QueueContainer;
+import org.openspaces.collections.queue.QueueMetadata;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
@@ -12,7 +12,7 @@ import java.util.Set;
  * @author Oleksiy_Dyagilev
  */
 @SpaceClass
-public class QueueMetadata implements QueueContainer {
+public class DistrQueueMetadata implements QueueMetadata {
 
     /** path is used in change api **/
     public static final String HEAD_PATH = "head";
@@ -30,10 +30,10 @@ public class QueueMetadata implements QueueContainer {
     private Set<Long> removedIndexes;
     private Integer removedIndexesSize;
 
-    public QueueMetadata() {
+    public DistrQueueMetadata() {
     }
 
-    public QueueMetadata(String name, Long head, Long tail, Boolean bounded, Integer capacity) {
+    public DistrQueueMetadata(String name, Long head, Long tail, Boolean bounded, Integer capacity) {
         this.name = name;
         this.head = head;
         this.tail = tail;
@@ -102,7 +102,7 @@ public class QueueMetadata implements QueueContainer {
 
     @Override
     public String toString() {
-        return "QueueMetadata{" +
+        return "DistrQueueMetadata{" +
                 "name='" + name + '\'' +
                 ", head=" + head +
                 ", tail=" + tail +

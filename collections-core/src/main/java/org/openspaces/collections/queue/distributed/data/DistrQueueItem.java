@@ -10,27 +10,27 @@ import java.util.Objects;
  * @author Oleksiy_Dyagilev
  */
 @SpaceClass
-public class QueueItem {
+public class DistrQueueItem {
 
-    private QueueItemKey itemKey;
+    private DistrQueueItemKey itemKey;
     private Integer routing;
     private Object item;
 
-    public QueueItem() {
+    public DistrQueueItem() {
     }
 
-    public QueueItem(QueueItemKey itemKey, Object item, Integer routing) {
+    public DistrQueueItem(DistrQueueItemKey itemKey, Object item, Integer routing) {
         this.itemKey = Objects.requireNonNull(itemKey, "'itemKey' parameter must not be null");
         this.routing = Objects.requireNonNull(routing, "'routing' parameter must not be null");
         this.item = item;
     }
 
     @SpaceId
-    public QueueItemKey getItemKey() {
+    public DistrQueueItemKey getItemKey() {
         return itemKey;
     }
 
-    public void setItemKey(QueueItemKey itemKey) {
+    public void setItemKey(DistrQueueItemKey itemKey) {
         this.itemKey = itemKey;
     }
 

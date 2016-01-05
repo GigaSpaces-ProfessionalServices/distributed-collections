@@ -8,13 +8,13 @@ import java.io.ObjectOutput;
 import static org.openspaces.collections.util.SerializationUtils.readNullableObject;
 import static org.openspaces.collections.util.SerializationUtils.writeNullableObject;
 
-public class QueueHeadResult implements Externalizable {
+public class DistrQueueHeadResult implements Externalizable {
 
     private boolean queueEmpty;
     private Long headIndex;
     private boolean removedIndexesChanged;
 
-    public QueueHeadResult() {
+    public DistrQueueHeadResult() {
     }
 
     /**
@@ -22,7 +22,7 @@ public class QueueHeadResult implements Externalizable {
      *
      * @return result
      */
-    public static QueueHeadResult emptyQueueResult() {
+    public static DistrQueueHeadResult emptyQueueResult() {
         return headIndexResult(true, null, false);
     }
 
@@ -31,7 +31,7 @@ public class QueueHeadResult implements Externalizable {
      *
      * @return result
      */
-    public static QueueHeadResult emptyQueueResult(Long index, boolean removedIndexesChanged) {
+    public static DistrQueueHeadResult emptyQueueResult(Long index, boolean removedIndexesChanged) {
         return headIndexResult(true, index, removedIndexesChanged);
     }
 
@@ -40,12 +40,12 @@ public class QueueHeadResult implements Externalizable {
      *
      * @return result
      */
-    public static QueueHeadResult headIndexResult(Long index, boolean removedIndexesChanged) {
+    public static DistrQueueHeadResult headIndexResult(Long index, boolean removedIndexesChanged) {
         return headIndexResult(false, index, removedIndexesChanged);
     }
 
-    private static QueueHeadResult headIndexResult(boolean queueEmpty, Long index, boolean removedIndexesChanged) {
-        QueueHeadResult result = new QueueHeadResult();
+    private static DistrQueueHeadResult headIndexResult(boolean queueEmpty, Long index, boolean removedIndexesChanged) {
+        DistrQueueHeadResult result = new DistrQueueHeadResult();
         result.queueEmpty = queueEmpty;
         result.headIndex = index;
         result.removedIndexesChanged = removedIndexesChanged;

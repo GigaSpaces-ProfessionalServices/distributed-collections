@@ -23,7 +23,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 /**
  * @author Svitlana_Pogrebna
  */
-public abstract class AbstractGigaBlockingQueue<E, Q extends QueueContainer> extends AbstractQueue<E> implements GigaBlockingQueue<E> {
+public abstract class AbstractGigaBlockingQueue<E, M extends QueueMetadata> extends AbstractQueue<E> implements GigaBlockingQueue<E> {
 
     protected static final String NULL_ELEMENT_ERR_MSG = "Queue doesn't support null elements";
   
@@ -67,14 +67,14 @@ public abstract class AbstractGigaBlockingQueue<E, Q extends QueueContainer> ext
         this.bounded = bounded;
         this.serializer = serializer;
 
-        final Q container = getOrCreate();
-        final int size = container.getSize();
+        final M queueMetadata = getOrCreate();
+        final int size = queueMetadata.getSize();
 
         this.readSemaphore = new Semaphore(size, true);
         this.writeSemaphore = bounded ? new Semaphore(capacity - size) : null;
 
         // start size change listener thread
-        final Runnable sizeChangeListener = createSizeChangeListener(container);
+        final Runnable sizeChangeListener = createSizeChangeListener(queueMetadata);
         this.sizeChangeListenerThread = new Thread(sizeChangeListener, QUEUE_SIZE_CHANGE_LISTENER_THREAD_NAME + queueName);
         this.sizeChangeListenerThread.start();
     }
@@ -190,9 +190,9 @@ public abstract class AbstractGigaBlockingQueue<E, Q extends QueueContainer> ext
         return null;
     }
     
-    protected abstract Q getOrCreate();
+    protected abstract M getOrCreate();
     
-    protected abstract AbstractSizeChangeListener createSizeChangeListener(Q container);
+    protected abstract AbstractSizeChangeListener createSizeChangeListener(M queueMetadata);
     
     /**
      * Set the proper number of permits for 'read' and 'write' semaphore based on the current queue size
@@ -257,20 +257,20 @@ public abstract class AbstractGigaBlockingQueue<E, Q extends QueueContainer> ext
     
     protected abstract class AbstractSizeChangeListener implements Runnable {
 
-        protected final Q container;
+        protected final M queueMetadata;
 
-        public AbstractSizeChangeListener(Q container) {
-            this.container = container;
+        public AbstractSizeChangeListener(M queueMetadata) {
+            this.queueMetadata = queueMetadata;
         }
 
         @Override
         public void run() {
-            final SQLQuery<Q> query = query();
+            final SQLQuery<M> query = query();
 
             while (!queueClosed) {
                 populateParams(query);
                 try {
-                    Q foundMetadata = space.read(query, SIZE_CHANGE_LISTENER_TIMEOUT_MS);
+                    M foundMetadata = space.read(query, SIZE_CHANGE_LISTENER_TIMEOUT_MS);
                     if (foundMetadata != null) {
                         onSizeChanged(foundMetadata.getSize());
                     }
@@ -286,9 +286,9 @@ public abstract class AbstractGigaBlockingQueue<E, Q extends QueueContainer> ext
             }
         }
 
-        protected abstract SQLQuery<Q> query();
+        protected abstract SQLQuery<M> query();
 
-        protected abstract void populateParams(SQLQuery<Q> query);
+        protected abstract void populateParams(SQLQuery<M> query);
 
         private boolean isInterrupted(Throwable e) {
             return MiscUtils.hasCause(e, InterruptedException.class);
