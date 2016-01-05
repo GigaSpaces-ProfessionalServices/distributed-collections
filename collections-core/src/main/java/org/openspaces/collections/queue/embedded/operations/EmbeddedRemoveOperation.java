@@ -11,9 +11,17 @@ public class EmbeddedRemoveOperation extends EmbeddedChangeOperation<Boolean> {
 
     private static final long serialVersionUID = 1L;
 
+    private final int index;
     private final Object item;
     
-    public EmbeddedRemoveOperation(Object item) {
+    public EmbeddedRemoveOperation(int index, Object item) {
+        if (index < 0) {
+            throw new IndexOutOfBoundsException("'index' parameter must not be negative");
+        }
+        if (item == null) {
+            throw new IllegalArgumentException("'item' must not be null");
+        }
+        this.index = index;
         this.item = item;
     }
     
@@ -24,6 +32,10 @@ public class EmbeddedRemoveOperation extends EmbeddedChangeOperation<Boolean> {
 
     @Override
     protected Boolean change(MutableServerEntry entry, List<Object> items) {
-        return items.remove(item);
+        if (index < items.size() && item.equals(items.get(index))) {
+            items.remove(index);
+            return true;
+        }
+        return false;
     }
 }

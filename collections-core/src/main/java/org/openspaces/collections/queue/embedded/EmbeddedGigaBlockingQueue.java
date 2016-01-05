@@ -130,6 +130,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
         private final int maxEntries; 
         
         private Object curr;
+        private int currIndex;
         
         private int batchIndex;
         private Iterator<Object> iterator;
@@ -143,6 +144,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
                 throw new IllegalArgumentException("'maxEntries' parameter must be positive");
             }
             this.maxEntries = maxEntries;
+            this.currIndex = -1;
             
             // load the first batch
             this.iterator = nextBatch();
@@ -159,6 +161,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
                 throw new NoSuchElementException();
             }
             this.curr = iterator.next();
+            currIndex++;
 
             if (!hasNext()) {
                 iterator = nextBatch();
@@ -187,10 +190,11 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
             if (curr == null) {
                 throw new IllegalStateException();
             }
-            final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedRemoveOperation(curr));
+            final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedRemoveOperation(currIndex, curr));
             space.change(idQuery(), changeSet);
 
             batchIndex--;
+            currIndex--;
             curr = null;
         }
     }

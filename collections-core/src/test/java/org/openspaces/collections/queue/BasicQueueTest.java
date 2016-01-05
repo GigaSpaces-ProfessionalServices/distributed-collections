@@ -489,6 +489,28 @@ public abstract class BasicQueueTest<T> extends AbstractCollectionTest<T> {
         iterator.remove();
     }
     
+    @Test
+    public void testIteratorRemoveDuplicatedItems() {
+        T item1 = newElement();
+        gigaQueue.add(item1);
+        T item2 = newElement();
+        gigaQueue.add(item2);
+        gigaQueue.add(item1);
+        
+        Iterator<T> iterator = gigaQueue.iterator();
+        while(iterator.hasNext()) {
+            iterator.next();
+        }
+        iterator.remove();
+        
+        assertSize("Invalid queue size", testedElements.size() + 2);
+        for (int index = 0; index < testedElements.size(); index++) {
+            assertEquals(testedElements.get(index), gigaQueue.poll());
+        }
+        assertEquals(item1, gigaQueue.poll());
+        assertEquals(item2, gigaQueue.poll());
+    }
+    
     private interface AddOperation<T> {
         Boolean perform(T element);
     }
