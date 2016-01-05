@@ -3,30 +3,28 @@ package org.openspaces.collections.serialization;
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
 import com.gigaspaces.lrmi.nio.MarshallingException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.openspaces.collections.set.NonSerializableType;
 import org.openspaces.collections.set.SerializableType;
 import org.openspaces.core.GigaSpace;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
-import static org.junit.Assert.assertEquals;
 import static org.openspaces.collections.CollectionUtils.createNonSerializableType;
 import static org.openspaces.collections.CollectionUtils.createSerializableType;
+import static org.testng.Assert.assertEquals;
 
 /**
  * @author Leonid_Poliakov
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class SerializationTest {
+public class SerializationTest extends AbstractTestNGSpringContextTests {
     @Autowired
     private GigaSpace gigaSpace;
 
-    @Before
+    @BeforeMethod
     public void setUp() {
         gigaSpace.clear(new Object());
     }
@@ -37,7 +35,7 @@ public class SerializationTest {
         testSerializer(new EmptyElementSerializer(), null);
     }
 
-    @Test(expected = MarshallingException.class)
+    @Test(expectedExceptions = MarshallingException.class)
     public void testEmptySerializerFail() {
         testSerializer(new EmptyElementSerializer(), createNonSerializableType());
     }
@@ -55,7 +53,7 @@ public class SerializationTest {
         testSerializer(new JavaElementSerializer(), null);
     }
 
-    @Test(expected = SerializationException.class)
+    @Test(expectedExceptions = SerializationException.class)
     public void testJavaSerializerFail() {
         testSerializer(new JavaElementSerializer(), createNonSerializableType());
     }
@@ -78,7 +76,7 @@ public class SerializationTest {
     private void testSerializer(ElementSerializer serializer, Object object) {
         Object payload = serializer.serialize(object);
         Object answer = serializer.deserialize(payload);
-        assertEquals(object, answer);
+        assertEquals(answer, object);
 
         SpaceWrapper wrapper = new SpaceWrapper(serializer.serialize(object));
         gigaSpace.write(wrapper);
@@ -86,7 +84,7 @@ public class SerializationTest {
         SpaceWrapper template = new SpaceWrapper();
         template.setId(wrapper.getId());
         SpaceWrapper spaceAnswer = gigaSpace.read(template);
-        assertEquals(object, serializer.deserialize(spaceAnswer.getObject()));
+        assertEquals(serializer.deserialize(spaceAnswer.getObject()), object);
     }
 
     @SpaceClass

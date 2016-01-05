@@ -16,15 +16,14 @@ public final class CollectionUtils {
     }
 
     public static final int MEDIUM_COLLECTION_SIZE = 100;
-
     public static final long LARGE_COLLECTION_SIZE = (long) Integer.MAX_VALUE + 1;
 
-    public static List<SerializableType> createSerializableTypeList(long count) {
+    public static <T> List<T> createSerializableTypeList(long count) {
         List<SerializableType> data = new ArrayList<>();
         for (long i = 0; i < count; i++) {
             data.add(createSerializableType());
         }
-        return Collections.unmodifiableList(data);
+        return (List<T>) Collections.unmodifiableList(data);
     }
 
     public static SerializableType createSerializableType() {

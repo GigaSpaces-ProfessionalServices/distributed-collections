@@ -1,12 +1,17 @@
 package org.openspaces.collections.queue;
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.openspaces.collections.CollocationMode;
+import org.openspaces.collections.GigaQueueConfigurer;
 import org.openspaces.core.GigaSpace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.*;
 
-import javax.annotation.Resource;
+import java.lang.reflect.Method;
+import java.util.EnumSet;
 import java.util.Random;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
@@ -14,23 +19,35 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
+import static org.openspaces.collections.util.TestUtils.singleParam;
+import static org.testng.Assert.assertEquals;
 
 /**
  * @author Oleksiy_Dyagilev
  */
-public abstract class ProducerConsumerTest {
+@ContextConfiguration("classpath:/partitioned-space-test-config.xml")
+public class ProducerConsumerTest extends AbstractTestNGSpringContextTests {
+    private static final Logger LOG = LoggerFactory.getLogger(ProducerConsumerTest.class);
+
+    @DataProvider
+    public static Object[][] queueTypes() {
+        Object[][] types = singleParam(EnumSet.allOf(CollocationMode.class).toArray());
+        LOG.info("Testing {} queue types", types.length);
+        return types;
+    }
+
+    @Factory(dataProvider = "queueTypes")
+    public static Object[] createTests(CollocationMode collocation) {
+        return new Object[]{new ProducerConsumerTest(collocation)};
+    }
+
+    private static final ExecutorService pool = Executors.newCachedThreadPool();
 
     @Autowired
     protected GigaSpace gigaSpace;
 
-    @Resource
-    protected GigaBlockingQueue<Integer> gigaQueue;
-
-    /** static reference to use junit @AfterClass **/
-    private static GigaBlockingQueue gigaQueueStaticReference;
-
-    private static final ExecutorService pool = Executors.newCachedThreadPool();
+    private CollocationMode collocation;
+    protected GigaBlockingQueue<Integer> queue;
 
     private final AtomicInteger putSum = new AtomicInteger(0);
     private final AtomicInteger takeSum = new AtomicInteger(0);
@@ -39,18 +56,28 @@ public abstract class ProducerConsumerTest {
     private final int nPairs = 10;
     private final CyclicBarrier barrier = new CyclicBarrier(nPairs * 2 + 1);
 
-    @Before
+    public ProducerConsumerTest(CollocationMode collocation) {
+        this.collocation = collocation;
+    }
+
+    @BeforeClass
     public void setUp() {
-        gigaQueue.clear();
-        gigaQueueStaticReference = gigaQueue;
+        LOG.info("Setting up queue: collocation = {}", collocation);
+        String queueName = "test-producer-consumer-queue-" + collocation.name().toLowerCase();
+        queue = new GigaQueueConfigurer<Integer>(gigaSpace, queueName, collocation).gigaQueue();
+    }
+
+    @BeforeMethod
+    public void before(Method method) {
+        LOG.info("| running {}", method.getName());
     }
 
     @AfterClass
-    public static void after() throws Exception {
-        gigaQueueStaticReference.close();
+    public void after() throws Exception {
+        queue.close();
     }
 
-    @Test(timeout = 20000)
+    @Test(timeOut = 20000)
     public void testProducerConsumer() throws Exception {
         for (int i = 0; i < nPairs; i++) {
             pool.execute(new Producer());
@@ -60,7 +87,7 @@ public abstract class ProducerConsumerTest {
         barrier.await(); // wait for all threads to be ready
         barrier.await(); // wait for all threads to finish
 
-        assertEquals(putSum.get(), takeSum.get());
+        assertEquals(takeSum.get(), putSum.get());
     }
 
     class Producer implements Runnable {
@@ -74,7 +101,7 @@ public abstract class ProducerConsumerTest {
                 int sum = 0;
                 for (int i = 0; i < nTrials; i++) {
                     int val = random.nextInt();
-                    gigaQueue.put(val);
+                    queue.put(val);
                     sum += val;
                 }
                 putSum.addAndGet(sum);
@@ -95,7 +122,7 @@ public abstract class ProducerConsumerTest {
 
                 int sum = 0;
                 for (int i = 0; i < nTrials; i++) {
-                    sum += gigaQueue.take();
+                    sum += queue.take();
                 }
                 takeSum.addAndGet(sum);
 
@@ -106,5 +133,4 @@ public abstract class ProducerConsumerTest {
             }
         }
     }
-
 }

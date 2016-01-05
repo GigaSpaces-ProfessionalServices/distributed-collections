@@ -1,30 +1,66 @@
 package org.openspaces.collections.queue;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.openspaces.collections.CollocationMode;
 import org.openspaces.collections.GigaQueueConfigurer;
 import org.openspaces.collections.set.SerializableType;
 import org.openspaces.core.GigaSpace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.*;
 
+import java.lang.reflect.Method;
+import java.util.EnumSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.openspaces.collections.CollocationMode.DISTRIBUTED;
+import static org.openspaces.collections.util.TestUtils.singleParam;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
 
 /**
  * @author Oleksiy_Dyagilev
  */
-public abstract class QueueCloseTest {
+@ContextConfiguration("classpath:/partitioned-space-test-config.xml")
+public class QueueCloseTest extends AbstractTestNGSpringContextTests {
+    private static final Logger LOG = LoggerFactory.getLogger(QueueCloseTest.class);
+
+    @DataProvider
+    public static Object[][] queueTypes() {
+        Object[][] types = singleParam(EnumSet.allOf(CollocationMode.class).toArray());
+        LOG.info("Testing {} queue types", types.length);
+        return types;
+    }
+
+    @Factory(dataProvider = "queueTypes")
+    public static Object[] createTests(CollocationMode collocation) {
+        return new Object[]{new QueueCloseTest(collocation)};
+    }
 
     @Autowired
     protected GigaSpace gigaSpace;
+    private CollocationMode collocation;
 
-    public abstract GigaBlockingQueue<SerializableType> createQueue();
+    public QueueCloseTest(CollocationMode collocation) {
+        this.collocation = collocation;
+    }
+
+    @BeforeClass
+    public void logCollocation() {
+        LOG.info("Testing queue: collocation = {}", collocation);
+    }
+
+    @BeforeMethod
+    public void before(Method method) {
+        gigaSpace.clear(null);
+        LOG.info("| running {}", method.getName());
+    }
+
+    public GigaBlockingQueue<SerializableType> createQueue() {
+        String queueName = "test-close-queue-" + collocation.name().toLowerCase();
+        return new GigaQueueConfigurer<SerializableType>(gigaSpace, queueName, collocation).gigaQueue();
+    }
 
     @Test
     public void testQueueClose() throws Exception {
@@ -34,20 +70,14 @@ public abstract class QueueCloseTest {
         assertQueueClosed();
     }
 
-    @Before
-    public void before() {
-        gigaSpace.clear(null);
-    }
-
-    @Test(expected = IllegalStateException.class)
+    @Test(expectedExceptions = IllegalStateException.class)
     public void testOfferAfterClose() throws Exception {
         GigaBlockingQueue<SerializableType> queue = createQueue();
         queue.close();
         queue.offer(new SerializableType());
-
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expectedExceptions = IllegalStateException.class)
     public void testPollAfterClose() throws Exception {
         GigaBlockingQueue<SerializableType> queue = createQueue();
         queue.offer(new SerializableType());
@@ -56,9 +86,9 @@ public abstract class QueueCloseTest {
     }
 
     private void assertQueueClosed() throws InterruptedException {
-        assertEquals(0, gigaSpace.count(new Object()));
+        assertEquals(gigaSpace.count(new Object()), 0);
 
-        //make sure there is no running 'size change listener' thread
+        // make sure there is no running 'size change listener' thread
         if (checkQueueSizeListenerThread()) {
             // if it was in native call - give it a time, we cannot interrupt that call
             System.out.println("waiting 5.5 seconds to check size change listener thread");
@@ -78,6 +108,5 @@ public abstract class QueueCloseTest {
         }
         return false;
     }
-
 
 }

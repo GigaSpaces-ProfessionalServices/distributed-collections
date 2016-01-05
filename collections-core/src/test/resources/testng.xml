@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="AllTests" verbose="1">
+
+  <test name="queue-test-filled">
+    <groups>
+      <run>
+        <include name="all"/>
+        <include name="filled"/>
+      </run>
+    </groups>
+    <classes>
+      <class name="org.openspaces.collections.queue.QueueTest"/>
+    </classes>
+  </test>
+
+  <test name="queue-test-empty">
+    <groups>
+      <run>
+        <include name="all"/>
+        <include name="empty"/>
+      </run>
+    </groups>
+    <classes>
+      <class name="org.openspaces.collections.queue.QueueTest"/>
+    </classes>
+  </test>
+
+  <test name="queue-test-others">
+    <classes>
+      <class name="org.openspaces.collections.queue.QueueCloseTest"/>
+      <class name="org.openspaces.collections.queue.ProducerConsumerTest"/>
+    </classes>
+  </test>
+
+  <test name="serizalization-test">
+    <classes>
+      <class name="org.openspaces.collections.serialization.SerializationTest"/>
+    </classes>
+  </test>
+
+</suite>

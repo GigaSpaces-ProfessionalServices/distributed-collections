@@ -22,6 +22,7 @@
     <gs.version>10.2.0-13800-RELEASE</gs.version>
     <spring.version>4.1.1.RELEASE</spring.version>
     <junit.version>4.12</junit.version>
+    <testng.version>6.1.1</testng.version>
     <java.version>1.7</java.version>
 
     <!-- Logging -->
@@ -81,15 +82,6 @@
         </executions>
       </plugin>
 
-      <!-- Unit tests runner -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.19</version>
-        <configuration>
-          <argLine>${surefireArgLine}</argLine>
-        </configuration>
-      </plugin>
     </plugins>
 
     <pluginManagement>
@@ -125,6 +117,16 @@
             <target>${java.version}</target>
           </configuration>
         </plugin>
+
+        <!-- Unit tests runner -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.19</version>
+          <configuration>
+            <argLine>${surefireArgLine}</argLine>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
@@ -156,9 +158,9 @@
       </dependency>
 
       <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>${junit.version}</version>
+        <groupId>org.testng</groupId>
+        <artifactId>testng</artifactId>
+        <version>${testng.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
