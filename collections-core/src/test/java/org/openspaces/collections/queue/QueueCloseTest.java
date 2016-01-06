@@ -91,7 +91,7 @@ public class QueueCloseTest extends AbstractTestNGSpringContextTests {
         // make sure there is no running 'size change listener' thread
         if (checkQueueSizeListenerThread()) {
             // if it was in native call - give it a time, we cannot interrupt that call
-            System.out.println("waiting 5.5 seconds to check size change listener thread");
+            LOG.info("Waiting 5.5 seconds to check size change listener thread");
             Thread.sleep(5500);
             if (checkQueueSizeListenerThread()) {
                 fail("found queue size check listener thread");

@@ -24,27 +24,27 @@ public abstract class BasicCollectionTest extends AbstractTestNGSpringContextTes
 
     protected abstract void assertSize(int expected, String message);
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test(groups = "all", expectedExceptions = NullPointerException.class)
     public void testAddAllNull() {
         getCollection().addAll(null);
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test(groups = "all", expectedExceptions = NullPointerException.class)
     public void testRemoveAllNull() {
         getCollection().removeAll(null);
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test(groups = "all", expectedExceptions = NullPointerException.class)
     public void testContainsAllNull() {
         getCollection().containsAll(null);
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test(groups = "all", expectedExceptions = NullPointerException.class)
     public void testRetainAllNull() {
         getCollection().retainAll(null);
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test(groups = "all", expectedExceptions = NullPointerException.class)
     public void testAddAllWithNull() throws InterruptedException {
         List<Object> list = new ArrayList<>();
         list.add(newElement());
@@ -52,7 +52,7 @@ public abstract class BasicCollectionTest extends AbstractTestNGSpringContextTes
         getCollection().addAll(list);
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test(groups = "all", expectedExceptions = NullPointerException.class)
     public void testRemoveAllWithNull() throws InterruptedException {
         List<Object> list = new ArrayList<>();
         list.add(newElement());
@@ -60,13 +60,13 @@ public abstract class BasicCollectionTest extends AbstractTestNGSpringContextTes
         getCollection().addAll(list);
     }
 
-    @Test
+    @Test(groups = "all")
     public void testClear() {
         getCollection().clear();
         assertSize(0);
     }
 
-    @Test
+    @Test(groups = "all")
     public void testContains() {
         Collection<Object> collection = getCollection();
         if (!getContent().isEmpty()) {
@@ -78,7 +78,7 @@ public abstract class BasicCollectionTest extends AbstractTestNGSpringContextTes
         assertFalse(collection.contains(element), "Collection should not contain the element = " + element);
     }
 
-    @Test
+    @Test(groups = "all")
     public void testContainsAll() {
         Collection<Object> collection = getCollection();
         assertTrue(collection.containsAll(Collections.emptySet()), "Collection should contain empty set");
@@ -106,7 +106,7 @@ public abstract class BasicCollectionTest extends AbstractTestNGSpringContextTes
         assertFalse(collection.containsAll(elementsQueue), "Collection should not contain the elements from the collection = " + elementsQueue);
     }
 
-    @Test
+    @Test(groups = "all")
     public void testIsEmpty() {
         Collection<Object> collection = getCollection();
         if (!getContent().isEmpty()) {
@@ -130,7 +130,7 @@ public abstract class BasicCollectionTest extends AbstractTestNGSpringContextTes
         assertTrue(collection.isEmpty(), "Collection should be empty");
     }
 
-    @Test
+    @Test(groups = "all")
     public void testIterator() {
         Iterator<Object> iterator = getCollection().iterator();
         assertNotNull(iterator, "Iterator must not be null");
@@ -142,7 +142,7 @@ public abstract class BasicCollectionTest extends AbstractTestNGSpringContextTes
         assertSize(actualCount, "Invalid collection elements count");
     }
 
-    @Test
+    @Test(groups = "all")
     public void testRemove() {
         int expectedSize = getContent().size();
         Collection<Object> collection = getCollection();
@@ -157,7 +157,7 @@ public abstract class BasicCollectionTest extends AbstractTestNGSpringContextTes
         assertSize(expectedSize);
     }
 
-    @Test
+    @Test(groups = "all")
     public void testRemoveAll() {
         Collection<Object> collection = getCollection();
         assertFalse(collection.removeAll(Collections.emptySet()), "Collection should not be changed after removing empty set");
@@ -188,7 +188,7 @@ public abstract class BasicCollectionTest extends AbstractTestNGSpringContextTes
         assertSize(0);
     }
 
-    @Test
+    @Test(groups = "all")
     public void testRetainAll() {
         Collection<Object> collection = getCollection();
         assertFalse(collection.retainAll(getContent()), "Collection should not be changed after retaining all its elements");
@@ -209,7 +209,7 @@ public abstract class BasicCollectionTest extends AbstractTestNGSpringContextTes
         assertSize(0);
     }
 
-    @Test
+    @Test(groups = "all")
     public void testSize() {
         int expectedSize = getContent().size();
         Collection<Object> collection = getCollection();
@@ -226,7 +226,7 @@ public abstract class BasicCollectionTest extends AbstractTestNGSpringContextTes
         assertEquals(collection.size(), 0, "Invalid collection size");
     }
 
-    @Test
+    @Test(groups = "all")
     public void testToArray() {
         Collection<Object> collection = getCollection();
         Object[] objectArray = collection.toArray();

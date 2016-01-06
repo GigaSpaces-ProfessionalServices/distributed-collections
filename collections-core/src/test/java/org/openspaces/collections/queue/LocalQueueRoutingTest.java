@@ -47,7 +47,7 @@ public class LocalQueueRoutingTest extends AbstractTestNGSpringContextTests {
 
     @AfterClass
     public void afterClass() throws Exception {
-        System.out.println("Closing queue");
+        LOG.info("Closing queue {}", queueName);
         queue.close();
     }
 

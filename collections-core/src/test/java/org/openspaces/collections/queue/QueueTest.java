@@ -32,7 +32,7 @@ public class QueueTest extends BasicCollectionTest {
     @DataProvider
     public static Object[][] queueTypes() {
         Object[][] types = combination(
-                /* collocation      */ EnumSet.allOf(CollocationMode.class),
+                /* collocation      */ Arrays.asList(CollocationMode.DISTRIBUTED, CollocationMode.LOCAL),
                 /* bounded queue    */ Arrays.asList(false, true),
                 /* serializable/not */ Arrays.asList(true, false)
         );
@@ -111,17 +111,17 @@ public class QueueTest extends BasicCollectionTest {
         LOG.info("...");
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test(groups = "all", expectedExceptions = NullPointerException.class)
     public void testOfferNull() {
         queue.offer(null);
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test(groups = "all", expectedExceptions = NullPointerException.class)
     public void testOfferNullWithTimeout() throws InterruptedException {
         queue.offer(null, 1, SECONDS);
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test(groups = "all", expectedExceptions = NullPointerException.class)
     public void testPutNull() throws InterruptedException {
         queue.put(null);
     }
@@ -215,7 +215,7 @@ public class QueueTest extends BasicCollectionTest {
         assertTrue(end - start >= TIMEOUT + TIMEOUT_ACCURACY);
     }
 
-    @Test
+    @Test(groups = "all")
     public void testAdd() {
         Object element = newElement();
         assertTrue(queue.add(element), "The element should be added");
@@ -228,7 +228,7 @@ public class QueueTest extends BasicCollectionTest {
         assertSize(content.size() + 2);
     }
 
-    @Test
+    @Test(groups = "all")
     public void testAddAll() {
         assertFalse(queue.addAll(Collections.emptySet()), "Queue should not be changed");
         assertSize(content.size());
@@ -237,7 +237,7 @@ public class QueueTest extends BasicCollectionTest {
         assertSize(content.size() + elementCount);
     }
 
-    @Test
+    @Test(groups = "all")
     public void testOffer() {
         Object element = newElement();
         assertTrue(queue.offer(element), "The element should be added");
@@ -250,7 +250,7 @@ public class QueueTest extends BasicCollectionTest {
         assertSize(content.size() + 2);
     }
 
-    @Test
+    @Test(groups = "all")
     public void testOfferWithTimeout() throws InterruptedException {
         Object element = newElement();
         assertTrue(queue.offer(element, TIMEOUT, MILLISECONDS), "The element should be added");
@@ -263,7 +263,7 @@ public class QueueTest extends BasicCollectionTest {
         assertSize(content.size() + 2);
     }
 
-    @Test
+    @Test(groups = "all")
     public void testPut() throws InterruptedException {
         Object element = newElement();
         queue.put(element);
@@ -283,7 +283,7 @@ public class QueueTest extends BasicCollectionTest {
         assertSize(content.size() - 1);
     }
 
-    @Test
+    @Test(groups = "all")
     public void testRemainingCapacity() {
         if (bounded) {
             assertCapacity(capacity - content.size());
@@ -324,7 +324,7 @@ public class QueueTest extends BasicCollectionTest {
         }
     }
 
-    @Test
+    @Test(groups = "all")
     public void testDrainTo() {
         Collection<Object> result = new ArrayList<>();
         assertEquals(queue.drainTo(result), content.size(), "Invalid number of elements transferred after performing 'drainTo' operation");
@@ -337,7 +337,7 @@ public class QueueTest extends BasicCollectionTest {
         }
     }
 
-    @Test
+    @Test(groups = "all")
     public void testDrainToMaxElements() {
         Collection<Object> result = new ArrayList<>();
         assertEquals(0, queue.drainTo(result, Integer.MIN_VALUE), "No elements should be transferred due to negative max elements param");
@@ -358,31 +358,33 @@ public class QueueTest extends BasicCollectionTest {
             assertEquals(element, content.iterator().next(), "Invalid element transferred");
         }
 
-        assertEquals(queue.drainTo(result, Integer.MAX_VALUE), content.size() - 1, "Invalid number of elements transferred after performing 'drainTo' operation");
-        assertSize(0, "Blocking queue should be empty");
-        assertEquals(result.size(), content.size(), "Invalid result collection size");
-        for (Object actual : result) {
-            assertNotNull(actual, "Element should not be null");
-            assertTrue(content.contains(actual), "Invalid element");
+        if (content.size() > 1) {
+            assertEquals(queue.drainTo(result, Integer.MAX_VALUE), content.size() - 1, "Invalid number of elements transferred after performing 'drainTo' operation");
+            assertSize(0, "Blocking queue should be empty");
+            assertEquals(result.size(), content.size(), "Invalid result collection size");
+            for (Object actual : result) {
+                assertNotNull(actual, "Element should not be null");
+                assertTrue(content.contains(actual), "Invalid element");
+            }
         }
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class)
+    @Test(groups = "all", expectedExceptions = IllegalArgumentException.class)
     public void testDrainToSameCollection() {
         queue.drainTo(queue);
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test(groups = "all", expectedExceptions = NullPointerException.class)
     public void testDrainToNullCollection() {
         queue.drainTo(null);
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
+    @Test(groups = "all", expectedExceptions = NullPointerException.class)
     public void testDrainToMaxElementsNullCollection() {
         queue.drainTo(null, Integer.MAX_VALUE);
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class)
+    @Test(groups = "all", expectedExceptions = IllegalArgumentException.class)
     public void testDrainToMaxElementsSameCollection() {
         queue.drainTo(queue, Integer.MAX_VALUE);
     }
@@ -407,7 +409,7 @@ public class QueueTest extends BasicCollectionTest {
         assertEquals(expectedSize, queue.size());
     }
 
-    @Test
+    @Test(groups = "all")
     public void testCallingRemoveOnLastElement() {
         Object element = newElement();
         queue.add(element);
@@ -420,7 +422,7 @@ public class QueueTest extends BasicCollectionTest {
         assertEquals(0, queue.size());
     }
 
-    @Test
+    @Test(groups = "all")
     public void testRemovingWholeQueueWithIterator() {
         Iterator<Object> iterator = queue.iterator();
         while (iterator.hasNext()) {
@@ -451,7 +453,7 @@ public class QueueTest extends BasicCollectionTest {
         }
     }
 
-    @Test(expectedExceptions = IllegalStateException.class)
+    @Test(groups = "all", expectedExceptions = IllegalStateException.class)
     public void testIteratorRemoveWithoutNext() {
         queue.iterator().remove();
     }
@@ -464,7 +466,7 @@ public class QueueTest extends BasicCollectionTest {
         iterator.remove();
     }
 
-    @Test
+    @Test(groups = "all")
     public void testIteratorRemoveDuplicatedItems() {
         Object item1 = newElement();
         queue.add(item1);
@@ -486,31 +488,31 @@ public class QueueTest extends BasicCollectionTest {
         assertEquals(queue.poll(), item2);
     }
 
-    @Test
+    @Test(groups = "all", expectedExceptions = {IllegalStateException.class, SkipException.class})
     public void testAddToFullQueue() {
         fillUpBoundedQueue();
         queue.add(newElement());
     }
 
-    @Test(expectedExceptions = IllegalStateException.class)
+    @Test(groups = "all", expectedExceptions = {IllegalStateException.class, SkipException.class})
     public void testAddAllToFullQueue() {
         fillUpBoundedQueue();
         queue.addAll(newElements(elementCount));
     }
 
-    @Test
+    @Test(groups = "all")
     public void testOfferToFullQueue() {
         fillUpBoundedQueue();
         assertFalse(queue.offer(newElement()), "The element should not be inserted due to reaching the capacity");
     }
 
-    @Test
+    @Test(groups = "all")
     public void testOfferWithTimeoutFullQueue() throws InterruptedException {
         fillUpBoundedQueue();
         assertFalse(queue.offer(newElement(), TIMEOUT, MILLISECONDS), "The element should not be inserted due to reaching the capacity");
     }
 
-    @Test(timeOut = TIMEOUT)
+    @Test(groups = "all", timeOut = TIMEOUT)
     public void testPutIntoFullQueueAndRemoveWithIterator() throws InterruptedException {
         fillUpBoundedQueue();
         final Object element = newElement();
@@ -594,7 +596,6 @@ public class QueueTest extends BasicCollectionTest {
         if (!bounded) {
             throw new SkipException("Testing only bounded queues");
         }
-        queue.clear();
         queue.addAll(newElements(capacity - content.size()));
     }
 
