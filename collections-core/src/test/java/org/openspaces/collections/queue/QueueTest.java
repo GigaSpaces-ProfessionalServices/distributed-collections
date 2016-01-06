@@ -89,7 +89,7 @@ public class QueueTest extends BasicCollectionTest {
 
     @BeforeMethod(groups = "filled")
     public void fillQueue(Method method) {
-        content = CollectionUtils.createSerializableTypeList(elementCount);
+        content = newElements(elementCount);
         queue.clear();
         queue.addAll(content);
         LOG.info("| running {}", method.getName());
@@ -563,7 +563,7 @@ public class QueueTest extends BasicCollectionTest {
 
     @Override
     protected Class<?> getElementType() {
-        return SerializableType.class;
+        return serializable ? SerializableType.class : NonSerializableType.class;
     }
 
     @Override

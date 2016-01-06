@@ -11,6 +11,7 @@
     </groups>
     <classes>
       <class name="org.openspaces.collections.queue.QueueTest"/>
+      <class name="org.openspaces.collections.set.SetTest"/>
     </classes>
   </test>
 
@@ -23,6 +24,7 @@
     </groups>
     <classes>
       <class name="org.openspaces.collections.queue.QueueTest"/>
+      <class name="org.openspaces.collections.set.SetTest"/>
     </classes>
   </test>
 
