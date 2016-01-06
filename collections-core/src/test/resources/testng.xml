@@ -30,7 +30,7 @@
 
   <test name="queue-test-others">
     <classes>
-      <class name="org.openspaces.collections.queue.QueueCloseTest"/>
+      <class name="org.openspaces.collections.queue.QueueCloseDestroyTest"/>
       <class name="org.openspaces.collections.queue.ProducerConsumerTest"/>
       <class name="org.openspaces.collections.queue.LocalQueueRoutingTest"/>
     </classes>

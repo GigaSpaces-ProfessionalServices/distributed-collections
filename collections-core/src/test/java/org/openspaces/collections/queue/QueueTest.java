@@ -104,8 +104,8 @@ public class QueueTest extends BasicCollectionTest {
 
     @AfterClass(groups = "all")
     public void tearDown() throws Exception {
-        LOG.info("Closing queue: collocation = {}, bounded = {}", collocation, bounded);
-        queue.close();
+        LOG.info("Destroying queue: collocation = {}, bounded = {}", collocation, bounded);
+        queue.destroy();
 
         // just to separate logs
         LOG.info("...");

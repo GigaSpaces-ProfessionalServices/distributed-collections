@@ -61,6 +61,8 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
     
     @Override
     public boolean offer(E e) {
+        checkNotClosed();
+
         final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedOfferOperation(serialize(e)));
 
         final ChangeResult<EmbeddedQueueContainer> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
@@ -72,6 +74,8 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
 
     @Override
     public E poll() {
+        checkNotClosed();
+
         final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedPollOperation());
 
         final ChangeResult<EmbeddedQueueContainer> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
@@ -82,6 +86,8 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
 
     @Override
     public E peek() {
+        checkNotClosed();
+
         final AggregationResult aggregationResult = space.aggregate(idQuery(), new AggregationSet().add(new EmbeddedPeekOperation()));
 
         final SerializableResult<byte[]> result = toSingleResult(aggregationResult);
@@ -107,6 +113,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
 
     @Override
     public Iterator<E> iterator() {
+        checkNotClosed();
         return new QueueIterator();
     }
 
@@ -127,7 +134,11 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
     @Override
     public void close() throws Exception {
         super.close();
-        
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        super.destroy();
         space.clear(idQuery());
     }
 

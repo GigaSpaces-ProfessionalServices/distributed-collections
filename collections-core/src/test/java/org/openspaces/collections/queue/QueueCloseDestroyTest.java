@@ -23,8 +23,8 @@ import static org.testng.Assert.fail;
  * @author Oleksiy_Dyagilev
  */
 @ContextConfiguration("classpath:/partitioned-space-test-config.xml")
-public class QueueCloseTest extends AbstractTestNGSpringContextTests {
-    private static final Logger LOG = LoggerFactory.getLogger(QueueCloseTest.class);
+public class QueueCloseDestroyTest extends AbstractTestNGSpringContextTests {
+    private static final Logger LOG = LoggerFactory.getLogger(QueueCloseDestroyTest.class);
 
     @DataProvider
     public static Object[][] queueTypes() {
@@ -35,14 +35,14 @@ public class QueueCloseTest extends AbstractTestNGSpringContextTests {
 
     @Factory(dataProvider = "queueTypes")
     public static Object[] createTests(CollocationMode collocation) {
-        return new Object[]{new QueueCloseTest(collocation)};
+        return new Object[]{new QueueCloseDestroyTest(collocation)};
     }
 
     @Autowired
     protected GigaSpace gigaSpace;
     private CollocationMode collocation;
 
-    public QueueCloseTest(CollocationMode collocation) {
+    public QueueCloseDestroyTest(CollocationMode collocation) {
         this.collocation = collocation;
     }
 
@@ -85,9 +85,30 @@ public class QueueCloseTest extends AbstractTestNGSpringContextTests {
         queue.poll();
     }
 
-    private void assertQueueClosed() throws InterruptedException {
-        assertEquals(gigaSpace.count(new Object()), 0);
+    @Test
+    public void testQueueDestroyed() throws Exception {
+        GigaBlockingQueue<SerializableType> queue = createQueue();
+        queue.offer(new SerializableType());
+        queue.destroy();
+        assertQueueDestroyed();
+    }
 
+    @Test(expectedExceptions = IllegalStateException.class)
+    public void testOfferAfterDestroy() throws Exception {
+        GigaBlockingQueue<SerializableType> queue = createQueue();
+        queue.destroy();
+        queue.offer(new SerializableType());
+    }
+
+    @Test(expectedExceptions = IllegalStateException.class)
+    public void testPollAfterDestroy() throws Exception {
+        GigaBlockingQueue<SerializableType> queue = createQueue();
+        queue.offer(new SerializableType());
+        queue.destroy();
+        queue.poll();
+    }
+
+    private void assertQueueClosed() throws InterruptedException {
         // make sure there is no running 'size change listener' thread
         if (checkQueueSizeListenerThread()) {
             // if it was in native call - give it a time, we cannot interrupt that call
@@ -97,6 +118,11 @@ public class QueueCloseTest extends AbstractTestNGSpringContextTests {
                 fail("found queue size check listener thread");
             }
         }
+    }
+
+    private void assertQueueDestroyed() throws InterruptedException {
+        assertEquals(gigaSpace.count(new Object()), 0);
+        assertQueueClosed();
     }
 
     private boolean checkQueueSizeListenerThread() {

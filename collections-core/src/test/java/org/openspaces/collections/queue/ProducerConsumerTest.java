@@ -74,7 +74,7 @@ public class ProducerConsumerTest extends AbstractTestNGSpringContextTests {
 
     @AfterClass
     public void after() throws Exception {
-        queue.close();
+        queue.destroy();
     }
 
     @Test(timeOut = 20000)

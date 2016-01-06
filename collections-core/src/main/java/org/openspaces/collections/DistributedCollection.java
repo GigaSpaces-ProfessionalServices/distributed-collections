@@ -10,7 +10,18 @@ import java.util.Collection;
  */
 public interface DistributedCollection<T> extends Collection<T>, AutoCloseable {
 
+    /**
+     * @return unique collection name
+     */
     String getName();
 
+    /**
+     * @return collocation mode
+     */
     CollocationMode getCollocationMode();
+
+    /**
+     * Deletes the collection from the grid
+     */
+    void destroy() throws Exception;
 }

@@ -82,7 +82,7 @@ public class GigaSetBenchmark {
     
     @TearDown(Level.Trial)
     public void destroy() {
-        applicationContext.close();
+        applicationContext.destroy();
     } 
     
     private SerializableType create() {

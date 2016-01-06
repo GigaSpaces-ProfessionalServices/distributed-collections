@@ -19,7 +19,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * The class provides implementation of some blocking queue operations
- * 
+ *
  * @author Svitlana_Pogrebna
  */
 public abstract class AbstractGigaBlockingQueue<E, M extends QueueMetadata> extends AbstractQueue<E> implements GigaBlockingQueue<E> {
@@ -189,11 +189,11 @@ public abstract class AbstractGigaBlockingQueue<E, M extends QueueMetadata> exte
         }
         return null;
     }
-    
+
     protected abstract M getOrCreate();
-    
+
     protected abstract AbstractSizeChangeListener createSizeChangeListener(M queueMetadata);
-    
+
     /**
      * Set the proper number of permits for 'read' and 'write' semaphore based on the current queue size
      */
@@ -232,12 +232,18 @@ public abstract class AbstractGigaBlockingQueue<E, M extends QueueMetadata> exte
     @SuppressWarnings("unchecked")
     protected <T extends Serializable> T toSingleResult(ChangeResult<?> changeResult) {
         if (changeResult.getNumberOfChangedEntries() == 0 && queueClosed) {
-            throw new IllegalStateException("Queue has been closed(deleted) from the grid: " + queueName);
+            throw new IllegalStateException("Queue has been destroyed(deleted from the grid): " + queueName);
         } else if (changeResult.getNumberOfChangedEntries() > 1) {
             throw new IllegalStateException("Unexpected number of changed entries: " + changeResult.getNumberOfChangedEntries());
         }
 
         return (T) changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
+    }
+
+    protected void checkNotClosed() {
+        if (queueClosed) {
+            throw new IllegalStateException("Queue has been closed " + queueName);
+        }
     }
 
     protected byte[] serialize(E element) {
@@ -252,6 +258,11 @@ public abstract class AbstractGigaBlockingQueue<E, M extends QueueMetadata> exte
     public void close() throws Exception {
         this.queueClosed = true;
         this.sizeChangeListenerThread.interrupt();
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        this.close();
     }
 
     protected abstract class AbstractSizeChangeListener implements Runnable {

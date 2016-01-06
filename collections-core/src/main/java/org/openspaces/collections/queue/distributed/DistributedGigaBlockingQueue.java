@@ -9,9 +9,9 @@ import com.gigaspaces.query.aggregators.AggregationSet;
 import com.j_spaces.core.client.SQLQuery;
 import org.openspaces.collections.CollocationMode;
 import org.openspaces.collections.queue.AbstractGigaBlockingQueue;
-import org.openspaces.collections.queue.distributed.data.DistrQueueMetadata;
 import org.openspaces.collections.queue.distributed.data.DistrQueueItem;
 import org.openspaces.collections.queue.distributed.data.DistrQueueItemKey;
+import org.openspaces.collections.queue.distributed.data.DistrQueueMetadata;
 import org.openspaces.collections.queue.distributed.operations.*;
 import org.openspaces.collections.serialization.ElementSerializer;
 import org.openspaces.collections.util.Pair;
@@ -81,7 +81,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
         this.collocationMode = collocationMode;
         this.queueMetadataQuery = new IdQuery<>(DistrQueueMetadata.class, queueName);
     }
-    
+
     @Override
     protected SizeChangeListener createSizeChangeListener(DistrQueueMetadata queueMetadata) {
         return new SizeChangeListener(queueMetadata);
@@ -90,6 +90,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
     @Override
     public boolean offer(E element) {
         requireNonNull(element, NULL_ELEMENT_ERR_MSG);
+        checkNotClosed();
 
         ChangeSet offerChange = new ChangeSet().custom(new DistrOfferOperation(1));
 
@@ -110,6 +111,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
     @Override
     public E poll() {
+        checkNotClosed();
         while (true) {
             ChangeSet pollChange = new ChangeSet().custom(new DistrPollOperation());
 
@@ -138,6 +140,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
     @Override
     public E peek() {
+        checkNotClosed();
         while (true) {
             AggregationSet peekOperation = new AggregationSet().add(new DistrPeekOperation());
 
@@ -163,12 +166,14 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
     @Override
     public Iterator<E> iterator() {
+        checkNotClosed();
         DistrQueueMetadata queueMetadata = space.readById(queueMetadataQuery);
         return new QueueIterator(queueMetadata.getHead(), queueMetadata.getTail(), queueMetadata.getRemovedIndexes());
     }
 
     @Override
     public int size() {
+        checkNotClosed();
         AggregationSet sizeOperation = new AggregationSet().add(new DistrSizeOperation());
 
         AggregationResult aggregationResult = space.aggregate(queueMetadataQuery, sizeOperation);
@@ -267,7 +272,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
             // remove element
             space.clear(itemTemplateByIndex(currIndex));
-            
+
             curr = null;
         }
 
@@ -328,7 +333,12 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
     @Override
     public void close() throws Exception {
         super.close();
-        
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        super.destroy();
+
         space.clear(queueMetadataQuery);
 
         // cannot use space.clear() because we need to match by nested template
