@@ -1,41 +1,44 @@
 package org.openspaces.collections.queue;
 
 import com.j_spaces.core.client.SQLQuery;
+import org.openspaces.collections.GigaQueueConfigurer;
 import org.openspaces.collections.queue.distributed.data.DistrQueueItem;
 import org.openspaces.collections.set.SerializableType;
 import org.openspaces.core.GigaSpace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 import static org.openspaces.collections.CollectionUtils.createSerializableType;
 import static org.openspaces.collections.CollectionUtils.createSerializableTypeList;
+import static org.openspaces.collections.CollocationMode.LOCAL;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
 /**
  * @author Svitlana_Pogrebna
  */
-@ContextConfiguration
+@ContextConfiguration("classpath:/partitioned-space-test-config.xml")
 public class LocalQueueRoutingTest extends AbstractTestNGSpringContextTests {
     private static final Logger LOG = LoggerFactory.getLogger(LocalQueueRoutingTest.class);
 
     @Autowired
     private GigaSpace gigaSpace;
-    @Resource
     private GigaBlockingQueue<SerializableType> queue;
+    private String queueName = "test-local-queue-routing";
 
-    @Value("${queue.name}")
-    private String queueName;
+    @BeforeClass
+    public void setUp() {
+        queue = new GigaQueueConfigurer<SerializableType>(gigaSpace, queueName, LOCAL).gigaQueue();
+    }
 
     @AfterMethod
     public void tearDown() {
