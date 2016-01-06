@@ -70,7 +70,7 @@ public class QueueTest extends BasicCollectionTest {
     public void setUp() {
         LOG.info("Setting up queue: collocation = {}, bounded = {}, serializable = {}", collocation, bounded, serializable);
         queueName = "test-queue-" + collocation.name().toLowerCase() + "-" + (bounded ? "bounded" : "unbounded") + "-" + (serializable ? "serializable" : "nonserializable");
-        Class<? extends Object> elementType = serializable ? SerializableType.class : NonSerializableType.class;
+        Class<?> elementType = serializable ? SerializableType.class : NonSerializableType.class;
         queue = new GigaQueueConfigurer<Object>(gigaSpace, queueName, collocation)
                 .capacity(bounded ? capacity : null)
                 .elementType(elementType)
