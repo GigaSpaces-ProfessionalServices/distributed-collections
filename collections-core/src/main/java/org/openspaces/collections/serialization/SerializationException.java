@@ -4,6 +4,9 @@ package org.openspaces.collections.serialization;
  * @author Leonid_Poliakov
  */
 public class SerializationException extends RuntimeException {
+   
+    private static final long serialVersionUID = 1L;
+
     public SerializationException() {
     }
 

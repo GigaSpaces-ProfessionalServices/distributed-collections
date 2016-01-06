@@ -11,6 +11,6 @@ public interface ElementSerializerProvider {
      * @param clazz the type of objects to be serialized, may be <code>null</code>
      * @return the serializer implementation
      */
-    ElementSerializer pickSerializer(Class clazz);
+    <T> ElementSerializer<T> pickSerializer(Class<? extends T> clazz);
 
 }

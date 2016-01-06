@@ -14,12 +14,12 @@ public class DistrQueueItem {
 
     private DistrQueueItemKey itemKey;
     private Integer routing;
-    private Object item;
+    private byte[] item;
 
     public DistrQueueItem() {
     }
 
-    public DistrQueueItem(DistrQueueItemKey itemKey, Object item, Integer routing) {
+    public DistrQueueItem(DistrQueueItemKey itemKey, byte[] item, Integer routing) {
         this.itemKey = Objects.requireNonNull(itemKey, "'itemKey' parameter must not be null");
         this.routing = Objects.requireNonNull(routing, "'routing' parameter must not be null");
         this.item = item;
@@ -43,11 +43,11 @@ public class DistrQueueItem {
         this.routing = routing;
     }
 
-    public Object getItem() {
+    public byte[] getItem() {
         return item;
     }
 
-    public void setItem(Object item) {
+    public void setItem(byte[] item) {
         this.item = item;
     }
 }

@@ -19,8 +19,8 @@ public abstract class EmbeddedChangeOperation<T> extends CustomChangeOperation {
 
     @Override
     public Object change(MutableServerEntry entry) {
-        final List<Object> originalQueue = (List<Object>) entry.getPathValue(ITEMS_PATH);
-        final List<Object> items = new ArrayList<>(originalQueue);
+        final List<byte[]> originalQueue = (List<byte[]>) entry.getPathValue(ITEMS_PATH);
+        final List<byte[]> items = new ArrayList<>(originalQueue);
 
         final T result = change(entry, items);
 
@@ -29,5 +29,5 @@ public abstract class EmbeddedChangeOperation<T> extends CustomChangeOperation {
         return new SerializableResult<T>(result);
     }
 
-    protected abstract T change(MutableServerEntry entry, List<Object> items);
+    protected abstract T change(MutableServerEntry entry, List<byte[]> items);
 }

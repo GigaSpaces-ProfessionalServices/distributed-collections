@@ -32,7 +32,7 @@ public class QueueTest extends BasicCollectionTest {
     @DataProvider
     public static Object[][] queueTypes() {
         Object[][] types = combination(
-                /* collocation      */ Arrays.asList(CollocationMode.DISTRIBUTED, CollocationMode.LOCAL),
+                /* collocation      */ EnumSet.allOf(CollocationMode.class),
                 /* bounded queue    */ Arrays.asList(false, true),
                 /* serializable/not */ Arrays.asList(true, false)
         );
@@ -70,8 +70,8 @@ public class QueueTest extends BasicCollectionTest {
     public void setUp() {
         LOG.info("Setting up queue: collocation = {}, bounded = {}, serializable = {}", collocation, bounded, serializable);
         queueName = "test-queue-" + collocation.name().toLowerCase() + "-" + (bounded ? "bounded" : "unbounded") + "-" + (serializable ? "serializable" : "nonserializable");
-        Class<?> elementType = serializable ? SerializableType.class : NonSerializableType.class;
-        queue = new GigaQueueConfigurer(gigaSpace, queueName, collocation)
+        Class<? extends Object> elementType = serializable ? SerializableType.class : NonSerializableType.class;
+        queue = new GigaQueueConfigurer<Object>(gigaSpace, queueName, collocation)
                 .capacity(bounded ? capacity : null)
                 .elementType(elementType)
                 .gigaQueue();

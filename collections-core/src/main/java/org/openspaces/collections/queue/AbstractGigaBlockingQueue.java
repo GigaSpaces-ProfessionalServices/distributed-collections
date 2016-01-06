@@ -25,15 +25,15 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 public abstract class AbstractGigaBlockingQueue<E, M extends QueueMetadata> extends AbstractQueue<E> implements GigaBlockingQueue<E> {
 
     protected static final String NULL_ELEMENT_ERR_MSG = "Queue doesn't support null elements";
-  
+
     protected static final String QUEUE_SIZE_CHANGE_LISTENER_THREAD_NAME = "Queue size change listener - ";
     private static final long SIZE_CHANGE_LISTENER_TIMEOUT_MS = 5000;
-    
+
     protected final GigaSpace space;
     protected final String queueName;
     protected final boolean bounded;
     protected final int capacity;
-    protected final ElementSerializer serializer;
+    protected final ElementSerializer<E> serializer;
 
     protected final Semaphore readSemaphore;
     protected final Semaphore writeSemaphore;
@@ -51,7 +51,7 @@ public abstract class AbstractGigaBlockingQueue<E, M extends QueueMetadata> exte
      * @param bounded    flag whether queue is bounded
      * @param serializer element serializer/deserializer
      */
-    public AbstractGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded, ElementSerializer serializer) {
+    public AbstractGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded, ElementSerializer<E> serializer) {
         if (queueName == null || queueName.isEmpty()) {
             throw new IllegalArgumentException("'queueName' parameter must not be null or empty");
         }
@@ -240,13 +240,12 @@ public abstract class AbstractGigaBlockingQueue<E, M extends QueueMetadata> exte
         return (T) changeResult.getResults().iterator().next().getChangeOperationsResults().iterator().next().getResult();
     }
 
-    protected Object serialize(E element) {
+    protected byte[] serialize(E element) {
         return serializer.serialize(element);
     }
 
-    @SuppressWarnings("unchecked")
-    protected E deserialize(Object payload) {
-        return (E) serializer.deserialize(payload);
+    protected E deserialize(byte[] payload) {
+        return serializer.deserialize(payload);
     }
 
     @Override
@@ -254,7 +253,7 @@ public abstract class AbstractGigaBlockingQueue<E, M extends QueueMetadata> exte
         this.queueClosed = true;
         this.sizeChangeListenerThread.interrupt();
     }
-    
+
     protected abstract class AbstractSizeChangeListener implements Runnable {
 
         protected final M queueMetadata;

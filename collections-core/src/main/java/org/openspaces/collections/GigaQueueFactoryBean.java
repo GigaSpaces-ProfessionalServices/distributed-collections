@@ -22,8 +22,8 @@ public class GigaQueueFactoryBean<T> implements InitializingBean, DisposableBean
     private String queueName;
     private Integer capacity;
     private CollocationMode collocationMode;
-    private Class elementType;
-    private ElementSerializer serializer;
+    private Class<? extends T> elementType;
+    private ElementSerializer<T> serializer;
     private ElementSerializerProvider serializerProvider;
     private GigaBlockingQueue<T> gigaQueue;
 
@@ -43,11 +43,11 @@ public class GigaQueueFactoryBean<T> implements InitializingBean, DisposableBean
         this.collocationMode = collocationMode;
     }
 
-    public void setElementType(Class elementType) {
+    public void setElementType(Class<? extends T> elementType) {
         this.elementType = elementType;
     }
 
-    public void setSerializer(ElementSerializer serializer) {
+    public void setSerializer(ElementSerializer<T> serializer) {
         this.serializer = serializer;
     }
 
@@ -66,7 +66,7 @@ public class GigaQueueFactoryBean<T> implements InitializingBean, DisposableBean
         Assert.hasText(queueName, "queueName property must be set");
         Assert.notNull(collocationMode, "collocationMode property must be set");
 
-        ElementSerializer serializer = pickSerializer();
+        ElementSerializer<T> serializer = pickSerializer();
 
         switch (collocationMode) {
             case EMBEDDED:
@@ -89,7 +89,7 @@ public class GigaQueueFactoryBean<T> implements InitializingBean, DisposableBean
         }
     }
 
-    public ElementSerializer pickSerializer() {
+    public ElementSerializer<T> pickSerializer() {
         if (serializer != null) {
             return serializer;
         }

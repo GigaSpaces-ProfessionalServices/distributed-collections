@@ -48,7 +48,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
      * @param queueName       unique queue name
      * @param collocationMode collocation mode
      */
-    public DistributedGigaBlockingQueue(GigaSpace space, String queueName, CollocationMode collocationMode, ElementSerializer serializer) {
+    public DistributedGigaBlockingQueue(GigaSpace space, String queueName, CollocationMode collocationMode, ElementSerializer<E> serializer) {
         this(space, queueName, 0, false, collocationMode, serializer);
     }
 
@@ -60,7 +60,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
      * @param capacity        queue capacity
      * @param collocationMode collocation mode
      */
-    public DistributedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, CollocationMode collocationMode, ElementSerializer serializer) {
+    public DistributedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, CollocationMode collocationMode, ElementSerializer<E> serializer) {
         this(space, queueName, capacity, true, collocationMode, serializer);
     }
 
@@ -72,7 +72,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
      * @param bounded         flag whether queue is bounded
      * @param collocationMode collocation mode
      */
-    private DistributedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded, CollocationMode collocationMode, ElementSerializer serializer) {
+    private DistributedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, boolean bounded, CollocationMode collocationMode, ElementSerializer<E> serializer) {
         super(space, queueName, capacity, bounded, serializer);
         notNull(collocationMode, "Collocation mode is null");
         if (collocationMode != CollocationMode.LOCAL && collocationMode != CollocationMode.DISTRIBUTED) {
@@ -109,7 +109,6 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public E poll() {
         while (true) {
             ChangeSet pollChange = new ChangeSet().custom(new DistrPollOperation());
@@ -137,7 +136,6 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public E peek() {
         while (true) {
@@ -273,7 +271,6 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
             curr = null;
         }
 
-        @SuppressWarnings("unchecked")
         private Pair<E, Long> readItemByIndex(long index) {
             while (index <= endIndex) {
                 if (removedIndexes.remove(index)) {

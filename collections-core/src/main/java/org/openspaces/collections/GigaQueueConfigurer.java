@@ -21,7 +21,7 @@ public class GigaQueueConfigurer<T> {
         return this;
     }
 
-    public GigaQueueConfigurer<T> elementType(Class<T> elementType) {
+    public GigaQueueConfigurer<T> elementType(Class<? extends T> elementType) {
         gigaQueueFactoryBean.setElementType(elementType);
         return this;
     }

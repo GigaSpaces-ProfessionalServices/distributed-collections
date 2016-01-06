@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * @author Svitlana_Pogrebna
  */
-public class EmbeddedPollOperation extends EmbeddedChangeOperation<Object> {
+public class EmbeddedPollOperation extends EmbeddedChangeOperation<byte[]> {
 
     private static final long serialVersionUID = 1L;
 
@@ -17,7 +17,7 @@ public class EmbeddedPollOperation extends EmbeddedChangeOperation<Object> {
     }
 
     @Override
-    protected Object change(MutableServerEntry entry, List<Object> items) {
+    protected byte[] change(MutableServerEntry entry, List<byte[]> items) {
         return items.isEmpty() ? null : items.remove(0);
     }
 }

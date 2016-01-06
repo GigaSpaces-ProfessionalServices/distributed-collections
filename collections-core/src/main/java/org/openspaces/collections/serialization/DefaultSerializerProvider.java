@@ -9,14 +9,14 @@ import java.io.Serializable;
  */
 public class DefaultSerializerProvider implements ElementSerializerProvider {
 
-    public ElementSerializer pickSerializer(Class clazz) {
+    @SuppressWarnings("unchecked")
+    public <T> ElementSerializer<T> pickSerializer(Class<? extends T> clazz) {
         if (clazz == null) {
-            return new KryoElementSerializer();
+            return new KryoElementSerializer<>();
         }
         if (Serializable.class.isAssignableFrom(clazz)) {
-            return new EmptyElementSerializer();
+            return (ElementSerializer<T>) new JavaElementSerializer<Serializable>();
         }
-        return new KryoElementSerializer();
+        return new KryoElementSerializer<>();
     }
-
 }

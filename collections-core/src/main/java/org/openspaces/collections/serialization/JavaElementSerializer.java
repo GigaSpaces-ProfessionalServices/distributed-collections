@@ -6,66 +6,35 @@ import java.util.Arrays;
 /**
  * @author Leonid_Poliakov
  */
-public class JavaElementSerializer implements ElementSerializer {
+public class JavaElementSerializer<T extends Serializable> implements ElementSerializer<T> {
 
     @Override
-    public Object serialize(Object pojo) throws SerializationException {
+    public byte[] serialize(T pojo) throws SerializationException {
         if (pojo == null) {
             return null;
         }
+        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+                ObjectOutput objectStream = new ObjectOutputStream(byteStream)) {
 
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        ObjectOutput objectStream = null;
-        try {
-            objectStream = new ObjectOutputStream(byteStream);
             objectStream.writeObject(pojo);
             return byteStream.toByteArray();
         } catch (IOException e) {
             throw new SerializationException("Error serializing " + pojo, e);
-        } finally {
-            try {
-                if (objectStream != null) {
-                    objectStream.close();
-                }
-            } catch (IOException ex) {
-                // ignore
-            }
-            try {
-                byteStream.close();
-            } catch (IOException ex) {
-                // ignore
-            }
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Object deserialize(Object payload) throws SerializationException {
+    public T deserialize(byte[] payload) throws SerializationException {
         if (payload == null) {
             return null;
         }
-
-        byte[] bytes = (byte[]) payload;
-        ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
-        ObjectInput objectStream = null;
-        try {
-            objectStream = new ObjectInputStream(byteStream);
-            return objectStream.readObject();
+        try (ByteArrayInputStream byteStream = new ByteArrayInputStream(payload);
+                ObjectInput objectStream = new ObjectInputStream(byteStream)) {
+            
+            return (T) objectStream.readObject();
         } catch (Exception e) {
-            throw new SerializationException("Error deserializing " + Arrays.toString(bytes), e);
-        } finally {
-            try {
-                byteStream.close();
-            } catch (IOException ex) {
-                // ignore
-            }
-            try {
-                if (objectStream != null) {
-                    objectStream.close();
-                }
-            } catch (IOException ex) {
-                // ignore
-            }
+            throw new SerializationException("Error deserializing " + Arrays.toString(payload), e);
         }
     }
-
 }

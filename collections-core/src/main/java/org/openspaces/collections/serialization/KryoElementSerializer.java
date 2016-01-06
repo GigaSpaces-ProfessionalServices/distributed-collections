@@ -10,7 +10,7 @@ import java.io.ByteArrayOutputStream;
 /**
  * @author Leonid_Poliakov
  */
-public class KryoElementSerializer implements ElementSerializer {
+public class KryoElementSerializer<T> implements ElementSerializer<T> {
     private KryoFactory kryoFactory;
 
     /**
@@ -41,7 +41,7 @@ public class KryoElementSerializer implements ElementSerializer {
     }
 
     @Override
-    public Object serialize(Object pojo) throws SerializationException {
+    public byte[] serialize(T pojo) throws SerializationException {
         if (pojo == null) {
             return null;
         }
@@ -54,15 +54,16 @@ public class KryoElementSerializer implements ElementSerializer {
         return byteStream.toByteArray();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Object deserialize(Object payload) throws SerializationException {
+    public T deserialize(byte[] payload) throws SerializationException {
         if (payload == null) {
             return null;
         }
 
-        Input input = new Input((byte[]) payload);
+        Input input = new Input(payload);
         Object result = kryos.get().readClassAndObject(input);
         input.close();
-        return result;
+        return (T)result;
     }
 }

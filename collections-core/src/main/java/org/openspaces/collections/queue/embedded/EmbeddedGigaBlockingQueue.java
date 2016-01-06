@@ -38,7 +38,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
      * @param queueName  unique queue name
      * @param serializer element serializer/deserializer
      */
-    public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName, ElementSerializer serializer) {
+    public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName, ElementSerializer<E> serializer) {
         super(space, queueName, 0, false, serializer);
     }
 
@@ -50,7 +50,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
      * @param capacity   queue capacity
      * @param serializer element serializer/deserializer
      */
-    public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, ElementSerializer serializer) {
+    public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, ElementSerializer<E> serializer) {
         super(space, queueName, capacity, true, serializer);
     }
 
@@ -61,8 +61,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
     
     @Override
     public boolean offer(E e) {
-        // TODO: add serialization
-        final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedOfferOperation(e));
+        final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedOfferOperation(serialize(e)));
 
         final ChangeResult<EmbeddedQueueContainer> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
 
@@ -71,25 +70,22 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
         return result.getResult();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public E poll() {
         final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedPollOperation());
 
         final ChangeResult<EmbeddedQueueContainer> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
 
-        final SerializableResult<Object> result = toSingleResult(changeResult);
-        // TODO: add deserialization
-        return (E) result.getResult();
+        final SerializableResult<byte[]> result = toSingleResult(changeResult);
+        return deserialize(result.getResult());
     }
 
     @Override
     public E peek() {
         final AggregationResult aggregationResult = space.aggregate(idQuery(), new AggregationSet().add(new EmbeddedPeekOperation()));
 
-        final SerializableResult<Object> result = toSingleResult(aggregationResult);
-        // TODO: add deserialization
-        return (E) result.getResult();
+        final SerializableResult<byte[]> result = toSingleResult(aggregationResult);
+        return deserialize(result.getResult());
     }
 
     @Override
@@ -100,7 +96,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
     @Override
     protected EmbeddedQueueContainer getOrCreate() {
         try {
-            List<Object> items = bounded ? new ArrayList<>(capacity) : new ArrayList<>();
+            List<byte[]> items = bounded ? new ArrayList<byte[]>(capacity) : new ArrayList<byte[]>();
             EmbeddedQueueContainer container = new EmbeddedQueueContainer(queueName, items, bounded ? capacity : null);
             space.write(container, WriteModifiers.WRITE_ONLY);
             return container;
@@ -141,11 +137,11 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
 
         private final int maxEntries; 
         
-        private Object curr;
+        private byte[] curr;
         private int currIndex;
         
         private int batchIndex;
-        private Iterator<Object> iterator;
+        private Iterator<byte[]> iterator;
 
         public QueueIterator() {
             this(DEFAULT_MAX_ENTRIES);
@@ -167,7 +163,6 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
             return iterator != null && iterator.hasNext();
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public E next() {
             if (iterator == null) {
@@ -180,15 +175,15 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
                 iterator = nextBatch();
             }
 
-            return (E) curr;
+            return deserialize(curr);
         }
 
-        private Iterator<Object> nextBatch() {
+        private Iterator<byte[]> nextBatch() {
             final EmbeddedRetrieveOperation operation = new EmbeddedRetrieveOperation(batchIndex, maxEntries);
             final AggregationResult aggregationResult = space.aggregate(idQuery(), new AggregationSet().add(operation));
 
-            final SerializableResult<List<Object>> result = toSingleResult(aggregationResult);
-            final List<Object> items = result.getResult();
+            final SerializableResult<List<byte[]>> result = toSingleResult(aggregationResult);
+            final List<byte[]> items = result.getResult();
             if (items == null) {
                 return null;
             }
