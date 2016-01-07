@@ -2,6 +2,8 @@ package org.openspaces.collections.serialization;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
+import com.gigaspaces.lrmi.nio.MarshallingException;
+
 import org.openspaces.collections.set.NonSerializableType;
 import org.openspaces.collections.set.SerializableType;
 import org.openspaces.core.GigaSpace;
@@ -11,7 +13,6 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 import static org.openspaces.collections.CollectionUtils.createNonSerializableType;
@@ -32,16 +33,21 @@ public class SerializationTest extends AbstractTestNGSpringContextTests {
     }
 
     @Test
+    public void testEmptySerializer() {
+        testSerializer(new EmptyElementSerializer<SerializableType>(), createSerializableType());
+        testSerializer(new EmptyElementSerializer<>(), null);
+    }
+
+    @Test(expectedExceptions = MarshallingException.class)
+    public void testEmptySerializerFail() {
+        testSerializer(new EmptyElementSerializer<NonSerializableType>(), createNonSerializableType());
+    }
+
+    @Test
     public void testKryoSerializer() {
         testSerializer(new KryoElementSerializer<SerializableType>(), createSerializableType());
         testSerializer(new KryoElementSerializer<NonSerializableType>(), createNonSerializableType());
         testSerializer(new KryoElementSerializer<>(), null);
-    }
-
-    @Test
-    public void testJavaSerializer() {
-        testSerializer(new JavaElementSerializer<SerializableType>(), createSerializableType());
-        testSerializer(new JavaElementSerializer<>(), null);
     }
 
     @Test
@@ -60,7 +66,7 @@ public class SerializationTest extends AbstractTestNGSpringContextTests {
     }
     
     private <T> void testSerializer(ElementSerializer<T> serializer, T object) {
-        byte[] payload = serializer.serialize(object);
+        Object payload = serializer.serialize(object);
         Object answer = serializer.deserialize(payload);
         assertEquals(answer, object);
 
@@ -76,12 +82,12 @@ public class SerializationTest extends AbstractTestNGSpringContextTests {
     @SpaceClass
     public static class SpaceWrapper {
         private String id;
-        private byte[] object;
+        private Object object;
 
         public SpaceWrapper() {
         }
 
-        public SpaceWrapper(byte[] object) {
+        public SpaceWrapper(Object object) {
             this.object = object;
         }
 
@@ -94,11 +100,11 @@ public class SerializationTest extends AbstractTestNGSpringContextTests {
             this.id = id;
         }
 
-        public byte[] getObject() {
+        public Object getObject() {
             return object;
         }
 
-        public void setObject(byte[] object) {
+        public void setObject(Object object) {
             this.object = object;
         }
 
@@ -107,7 +113,7 @@ public class SerializationTest extends AbstractTestNGSpringContextTests {
             final int prime = 31;
             int result = 1;
             result = prime * result + ((id == null) ? 0 : id.hashCode());
-            result = prime * result + Arrays.hashCode(object);
+            result = prime * result + ((object == null) ? 0 : object.hashCode());
             return result;
         }
 
@@ -123,7 +129,7 @@ public class SerializationTest extends AbstractTestNGSpringContextTests {
                 return false;
             }
             SpaceWrapper other = (SpaceWrapper) obj;
-            return Objects.equals(id, other.id) ? Arrays.equals(object, other.object) : false;
+            return Objects.equals(id, other.id) ? Objects.equals(object, other.object) : false;
         }
     }
 

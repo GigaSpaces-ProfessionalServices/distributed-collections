@@ -14,9 +14,9 @@ public class EmbeddedOfferOperation extends EmbeddedChangeOperation<Boolean> {
 
     private static final long serialVersionUID = 1L;
 
-    private final byte[] element;
+    private final Object element;
 
-    public EmbeddedOfferOperation(byte[] element) {
+    public EmbeddedOfferOperation(Object element) {
         this.element = Objects.requireNonNull(element);
     }
 
@@ -26,7 +26,7 @@ public class EmbeddedOfferOperation extends EmbeddedChangeOperation<Boolean> {
     }
 
     @Override
-    protected Boolean change(MutableServerEntry entry, List<byte[]> items) {
+    protected Boolean change(MutableServerEntry entry, List<Object> items) {
         final Integer capacity = (Integer) entry.getPathValue(CAPACITY_PATH);
         return isSpaceAvailible(capacity, items.size()) ? items.add(element) : false;
     }

@@ -41,7 +41,7 @@ public class KryoElementSerializer<T> implements ElementSerializer<T> {
     }
 
     @Override
-    public byte[] serialize(T pojo) throws SerializationException {
+    public Object serialize(T pojo) throws SerializationException {
         if (pojo == null) {
             return null;
         }
@@ -56,12 +56,15 @@ public class KryoElementSerializer<T> implements ElementSerializer<T> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public T deserialize(byte[] payload) throws SerializationException {
+    public T deserialize(Object payload) throws SerializationException {
         if (payload == null) {
             return null;
         }
-
-        Input input = new Input(payload);
+        if (!(payload instanceof byte[])) {
+            throw new IllegalArgumentException("Invalid payload type = " + payload.getClass().getSimpleName());
+        }
+        
+        Input input = new Input((byte[])payload);
         Object result = kryos.get().readClassAndObject(input);
         input.close();
         return (T)result;

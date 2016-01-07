@@ -190,8 +190,18 @@ public abstract class AbstractGigaBlockingQueue<E, M extends QueueMetadata> exte
         return null;
     }
 
+    /**
+     * Creates new queue metadata if it has not been found by queue name
+     * 
+     * @return queue metadata
+     */
     protected abstract M getOrCreate();
 
+    /**
+     * Creates SizeChangeListener based on queue metadata
+     * 
+     * @param queueMetadata queue metadata
+     */
     protected abstract AbstractSizeChangeListener createSizeChangeListener(M queueMetadata);
 
     /**
@@ -246,11 +256,11 @@ public abstract class AbstractGigaBlockingQueue<E, M extends QueueMetadata> exte
         }
     }
 
-    protected byte[] serialize(E element) {
+    protected Object serialize(E element) {
         return serializer.serialize(element);
     }
 
-    protected E deserialize(byte[] payload) {
+    protected E deserialize(Object payload) {
         return serializer.deserialize(payload);
     }
 
@@ -264,7 +274,10 @@ public abstract class AbstractGigaBlockingQueue<E, M extends QueueMetadata> exte
     public void destroy() throws Exception {
         this.close();
     }
-
+    
+	/**
+     * The listener that observes queue size changes and calls {@link #onSizeChanged} callback method
+     */
     protected abstract class AbstractSizeChangeListener implements Runnable {
 
         protected final M queueMetadata;
@@ -296,8 +309,16 @@ public abstract class AbstractGigaBlockingQueue<E, M extends QueueMetadata> exte
             }
         }
 
+        /**
+         * Returns query that determines whether queue size is changed
+         * @return
+         */
         protected abstract SQLQuery<M> query();
 
+        /**
+         * Populates parameters to the size change query
+         * @param query
+         */
         protected abstract void populateParams(SQLQuery<M> query);
 
         private boolean isInterrupted(Throwable e) {

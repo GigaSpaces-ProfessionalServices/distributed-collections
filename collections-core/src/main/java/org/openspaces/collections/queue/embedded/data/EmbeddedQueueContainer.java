@@ -22,14 +22,14 @@ public class EmbeddedQueueContainer implements QueueMetadata {
     public static final String CAPACITY_PATH = "capacity";
 
     private String name;
-    private List<byte[]> items;
+    private List<Object> items;
     private Integer size;
     private Integer capacity;
 
     public EmbeddedQueueContainer() {
     }
 
-    public EmbeddedQueueContainer(String name, List<byte[]> items, Integer capacity) {
+    public EmbeddedQueueContainer(String name, List<Object> items, Integer capacity) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("'name' parameter must not be null or empty");
         }
@@ -49,11 +49,11 @@ public class EmbeddedQueueContainer implements QueueMetadata {
         this.name = name;
     }
     
-    public List<byte[]> getItems() {
+    public List<Object> getItems() {
         return items;
     }
 
-    public void setItems(List<byte[]> list) {
+    public void setItems(List<Object> list) {
         this.items = list;
     }
 

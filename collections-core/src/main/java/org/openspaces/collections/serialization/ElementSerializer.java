@@ -11,7 +11,7 @@ public interface ElementSerializer<T> {
      * @param pojo an object to be serialized
      * @return serialized form of the object
      */
-    byte[] serialize(T pojo) throws SerializationException;
+    Object serialize(T pojo) throws SerializationException;
 
     /**
      * Deserializes payload into an actual object.
@@ -19,6 +19,6 @@ public interface ElementSerializer<T> {
      * @param payload serialized form of object
      * @return the deserialized object
      */
-    T deserialize(byte[] payload) throws SerializationException;
+    T deserialize(Object payload) throws SerializationException;
 
 }

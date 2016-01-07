@@ -80,7 +80,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
 
         final ChangeResult<EmbeddedQueueContainer> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
 
-        final SerializableResult<byte[]> result = toSingleResult(changeResult);
+        final SerializableResult<Object> result = toSingleResult(changeResult);
         return deserialize(result.getResult());
     }
 
@@ -90,7 +90,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
 
         final AggregationResult aggregationResult = space.aggregate(idQuery(), new AggregationSet().add(new EmbeddedPeekOperation()));
 
-        final SerializableResult<byte[]> result = toSingleResult(aggregationResult);
+        final SerializableResult<Object> result = toSingleResult(aggregationResult);
         return deserialize(result.getResult());
     }
 
@@ -102,7 +102,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
     @Override
     protected EmbeddedQueueContainer getOrCreate() {
         try {
-            List<byte[]> items = bounded ? new ArrayList<byte[]>(capacity) : new ArrayList<byte[]>();
+            List<Object> items = bounded ? new ArrayList<>(capacity) : new ArrayList<>();
             EmbeddedQueueContainer container = new EmbeddedQueueContainer(queueName, items, bounded ? capacity : null);
             space.write(container, WriteModifiers.WRITE_ONLY);
             return container;
@@ -148,11 +148,11 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
 
         private final int maxEntries; 
         
-        private byte[] curr;
+        private Object curr;
         private int currIndex;
         
         private int batchIndex;
-        private Iterator<byte[]> iterator;
+        private Iterator<Object> iterator;
 
         public QueueIterator() {
             this(DEFAULT_MAX_ENTRIES);
@@ -189,12 +189,12 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
             return deserialize(curr);
         }
 
-        private Iterator<byte[]> nextBatch() {
+        private Iterator<Object> nextBatch() {
             final EmbeddedRetrieveOperation operation = new EmbeddedRetrieveOperation(batchIndex, maxEntries);
             final AggregationResult aggregationResult = space.aggregate(idQuery(), new AggregationSet().add(operation));
 
-            final SerializableResult<List<byte[]>> result = toSingleResult(aggregationResult);
-            final List<byte[]> items = result.getResult();
+            final SerializableResult<List<Object>> result = toSingleResult(aggregationResult);
+            final List<Object> items = result.getResult();
             if (items == null) {
                 return null;
             }

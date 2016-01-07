@@ -2,8 +2,8 @@ package org.openspaces.collections.queue.embedded.operations;
 
 import com.gigaspaces.server.MutableServerEntry;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Svitlana_Pogrebna
@@ -13,9 +13,9 @@ public class EmbeddedRemoveOperation extends EmbeddedChangeOperation<Boolean> {
     private static final long serialVersionUID = 1L;
 
     private final int index;
-    private final byte[] item;
+    private final Object item;
     
-    public EmbeddedRemoveOperation(int index, byte[] item) {
+    public EmbeddedRemoveOperation(int index, Object item) {
         if (index < 0) {
             throw new IndexOutOfBoundsException("'index' parameter must not be negative");
         }
@@ -32,8 +32,8 @@ public class EmbeddedRemoveOperation extends EmbeddedChangeOperation<Boolean> {
     }
 
     @Override
-    protected Boolean change(MutableServerEntry entry, List<byte[]> items) {
-        if (index < items.size() && Arrays.equals(item, items.get(index))) {
+    protected Boolean change(MutableServerEntry entry, List<Object> items) {
+        if (index < items.size() && Objects.deepEquals(item, items.get(index))) {
             items.remove(index);
             return true;
         }

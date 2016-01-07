@@ -12,11 +12,11 @@ import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContai
  * @author Svitlana_Pogrebna
  *
  */
-public class EmbeddedRetrieveOperation extends SpaceEntriesAggregator<SerializableResult<List<byte[]>>> {
+public class EmbeddedRetrieveOperation extends SpaceEntriesAggregator<SerializableResult<List<Object>>> {
 
     private static final long serialVersionUID = 1L;
 
-    private transient SerializableResult<List<byte[]>> result;
+    private transient SerializableResult<List<Object>> result;
     
     private final int index;
     private final int maxEntries;
@@ -40,7 +40,7 @@ public class EmbeddedRetrieveOperation extends SpaceEntriesAggregator<Serializab
     @Override
     public void aggregate(SpaceEntriesAggregatorContext context) {
         @SuppressWarnings("unchecked")
-        final List<byte[]> items = (List<byte[]>) context.getPathValue(ITEMS_PATH);
+        final List<Object> items = (List<Object>) context.getPathValue(ITEMS_PATH);
         final int size = items.size();
         
         if (index >= size) {
@@ -49,17 +49,17 @@ public class EmbeddedRetrieveOperation extends SpaceEntriesAggregator<Serializab
         }
         
         final int toIndex = index + maxEntries;
-        final List<byte[]> subList = new ArrayList<byte[]>(items.subList(index, toIndex < size ? toIndex : size));
+        final List<Object> subList = new ArrayList<>(items.subList(index, toIndex < size ? toIndex : size));
         result = new SerializableResult<>(subList);
     }
 
     @Override
-    public SerializableResult<List<byte[]>> getIntermediateResult() {
+    public SerializableResult<List<Object>> getIntermediateResult() {
         return result;
     }
 
     @Override
-    public void aggregateIntermediateResult(SerializableResult<List<byte[]>> partitionResult) {
+    public void aggregateIntermediateResult(SerializableResult<List<Object>> partitionResult) {
         this.result = partitionResult;
     }
 }
