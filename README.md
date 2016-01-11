@@ -130,6 +130,8 @@ This mode suggests that user items are stored inside single collection container
 
 `GigaQueue` can have multiple clients operating over one collection. Several processes may declare a queue with one name: this will create only one queue structure in space and will allow clients to offer and poll with a single source. For example, queue may be filled with tasks by the manager process and emptied by the workers.
 
+It is strongly recommended to reuse one instance of queue within one java process due to client-side optimizations. Thus, it is recommended to declare a queue as a Spring context bean, and just inject it wherever it's required without additional creation.
+
 #### Serialization
 
 By default all queue items will be serialized into byte arrays and stored in space, which brings inability to query the items directly. To tweak the serialization, you can provide an item class which will be used to determine if items must be stored in byte form or note. Next configuration will skip additional serialization, if `Person` class implements `Serializable`:
