@@ -79,13 +79,13 @@ public class MyService {
 
 ## Configuring GigaSet
 
-Current implementation of `GigaSet` supports two modes: `clustered` and `non-clustered`. If a specific mode is not chosen, it will be set automatically based on given `GigaSpace`. Clustered mode is set to `true` if the space is an embedded one and the space is not a local cache proxy, `false` otherwise. When declaring the mode, user can leave this flag unset or choose `true` to work with single member of the grid or `false` to work with the whole cluster. This allows to switch between client-side implementation of `GigaSet` which interacts with remote space and server-side implementation that works with own embedded space.
+Current implementation of `GigaSet` supports two modes: `clustered` and `non-clustered`. If a specific mode is not chosen, it will be set automatically based on given `GigaSpace`. Clustered mode is set to `false` if the space is an embedded one and the space is not a local cache proxy, `true` otherwise. When declaring the mode, user can leave this flag unset or choose `false` to work with single member of the grid or `true` to work with the whole cluster. This allows to switch between client-side implementation of `GigaSet` which interacts with remote space and server-side implementation that works with own embedded space.
 
 Here is an example of how to create a `GigaSet` for a single grid member (embedded space):
 
 ```java
 GigaSet<Person> set = new GigaSetConfigurer<Person>(gigaSpace)
-                        .clustered(clustered)
+                        .clustered(false)
                         .gigaSet();
 ```
 
@@ -98,7 +98,7 @@ Or, with XML configuration:
 
 <bean id="myGigaSet" class="org.openspaces.collections.GigaSetFactoryBean">
   <property name="gigaSpace" ref="myGigaSpace"/>
-  <property name="clustered" value="true"/>
+  <property name="clustered" value="false"/>
 </bean>
 ```
 
