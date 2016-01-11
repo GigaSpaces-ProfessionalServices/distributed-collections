@@ -84,7 +84,9 @@ Current implementation of `GigaSet` supports two modes: `clustered` and `non-clu
 Here is an example of how to create a `GigaSet` for a single grid member (embedded space):
 
 ```java
-GigaSet<Person> set = new GigaSetConfigurer<Person>(gigaSpace).clustered(clustered).gigaSet();
+GigaSet<Person> set = new GigaSetConfigurer<Person>(gigaSpace)
+                        .clustered(clustered)
+                        .gigaSet();
 ```
 
 Or, with XML configuration:
@@ -133,7 +135,7 @@ This mode suggests that user items are stored inside single collection container
 By default all queue items will be serialized into byte arrays and stored in space, which brings inability to query the items directly. To tweak the serialization, you can provide an item class which will be used to determine if items must be stored in byte form or note. Next configuration will skip additional serialization, if `Person` class implements `Serializable`:
 
 ```java
-GigaQueue<Person> queue = new GigaQueueConfigurer<Person>(gigaSpace, "myPersonQueue", CollocationMode.DISTRIBUTED)
+GigaQueue<Person> queue = new GigaQueueConfigurer<Person>(gigaSpace, "myPersonQueue", DISTRIBUTED)
                             .elementType(Person.class)
                             .gigaQueue();
 ```
@@ -156,7 +158,7 @@ You can also provide custom serializers and serializer providers using `GigaQueu
 `GigaQueue` can be limited on capacity. This will change queue behavior when items count reaches the maximum. More information about bounded queue behavior can be found in method docs. To create a bounded queue, next declaration may be used:
 
 ```java
-GigaQueue<Person> queue = new GigaQueueConfigurer<Person>(gigaSpace, "myPersonQueue", CollocationMode.DISTRIBUTED)
+GigaQueue<Person> queue = new GigaQueueConfigurer<Person>(gigaSpace, "myPersonQueue", DISTRIBUTED)
                             .capacity(100)
                             .gigaQueue();
 ```
