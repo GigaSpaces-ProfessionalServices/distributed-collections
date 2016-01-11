@@ -128,7 +128,7 @@ This mode suggests that user items are stored inside single collection container
 
 ![Multi-client usage](./docs/multi-client.png?raw=true)
 
-`GigaQueue` can have multiple clients operating over one collection. Several processes may declare a queue with one name: this will create only one queue structure in space and will allow clients to offer and poll with a single source. For example, queue may be filled with tasks by the manager process and emptied by the workers.
+`GigaQueue` can have multiple clients operating over one collection. Several processes may declare a queue with one name: this will create only one queue structure in space and will allow clients to offer and poll with a single source. For example, queue may be filled with tasks by the producer process and emptied by the consumers.
 
 It is strongly recommended to reuse one instance of queue within one java process due to client-side optimizations. Thus, it is recommended to declare a queue as a Spring context bean, and just inject it wherever it's required without additional creation.
 
