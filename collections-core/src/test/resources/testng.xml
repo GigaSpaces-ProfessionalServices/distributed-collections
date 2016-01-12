@@ -1,47 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="AllTests" verbose="1">
-
-  <test name="collections-test-filled">
-    <groups>
-      <run>
-        <include name="all"/>
-        <include name="filled"/>
-      </run>
-    </groups>
-    <classes>
-      <class name="org.openspaces.collections.queue.QueueTest"/>
-      <class name="org.openspaces.collections.set.SetTest"/>
-    </classes>
-  </test>
-
-  <test name="collections-test-empty">
-    <groups>
-      <run>
-        <include name="all"/>
-        <include name="empty"/>
-      </run>
-    </groups>
-    <classes>
-      <class name="org.openspaces.collections.queue.QueueTest"/>
-      <class name="org.openspaces.collections.set.SetTest"/>
-    </classes>
-  </test>
-
-  <test name="collections-test-others">
-    <classes>
-      <class name="org.openspaces.collections.queue.QueueCloseDestroyTest"/>
-      <class name="org.openspaces.collections.queue.ProducerConsumerTest"/>
-      <class name="org.openspaces.collections.queue.LocalQueueRoutingTest"/>
-      <class name="org.openspaces.collections.queue.QueueConfigurationTest"/>
-      <class name="org.openspaces.collections.set.SetConfigurationTest"/>
-    </classes>
-  </test>
-
-  <test name="serizalization-test">
-    <classes>
-      <class name="org.openspaces.collections.serialization.SerializationTest"/>
-    </classes>
-  </test>
-
+  <suite-files>
+    <suite-file path="testng-queue.xml"/>
+    <suite-file path="testng-set.xml"/>
+    <suite-file path="testng-others.xml"/>
+  </suite-files>
 </suite>

@@ -1,6 +1,5 @@
 package org.openspaces.collections.set;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.openspaces.collections.BasicCollectionTest;
 import org.openspaces.collections.CollectionUtils;
 import org.openspaces.collections.GigaSetConfigurer;
@@ -8,6 +7,7 @@ import org.openspaces.core.GigaSpace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.testng.annotations.*;
 
@@ -18,14 +18,14 @@ import static org.openspaces.collections.CollectionUtils.createSerializableType;
 import static org.openspaces.collections.util.TestUtils.combination;
 import static org.testng.Assert.*;
 
-@ContextConfiguration("classpath:/partitioned-space-test-config.xml")
+@ContextConfiguration
 public class SetTest extends BasicCollectionTest {
     private static final Logger LOG = LoggerFactory.getLogger(SetTest.class);
 
     @DataProvider
     public static Object[][] setTypes() {
         Object[][] types = combination(
-                /* clustered/not/undefined */ Arrays.asList(true, /*false,*/ null)
+                /* clustered/not/undefined */ Arrays.asList(true, false, null)
         );
         LOG.info("Testing {} set combinations", types.length);
         return types;
@@ -39,7 +39,11 @@ public class SetTest extends BasicCollectionTest {
     private static int elementCount = 10;
 
     @Autowired
+    @Qualifier("gigaSpace")
     private GigaSpace gigaSpace;
+    @Autowired
+    @Qualifier("embeddedGigaSpace")
+    private GigaSpace embeddedGigaSpace;
 
     private Boolean clustered;
     private GigaSet<SerializableType> set;
@@ -52,7 +56,11 @@ public class SetTest extends BasicCollectionTest {
     @BeforeClass(groups = "all")
     public void setUp() {
         LOG.info("Setting up set: clustered = {}", clustered);
-        set = new GigaSetConfigurer<SerializableType>(gigaSpace).clustered(clustered).gigaSet();
+        GigaSpace targetSpace = gigaSpace;
+        if (clustered != null && !clustered) {
+            targetSpace = embeddedGigaSpace;
+        }
+        set = new GigaSetConfigurer<SerializableType>(targetSpace).clustered(clustered).gigaSet();
     }
 
     @BeforeClass(groups = "filled")

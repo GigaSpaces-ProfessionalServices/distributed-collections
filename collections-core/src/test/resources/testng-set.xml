@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="SetTests" verbose="1">
+
+  <test name="set-test-filled">
+    <groups>
+      <run>
+        <include name="all"/>
+        <include name="filled"/>
+      </run>
+    </groups>
+    <classes>
+      <class name="org.openspaces.collections.set.SetTest"/>
+    </classes>
+  </test>
+
+  <test name="set-test-empty">
+    <groups>
+      <run>
+        <include name="all"/>
+        <include name="empty"/>
+      </run>
+    </groups>
+    <classes>
+      <class name="org.openspaces.collections.set.SetTest"/>
+    </classes>
+  </test>
+
+</suite>

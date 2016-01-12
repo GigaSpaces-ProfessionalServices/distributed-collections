@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="OtherTests" verbose="1">
+
+  <test name="collections-test-others">
+    <classes>
+      <class name="org.openspaces.collections.queue.QueueCloseDestroyTest"/>
+      <class name="org.openspaces.collections.queue.ProducerConsumerTest"/>
+      <class name="org.openspaces.collections.queue.LocalQueueRoutingTest"/>
+      <class name="org.openspaces.collections.queue.QueueConfigurationTest"/>
+      <class name="org.openspaces.collections.set.SetConfigurationTest"/>
+    </classes>
+  </test>
+
+  <test name="serizalization-test">
+    <classes>
+      <class name="org.openspaces.collections.serialization.SerializationTest"/>
+    </classes>
+  </test>
+
+</suite>

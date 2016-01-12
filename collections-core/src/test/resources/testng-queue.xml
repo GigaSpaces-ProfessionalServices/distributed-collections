@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="QueueTests" verbose="1">
+
+  <test name="queue-test-filled">
+    <groups>
+      <run>
+        <include name="all"/>
+        <include name="filled"/>
+      </run>
+    </groups>
+    <classes>
+      <class name="org.openspaces.collections.queue.QueueTest"/>
+    </classes>
+  </test>
+
+  <test name="queue-test-empty">
+    <groups>
+      <run>
+        <include name="all"/>
+        <include name="empty"/>
+      </run>
+    </groups>
+    <classes>
+      <class name="org.openspaces.collections.queue.QueueTest"/>
+    </classes>
+  </test>
+
+</suite>
