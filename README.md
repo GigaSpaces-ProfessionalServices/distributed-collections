@@ -110,19 +110,19 @@ Or, with XML configuration:
 
 ![Distributed collocation mode](./docs/distributed.png?raw=true)
 
-In this mode collection items are spread over the whole cluster. It is preferred mode for collections of huge sizes, since memory consumption is balanced across the grid. User items are wrapped into meta classes, but can still be queried (only serializable items).
+In this mode collection items are spread over the whole cluster. It is preferred mode for collections of huge sizes, since memory consumption is balanced across the grid. User items are wrapped into meta classes and stored in space one by one.
 
 #### Local collocation mode
 
 ![Local collocation mode](./docs/local.png?raw=true)
 
-In `local` collocation mode items are stored within the same partition as the metadata object. This mode should be chosen when application interacts with multiple small collections stored in the grid. It is scalable by collection count and not by the number of items in one collection. User items are wrapped into meta classes, but can still be queried (only serializable items).
+In `local` collocation mode items are stored within the same partition as the metadata object. This mode should be chosen when application interacts with multiple small collections stored in the grid. It is scalable by collection count and not by the number of items in one collection. User items are wrapped into meta classes and stored in space one by one.
 
 #### Embedded collocation mode
 
 ![Embedded collocation mode](./docs/embedded.png?raw=true)
 
-This mode suggests that user items are stored inside single collection container object. Thus items do not have their own space identity and cannot be queried. This mode is similar to `local` mode but does not expose collection items for direct external use.
+This mode suggests that user items are stored inside single collection container object. Thus items do not have their own space identity and are stored together. This mode is similar to `local` mode but groups up items for performance needs.
 
 #### Multi-client usage
 
@@ -134,7 +134,7 @@ It is strongly recommended to reuse one instance of queue within one java proces
 
 #### Serialization
 
-By default all queue items will be serialized into byte arrays and stored in space, which brings inability to query the items directly. To tweak the serialization, you can provide an item class which will be used to determine if items must be stored in byte form or note. Next configuration will skip additional serialization, if `Person` class implements `Serializable`:
+By default all queue items will be serialized into byte arrays and stored in space. To tweak the serialization, you can provide an item class which will be used to determine if items must be stored in byte form or note. Next configuration will skip additional serialization, if `Person` class implements `Serializable`:
 
 ```java
 GigaQueue<Person> queue = new GigaQueueConfigurer<Person>(gigaSpace, "myPersonQueue", DISTRIBUTED)
