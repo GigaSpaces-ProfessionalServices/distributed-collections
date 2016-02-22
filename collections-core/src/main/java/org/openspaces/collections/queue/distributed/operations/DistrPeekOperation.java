@@ -3,8 +3,9 @@ package org.openspaces.collections.queue.distributed.operations;
 import com.gigaspaces.query.aggregators.SpaceEntriesAggregator;
 import com.gigaspaces.query.aggregators.SpaceEntriesAggregatorContext;
 
-import java.util.HashSet;
 import java.util.Set;
+
+import org.openspaces.collections.util.CollectionUtils;
 
 import static org.openspaces.collections.queue.distributed.data.DistrQueueMetadata.*;
 
@@ -28,7 +29,7 @@ public class DistrPeekOperation extends SpaceEntriesAggregator<DistrQueueHeadRes
         if (tail == head) {
             this.result = DistrQueueHeadResult.emptyQueueResult();
         } else {
-            final Set<Long> removedIndexes = new HashSet<>((Set<Long>) context.getPathValue(REMOVED_INDEXES_PATH));
+            final Set<Object> removedIndexes = CollectionUtils.cloneSet((Set<Object>)context.getPathValue(REMOVED_INDEXES_PATH));
             this.result = new DistrQueueHeadTransformer().forwardQueueHead(head, tail, removedIndexes);
         }
     }

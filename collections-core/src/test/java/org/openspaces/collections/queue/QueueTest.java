@@ -75,6 +75,7 @@ public class QueueTest extends BasicCollectionTest {
                 .capacity(bounded ? capacity : null)
                 .elementType(elementType)
                 .gigaQueue();
+       
     }
 
     @BeforeClass(groups = "filled")
@@ -91,6 +92,15 @@ public class QueueTest extends BasicCollectionTest {
     public void fillQueue(Method method) {
         content = newElements(elementCount);
         queue.clear();
+        
+        try {
+			Thread.sleep(300); //TODO:After clear its possible that locks have not released
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        //System.out.println("-----------------------Capacity:"+ capacity +" sizeToAdd:" + content.size() + "currentSize:" + queue.size() + "remainingCapacity:"+queue.remainingCapacity());
         queue.addAll(content);
         LOG.info("| running {}", method.getName());
     }
@@ -265,15 +275,17 @@ public class QueueTest extends BasicCollectionTest {
 
     @Test(groups = "all")
     public void testPut() throws InterruptedException {
+    	
         Object element = newElement();
-        queue.put(element);
+       queue.put(element);
         assertSize(content.size() + 1);
         if (content.isEmpty()) {
             assertEquals(queue.peek(), element, "Invalid blocking queue head");
         }
-
+       
         queue.put(element);
         assertSize(content.size() + 2);
+        
     }
 
     @Test(groups = "filled", timeOut = 5000)
@@ -335,6 +347,33 @@ public class QueueTest extends BasicCollectionTest {
             assertNotNull(actual, "Element should not be null");
             assertTrue(content.contains(actual), "Invalid element");
         }
+    }
+    @Test(groups = "all")
+    public void testContains(){
+    	Object element = newElement();
+    	Object element2 = newElement();
+    	Object element3 = newElement();
+    	Object element4 = newElement();
+    	assertTrue(queue.offer(element));
+    	assertTrue(queue.offer(element2));
+    	assertTrue(queue.offer(element3));
+    	assertTrue(queue.offer(element4));
+    	
+        assertTrue(queue.contains(element));
+    }
+    @Test(groups = "all")
+    public void testContainsAll(){
+    	Object element = newElement();
+    	Object element2 = newElement();
+    	Object element3 = newElement();
+    	Object element4 = newElement();
+    	
+    	assertTrue(queue.offer(element));
+    	assertTrue(queue.offer(element2));
+    	assertTrue(queue.offer(element3));
+    	assertTrue(queue.offer(element4));
+    	
+        assertTrue(queue.containsAll(Arrays.asList(element2, element3)));
     }
 
     @Test(groups = "all")
@@ -411,15 +450,17 @@ public class QueueTest extends BasicCollectionTest {
 
     @Test(groups = "all")
     public void testCallingRemoveOnLastElement() {
-        Object element = newElement();
+        
+    	Object element = newElement();
+    	int size = queue.size();
         queue.add(element);
         // calls iterator.remove() inside
         queue.remove(element);
-
-        assertEquals(content.size(), queue.size());
+        
+        assertEquals(queue.size(), size);
 
         queue.clear();
-        assertEquals(0, queue.size());
+        assertEquals(queue.size(), 0);
     }
 
     @Test(groups = "all")

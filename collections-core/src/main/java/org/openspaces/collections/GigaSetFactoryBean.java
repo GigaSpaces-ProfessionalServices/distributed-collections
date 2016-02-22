@@ -1,8 +1,6 @@
 package org.openspaces.collections;
 
 import com.j_spaces.map.IMap;
-import org.openspaces.collections.serialization.DefaultSerializerProvider;
-import org.openspaces.collections.serialization.ElementSerializer;
 import org.openspaces.collections.set.DefaultGigaSet;
 import org.openspaces.collections.set.GigaSet;
 import org.openspaces.core.GigaMap;

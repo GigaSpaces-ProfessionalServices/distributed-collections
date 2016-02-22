@@ -6,6 +6,8 @@ import com.gigaspaces.server.MutableServerEntry;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.openspaces.collections.util.CollectionUtils;
+
 import static org.openspaces.collections.queue.distributed.data.DistrQueueMetadata.*;
 
 /**
@@ -26,7 +28,7 @@ public class DistrPollOperation extends CustomChangeOperation {
         }
 
         // skip elements that were removed with iterator.remove()
-        final Set<Long> removedIndexes = new HashSet<>((Set<Long>) entry.getPathValue(REMOVED_INDEXES_PATH));
+        final Set<Object> removedIndexes = (Set<Object>)CollectionUtils.cloneSet(((Set<Object>) entry.getPathValue(REMOVED_INDEXES_PATH)));
 
         DistrQueueHeadResult result = new DistrQueueHeadTransformer().forwardQueueHead(head, tail, removedIndexes);
         entry.setPathValue(HEAD_PATH, result.getHeadIndex());

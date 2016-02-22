@@ -24,7 +24,7 @@ public class DistrRemoveOperation extends CustomChangeOperation {
     public Object change(MutableServerEntry entry) {
         long tail = (long) entry.getPathValue(TAIL_PATH);
         long head = (long) entry.getPathValue(HEAD_PATH);
-        Set<Long> removedIndexes = new HashSet<>((Set<Long>) entry.getPathValue(REMOVED_INDEXES_PATH));
+        HashSet<Long> removedIndexes = (HashSet<Long>)((HashSet<Long>) entry.getPathValue(REMOVED_INDEXES_PATH)).clone();
 
         if (head == tail) {
             // nothing to remove

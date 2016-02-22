@@ -3,6 +3,7 @@ package org.openspaces.collections.queue.embedded.operations;
 import com.gigaspaces.query.aggregators.SpaceEntriesAggregator;
 import com.gigaspaces.query.aggregators.SpaceEntriesAggregatorContext;
 
+import java.io.Serializable;
 import java.util.List;
 
 import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContainer.ITEMS_PATH;
@@ -10,11 +11,11 @@ import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContai
 /**
  * @author Svitlana_Pogrebna
  */
-public class EmbeddedPeekOperation extends SpaceEntriesAggregator<SerializableResult<Object>> {
+public class EmbeddedPeekOperation extends SpaceEntriesAggregator<Serializable> {
 
     private static final long serialVersionUID = 1L;
 
-    private transient SerializableResult<Object> result;
+    private transient Serializable result;
 
     @Override
     public String getDefaultAlias() {
@@ -24,16 +25,16 @@ public class EmbeddedPeekOperation extends SpaceEntriesAggregator<SerializableRe
     @Override
     public void aggregate(SpaceEntriesAggregatorContext context) {
         final List<Object> items = (List<Object>) context.getPathValue(ITEMS_PATH);
-        result = new SerializableResult<Object>(items.isEmpty() ? null : items.get(0));
+        result = (Serializable)(items.isEmpty() ? null : items.get(0));
     }
 
     @Override
-    public SerializableResult<Object> getIntermediateResult() {
+    public Serializable getIntermediateResult() {
         return result;
     }
 
     @Override
-    public void aggregateIntermediateResult(SerializableResult<Object> partitionResult) {
+    public void aggregateIntermediateResult(Serializable partitionResult) {
         this.result = partitionResult;
     }
 }

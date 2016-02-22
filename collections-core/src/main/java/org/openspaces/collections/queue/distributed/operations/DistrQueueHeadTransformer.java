@@ -18,7 +18,7 @@ public class DistrQueueHeadTransformer {
      * @param removedIndexes
      * @return queue head result.
      */
-    public DistrQueueHeadResult forwardQueueHead(long head, long tail, Set<Long> removedIndexes) {
+    public DistrQueueHeadResult forwardQueueHead(long head, long tail, Set<Object> removedIndexes) {
         if (head == tail) {
             throw new IllegalArgumentException("Queue should not be empty");
         }
@@ -34,7 +34,7 @@ public class DistrQueueHeadTransformer {
     /**
      * returns next non removed index, as a side effect cleans up 'removedIndexes' set removing indexes we no longer need
      */
-    private long nextNonRemovedIndex(final long index, Set<Long> removedIndexes) {
+    private long nextNonRemovedIndex(final long index, Set<Object> removedIndexes) {
         long next = index + 1;
         while (removedIndexes.remove(next)) {
             next++;

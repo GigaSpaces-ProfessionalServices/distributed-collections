@@ -15,13 +15,20 @@ import org.openspaces.collections.queue.distributed.data.DistrQueueMetadata;
 import org.openspaces.collections.queue.distributed.operations.*;
 import org.openspaces.collections.serialization.ElementSerializer;
 import org.openspaces.collections.util.Pair;
+import org.openspaces.core.ChangeException;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
+import org.springframework.dao.DataAccessException;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.gigaspaces.client.ChangeModifiers.RETURN_DETAILED_RESULTS;
 import static java.util.Objects.requireNonNull;
@@ -41,6 +48,10 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
 
     private final IdQuery<DistrQueueMetadata> queueMetadataQuery;
 
+    private static final Logger LOG = Logger.getLogger(DistributedGigaBlockingQueue.class.getName());
+
+    private static final AggregationSet sizeOperation = new AggregationSet().add(new DistrSizeOperation());
+    
     /**
      * Creates not bounded queue
      *
@@ -86,26 +97,56 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
     protected SizeChangeListener createSizeChangeListener(DistrQueueMetadata queueMetadata) {
         return new SizeChangeListener(queueMetadata);
     }
-
+    
     @Override
-    public boolean offer(E element) {
+    protected boolean writeMultipleEntities(List<Object> c) {
+        checkNotClosed();
+        
+        int listSize = c.size();
+
+        ChangeSet offerChange = new ChangeSet().custom(new DistrOfferMultipleOperation(listSize));
+
+        try{
+        	ChangeResult<DistrQueueMetadata> changeResult = space.change(queueMetadataQuery, offerChange, RETURN_DETAILED_RESULTS);
+            Long oldtail = getTailFromResult(changeResult);
+            
+            DistrQueueItem[] queueItems = new DistrQueueItem[listSize];
+            Long tailForItem = oldtail + 1;
+            for(int i = 0; i< listSize;i++){
+            	DistrQueueItemKey itemKey = new DistrQueueItemKey(queueName,  tailForItem + i);
+            	Integer routing = calculateRouting(itemKey);
+            	DistrQueueItem item = new DistrQueueItem(itemKey, c.get(i), routing);
+            	queueItems[i] = item;
+            }
+        	space.writeMultiple(queueItems);
+            
+        	return true;
+        }catch(ChangeException ex){
+        	LOG.log(Level.FINE, "queueName"+ getName() + " successfulChanges:" + ex.getNumSuccesfullChanges(), ex);
+        	return false;
+        }catch(DataAccessException ex){
+        	LOG.log(Level.FINE, "queueName"+ getName() + " failed to write items:", ex);
+        	return false;
+        }
+    }
+    @Override
+    public boolean writeEntity(E element) {
         requireNonNull(element, NULL_ELEMENT_ERR_MSG);
         checkNotClosed();
 
-        ChangeSet offerChange = new ChangeSet().custom(new DistrOfferOperation(1));
+        ChangeSet offerChange = new ChangeSet().custom(new DistrOfferOperation());
 
-        ChangeResult<DistrQueueMetadata> changeResult = space.change(queueMetadataQuery, offerChange, RETURN_DETAILED_RESULTS);
-
-        DistrOfferOperation.Result offerResult = toSingleResult(changeResult);
-
-        if (offerResult.isChanged()) {
-            DistrQueueItemKey itemKey = new DistrQueueItemKey(queueName, offerResult.getNewTail());
+        try{
+        	ChangeResult<DistrQueueMetadata> changeResult = space.change(queueMetadataQuery, offerChange, RETURN_DETAILED_RESULTS);
+            Long newTail = getTailFromResult(changeResult);
+        	DistrQueueItemKey itemKey = new DistrQueueItemKey(queueName, newTail);
             Integer routing = calculateRouting(itemKey);
             DistrQueueItem item = new DistrQueueItem(itemKey, serialize(element), routing);
             space.write(item);
             return true;
-        } else {
-            return false;
+        }catch(ChangeException ex){
+        	LOG.log(Level.FINE, "queueName"+ getName() + " successfulChanges:" + ex.getNumSuccesfullChanges(), ex);
+        	return false;
         }
     }
 
@@ -113,7 +154,7 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
     public E poll() {
         checkNotClosed();
         while (true) {
-            ChangeSet pollChange = new ChangeSet().custom(new DistrPollOperation());
+        	 ChangeSet pollChange = new ChangeSet().custom(new DistrPollOperation());
 
             ChangeResult<DistrQueueMetadata> changeResult = space.change(queueMetadataQuery, pollChange, RETURN_DETAILED_RESULTS);
 
@@ -174,11 +215,11 @@ public class DistributedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E
     @Override
     public int size() {
         checkNotClosed();
-        AggregationSet sizeOperation = new AggregationSet().add(new DistrSizeOperation());
-
+        
         AggregationResult aggregationResult = space.aggregate(queueMetadataQuery, sizeOperation);
 
         DistrSizeOperation.Result sizeResult = toSingleResult(aggregationResult);
+        
         return sizeResult.getSize();
     }
 

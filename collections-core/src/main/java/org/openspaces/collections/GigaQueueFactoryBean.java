@@ -80,7 +80,7 @@ public class GigaQueueFactoryBean<T> implements InitializingBean, DisposableBean
             case LOCAL:
                 // fall through
             case DISTRIBUTED:
-                if (capacity != null) {
+                if (capacity != null && capacity != 0) {
                     gigaQueue = new DistributedGigaBlockingQueue<>(gigaSpace, queueName, capacity, collocationMode, serializer);
                 } else {
                     gigaQueue = new DistributedGigaBlockingQueue<>(gigaSpace, queueName, collocationMode, serializer);

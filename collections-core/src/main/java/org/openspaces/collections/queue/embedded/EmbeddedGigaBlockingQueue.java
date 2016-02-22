@@ -13,6 +13,7 @@ import org.openspaces.collections.queue.AbstractGigaBlockingQueue;
 import org.openspaces.collections.queue.embedded.data.EmbeddedQueueContainer;
 import org.openspaces.collections.queue.embedded.operations.*;
 import org.openspaces.collections.serialization.ElementSerializer;
+import org.openspaces.core.ChangeException;
 import org.openspaces.core.EntryAlreadyInSpaceException;
 import org.openspaces.core.GigaSpace;
 
@@ -20,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContainer.QUEUE_NAME_PATH;
 import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContainer.SIZE_PATH;
@@ -31,6 +34,13 @@ import static org.openspaces.collections.queue.embedded.data.EmbeddedQueueContai
  */
 public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, EmbeddedQueueContainer> {
 
+	private final IdQuery<EmbeddedQueueContainer> idQuery;
+	private final IdQuery<EmbeddedQueueContainer> idQueryLightWeightContainer;
+	
+	public static final Integer UNBOUNDED_ALLOCATION = 1000;//TODO:Configurable
+    
+	private static final Logger LOG = Logger.getLogger(EmbeddedGigaBlockingQueue.class.getName());
+	
     /**
      * Creates not bounded queue
      * 
@@ -40,6 +50,8 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
      */
     public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName, ElementSerializer<E> serializer) {
         super(space, queueName, 0, false, serializer);
+        idQuery = createQuereyForToRetrieveQueueMetaData(queueName);
+        idQueryLightWeightContainer = createQuereyToRetireveQueueSize(queueName);
     }
 
     
@@ -52,26 +64,89 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
      */
     public EmbeddedGigaBlockingQueue(GigaSpace space, String queueName, int capacity, ElementSerializer<E> serializer) {
         super(space, queueName, capacity, true, serializer);
+        idQuery = createQuereyForToRetrieveQueueMetaData(queueName);
+        idQueryLightWeightContainer = createQuereyToRetireveQueueSize(queueName);
     }
 
+    private static IdQuery<EmbeddedQueueContainer> createQuereyForToRetrieveQueueMetaData(String queueName){
+    	return new IdQuery<EmbeddedQueueContainer>(EmbeddedQueueContainer.class, queueName);
+    }
+    private static IdQuery<EmbeddedQueueContainer> createQuereyToRetireveQueueSize(String queueName){
+    	return new IdQuery<EmbeddedQueueContainer>(EmbeddedQueueContainer.class, queueName).setProjections(SIZE_PATH);
+    }
     @Override
     protected EmbeddedSizeChangeListener createSizeChangeListener(EmbeddedQueueContainer queueMetadata) {
         return new EmbeddedSizeChangeListener(queueMetadata);
     }
     
     @Override
-    public boolean offer(E e) {
-        checkNotClosed();
+    protected boolean writeMultipleEntities(List<Object> c) {
+    	 checkNotClosed();
+    	 
+    	 final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedOfferMultipleOperation(c));
 
+         try{
+         	space.change(idQuery(), changeSet);
+         }catch(ChangeException ex){
+         	//TODO:Do we want to let other exceptions through
+         	if(ex.getNumSuccesfullChanges() == 0){
+         		LOG.log(Level.SEVERE, "Failed to offer collection", ex);
+         		return false;
+         	}
+         }
+         return true;
+    }
+    @Override
+    public boolean writeEntity(E e) {
+        checkNotClosed();
+        
         final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedOfferOperation(serialize(e)));
 
-        final ChangeResult<EmbeddedQueueContainer> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
-
-        final SerializableResult<Boolean> result = toSingleResult(changeResult);
-
-        return result.getResult();
+        try{
+        	space.change(idQuery(), changeSet);
+        }catch(ChangeException ex){
+        	//TODO:Do we want to let other exceptions through
+        	if(ex.getNumSuccesfullChanges() == 0){
+        		LOG.log(Level.SEVERE, "Failed to offer entity" + e.toString(), ex);
+        		return false;
+        	}
+        }
+        return true;
+       
     }
 
+    @Override
+    public boolean contains(Object e) {
+        checkNotClosed();
+
+        final AggregationSet aggregationSet = new AggregationSet().add(new EmbeddedContaiinsOperation(serialize((E)e)));
+        
+       AggregationResult result = space.aggregate(idQuery(), aggregationSet);
+       
+       Boolean success = toSingleResult(result);
+        
+        if(success != null){
+        	return success;
+        }
+        
+        return false;
+       
+    }
+    @Override
+    public boolean remove(Object o){
+	    final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedRemoveOperation(serialize((E)o)));
+	    
+	    try{
+	    	space.change(idQuery(), changeSet);
+	    }catch(ChangeException ex){
+	    	//TODO:Do we want to let other exceptions through
+	    	if(ex.getNumSuccesfullChanges() == 0){
+	    		LOG.log(Level.SEVERE, "Failed to remove entity" + o.toString(), ex);
+	    		return false;
+	    	}
+	    }
+	    return true;
+    }
     @Override
     public E poll() {
         checkNotClosed();
@@ -80,8 +155,16 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
 
         final ChangeResult<EmbeddedQueueContainer> changeResult = space.change(idQuery(), changeSet, ChangeModifiers.RETURN_DETAILED_RESULTS);
 
-        final SerializableResult<Object> result = toSingleResult(changeResult);
-        return deserialize(result.getResult());
+        return deserialize(toSingleResult(changeResult));
+     }
+
+    @Override
+    public void clear() {
+    	checkNotClosed();
+
+    	final ChangeSet changeSet = new ChangeSet().custom( new EmbeddedClearOperation());
+    	
+    	space.change(idQuery(), changeSet);
     }
 
     @Override
@@ -90,8 +173,9 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
 
         final AggregationResult aggregationResult = space.aggregate(idQuery(), new AggregationSet().add(new EmbeddedPeekOperation()));
 
-        final SerializableResult<Object> result = toSingleResult(aggregationResult);
-        return deserialize(result.getResult());
+        return deserialize(toSingleResult(aggregationResult));
+        
+       
     }
 
     @Override
@@ -102,7 +186,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
     @Override
     protected EmbeddedQueueContainer getOrCreate() {
         try {
-            List<Object> items = bounded ? new ArrayList<>(capacity) : new ArrayList<>();
+            List<Object> items = bounded ? new ArrayList<>(capacity) : new ArrayList<>(UNBOUNDED_ALLOCATION);
             EmbeddedQueueContainer container = new EmbeddedQueueContainer(queueName, items, bounded ? capacity : null);
             space.write(container, WriteModifiers.WRITE_ONLY);
             return container;
@@ -123,12 +207,12 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
     }
 
     private EmbeddedQueueContainer getLightweightContainer() {
-        final IdQuery<EmbeddedQueueContainer> idQuery = idQuery().setProjections(SIZE_PATH);
-        return space.read(idQuery);
+        //final IdQuery<EmbeddedQueueContainer> idQuery = idQuery().setProjections(SIZE_PATH);
+        return space.read(idQueryLightWeightContainer);
     }
     
     private IdQuery<EmbeddedQueueContainer> idQuery() {
-        return new IdQuery<EmbeddedQueueContainer>(EmbeddedQueueContainer.class, queueName);
+        return idQuery;
     }
 
     @Override
@@ -141,6 +225,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
         super.destroy();
         space.clear(idQuery());
     }
+   
 
     private class QueueIterator implements Iterator<E> {
 
@@ -166,6 +251,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
             this.currIndex = -1;
             
             // load the first batch
+            // TODO:Async?
             this.iterator = nextBatch();
         }
 
@@ -203,12 +289,16 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
             return items.iterator();
         }
 
+        //TODO:Would this be accurate when multiple clients updating the same queue?
+        //The index may change often?
         @Override
         public void remove() {
             if (curr == null) {
                 throw new IllegalStateException();
             }
-            final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedRemoveOperation(currIndex, curr));
+            
+            //TODO:Async?
+            final ChangeSet changeSet = new ChangeSet().custom(new EmbeddedRemoveIteratorOperation(currIndex, curr));
             space.change(idQuery(), changeSet);
 
             batchIndex--;
@@ -225,7 +315,7 @@ public class EmbeddedGigaBlockingQueue<E> extends AbstractGigaBlockingQueue<E, E
 
         @Override
         protected SQLQuery<EmbeddedQueueContainer> query() {
-            SQLQuery<EmbeddedQueueContainer> query = new SQLQuery<>(EmbeddedQueueContainer.class, QUEUE_NAME_PATH + " = ? AND " + SIZE_PATH + " <> ?");
+            SQLQuery<EmbeddedQueueContainer> query = new SQLQuery<>(EmbeddedQueueContainer.class, QUEUE_NAME_PATH + " = ?");// AND " + SIZE_PATH + " <> ?");
             query.setProjections(SIZE_PATH);
             return query;
         }
